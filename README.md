@@ -10,6 +10,8 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 ### v1.4 - 3.xx.2018
 * Remove redundant code
 * Don't use install binary anymore since it's weird on some devices
+* Install apps to priv-app if /vendor/app folder doesn't exist
+* Misc improvements
 
 ### v1.3 - 2.25.2018
 * Fix seg faults on system installs
