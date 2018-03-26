@@ -9,6 +9,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 ## Change Log
 ### v1.4.1 - x.xx.2018
 * Don't use dynamic oreo for system kernel modules
+* Fix prop file permissions for system installs
 
 ### v1.4 - 3.18.2018
 * Remove redundant code
