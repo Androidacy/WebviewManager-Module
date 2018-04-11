@@ -228,7 +228,7 @@ device_check() {
 
 cp_ch_nb() {
   if [ -z $4 ]; then ALLBAK=false; else ALLBAK=$4; fi
-  if ( ! $MAGISK || $ALLBAK ) && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
+  if ( ! $MAGISK || $SYSOVERRIDE || $ALLBAK ) && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
   mkdir -p "$(dirname $2)"
   cp -f "$1" "$2"
   if [ -z $3 ] || [ "$3" == "noperm" ]; then
@@ -236,12 +236,14 @@ cp_ch_nb() {
   else
     chmod $3 "$2"
   fi
-  case $2 in
-    */vendor/etc/*) chcon u:object_r:vendor_configs_file:s0 $2;;
-    */vendor/*.apk) chcon u:object_r:vendor_app_file:s0 $2;;
-    */vendor/*) chcon u:object_r:vendor_file:s0 $2;;
-    */system/*) chcon u:object_r:system_file:s0 $2;;
-  esac
+  if ! $MAGISK; then
+    case $2 in
+      */vendor/etc/*) chcon u:object_r:vendor_configs_file:s0 $2;;
+      */vendor/*.apk) chcon u:object_r:vendor_app_file:s0 $2;;
+      */vendor/*) chcon u:object_r:vendor_file:s0 $2;;
+      */system/*) chcon u:object_r:system_file:s0 $2;;
+    esac
+  fi
 }
 
 cp_ch() {
@@ -249,7 +251,7 @@ cp_ch() {
     */system/*|*/vendor/*) ALLBAK=false;;
     *) ALLBAK=true;;
   esac
-  if [ -f "$2" ] && [ ! -f "$2.bak" ] && ( ! $MAGISK || $ALLBAK ); then
+  if [ -f "$2" ] && [ ! -f "$2.bak" ] && ( ! $MAGISK || $SYSOVERRIDE || $ALLBAK ); then
     cp -af $2 $2.bak
     echo "$2.bak" >> $INFO
   fi
@@ -270,9 +272,13 @@ patch_script() {
   sed -i "s|<MAGISK>|$MAGISK|" $1
   sed -i "s|<LIBDIR>|$LIBDIR|" $1
   if $MAGISK; then
+    if $SYSOVERRIDE; then
+      sed -i "s|<VEN>|$REALVEN|" $1
+    else
+      sed -i "s|<VEN>|$VEN|" $1
+    fi
     sed -i "s|<ROOT>|\"\"|" $1
     sed -i "s|<SYS>|/system|" $1
-    sed -i "s|<VEN>|$VEN|" $1
     sed -i "s|<SHEBANG>|#!/system/bin/sh|" $1
     sed -i "s|<SEINJECT>|magiskpolicy|" $1
     sed -i "s|\$MOUNTPATH|/sbin/.core/img|g" $1                                   
