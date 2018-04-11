@@ -7,6 +7,11 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.5 - 4.xx.2018
+* Add DYNAMICAPP option
+* ADD SYSOVERRIDE option
+* chcon only for system installs since magisk makes everything system_file anyways
+
 ### v1.4.1 - 3.29.2018
 * Don't use dynamic oreo for system kernel modules
 * Fix prop file permissions for system installs
