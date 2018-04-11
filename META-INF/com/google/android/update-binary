@@ -186,7 +186,11 @@ unity_install() {
         *) FILE2=$FILE;;
       esac
     else
-      $DYNAMICAPP && if $OLDAPP; then FILE2=$(echo $FILE | sed 's|/system/app/.*/|/system/app/|'); else FILE2=$(echo $FILE | sed 's|/system/app/|/system/priv-app/|'); fi
+      if $DYNAMICAPP; then
+        if $OLDAPP; then FILE2=$(echo $FILE | sed 's|/system/app/.*/|/system/app/|'); else FILE2=$(echo $FILE | sed 's|/system/app/|/system/priv-app/|'); fi
+      else
+        FILE2=$FILE
+      fi
     fi
     cp_ch $INSTALLER$FILE $UNITY$FILE2
   done
