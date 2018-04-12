@@ -226,17 +226,21 @@ device_check() {
   fi
 }
 
+check_bak() {
+  case $1 in
+    /system/*|/vendor/*) BAK=true;;
+    */system/*|*/vendor/*) BAK=false;;
+    *) BAK=true;;
+  esac
+}
+
 cp_ch_nb() {
   if [ -z $4 ]; then 
-    case $2 in
-      /system/*|/vendor/*) ALLBAK=true;;
-      */system/*|*/vendor/*) ALLBAK=false;;
-      *) ALLBAK=true;;
-    esac
+    check_bak $4
   else 
-    ALLBAK=$4
+    BAK=$4
   fi
-  if ( ! $MAGISK || $SYSOVERRIDE || $ALLBAK ) && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
+  if ( $SYSOVERRIDE || $BAK ) && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
   mkdir -p "$(dirname $2)"
   cp -f "$1" "$2"
   if [ -z $3 ] || [ "$3" == "noperm" ]; then
@@ -253,16 +257,12 @@ cp_ch_nb() {
 }
 
 cp_ch() {
-  case $2 in
-    /system/*|/vendor/*) ALLBAK=true;;
-    */system/*|*/vendor/*) ALLBAK=false;;
-    *) ALLBAK=true;;
-  esac
-  if [ -f "$2" ] && [ ! -f "$2.bak" ] && ( ! $MAGISK || $SYSOVERRIDE || $ALLBAK ); then
+  check_bak $2
+  if [ -f "$2" ] && [ ! -f "$2.bak" ] && ( $SYSOVERRIDE || $BAK ); then
     cp -af $2 $2.bak
     echo "$2.bak" >> $INFO
   fi
-  if [ -z $3 ]; then cp_ch_nb $1 $2 "noperm" $ALLBAK; else cp_ch_nb $1 $2 $3 $ALLBAK; fi
+  if [ -z $3 ]; then cp_ch_nb $1 $2 "noperm" $ALLBAK; else cp_ch_nb $1 $2 $3 $BAK; fi
 }
 
 install_script() {
