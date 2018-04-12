@@ -236,16 +236,12 @@ cp_ch_nb() {
   else
     chmod $3 "$2"
   fi
-  if $MAGISK; then
-    chcon u:object_r:system_file:s0 $2
-  else
-    case $2 in
-      */vendor/etc/*) chcon u:object_r:vendor_configs_file:s0 $2;;
-      */vendor/*.apk) chcon u:object_r:vendor_app_file:s0 $2;;
-      */vendor/*) chcon u:object_r:vendor_file:s0 $2;;
-      */system/*) chcon u:object_r:system_file:s0 $2;;
-    esac
-  fi
+  case $2 in
+    */vendor/etc/*) chcon u:object_r:vendor_configs_file:s0 $2;;
+    */vendor/*.apk) chcon u:object_r:vendor_app_file:s0 $2;;
+    */vendor/*) chcon u:object_r:vendor_file:s0 $2;;
+    */system/*) chcon u:object_r:system_file:s0 $2;;
+  esac
 }
 
 cp_ch() {

@@ -28,6 +28,7 @@ ZIP=$3
 MAGISK=true
 DYNAMICOREO=false
 DYNAMICAPP=false
+ALWAYSRW=false
 case $ZIP in
   *sysover*|*Sysover*|*SYSOVER*) SYSOVERRIDE=true;;
   *) SYSOVERRIDE=false;;
@@ -258,7 +259,9 @@ else
   if $SYSOVERRIDE; then
     ui_print "- Overriding paths for system install"
     $BOOTMODE && { ui_print "   ! Magisk manager isn't supported!"; abort "   ! Install in TWRP !"; }
-    mount_partitions    
+    mount_partitions
+  elif $ALWAYSRW; then
+    mount_partitions
   fi
   . $MAGISKBIN/util_functions.sh
   [ ! -z $MAGISK_VER_CODE -a $MAGISK_VER_CODE -ge $MINMAGISK ] || require_new_magisk
