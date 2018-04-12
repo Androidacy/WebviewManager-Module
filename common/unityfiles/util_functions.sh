@@ -262,7 +262,7 @@ cp_ch() {
     cp -af $2 $2.bak
     echo "$2.bak" >> $INFO
   fi
-  if [ -z $3 ]; then cp_ch_nb $1 $2 "noperm" $ALLBAK; else cp_ch_nb $1 $2 $3 $BAK; fi
+  if [ -z $3 ]; then cp_ch_nb $1 $2 "noperm" $BAK; else cp_ch_nb $1 $2 $3 $BAK; fi
 }
 
 install_script() {
