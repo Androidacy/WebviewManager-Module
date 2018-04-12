@@ -229,7 +229,7 @@ device_check() {
 check_bak() {
   case $1 in
     /system/*|/vendor/*) BAK=true;;
-    */system/*|*/vendor/*) BAK=false;;
+    $MOUNTPATH/*) BAK=false;;
     *) BAK=true;;
   esac
   if ! $MAGISK || $SYSOVERRIDE; then BAK=true; fi
