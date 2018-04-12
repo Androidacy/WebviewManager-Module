@@ -243,7 +243,7 @@ cp_ch_nb() {
   if ( $SYSOVERRIDE || $BAK ) && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
   mkdir -p "$(dirname $2)"
   cp -f "$1" "$2"
-  if [ -z $3 ] || [ "$3" == "noperm" ]; then
+  if [ -z $3 ]; then
     chmod 0644 "$2"
   else
     chmod $3 "$2"
@@ -262,7 +262,7 @@ cp_ch() {
     cp -af $2 $2.bak
     echo "$2.bak" >> $INFO
   fi
-  if [ -z $3 ]; then cp_ch_nb $1 $2 "noperm" $BAK; else cp_ch_nb $1 $2 $3 $BAK; fi
+  if [ -z $3 ]; then cp_ch_nb $1 $2 0644 $BAK; else cp_ch_nb $1 $2 $3 $BAK; fi
 }
 
 install_script() {
