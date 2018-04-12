@@ -232,15 +232,12 @@ check_bak() {
     */system/*|*/vendor/*) BAK=false;;
     *) BAK=true;;
   esac
+  if ! $MAGISK || $SYSOVERRIDE; then BAK=true; fi
 }
 
 cp_ch_nb() {
-  if [ -z $4 ]; then 
-    check_bak $4
-  else 
-    BAK=$4
-  fi
-  if ( $SYSOVERRIDE || $BAK ) && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
+  if [ -z $4 ]; then check_bak $2; else BAK=$4; fi
+  if $BAK && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
   mkdir -p "$(dirname $2)"
   cp -f "$1" "$2"
   if [ -z $3 ]; then
@@ -258,7 +255,7 @@ cp_ch_nb() {
 
 cp_ch() {
   check_bak $2
-  if [ -f "$2" ] && [ ! -f "$2.bak" ] && ( $SYSOVERRIDE || $BAK ); then
+  if [ -f "$2" ] && [ ! -f "$2.bak" ] && $BAK; then
     cp -af $2 $2.bak
     echo "$2.bak" >> $INFO
   fi
