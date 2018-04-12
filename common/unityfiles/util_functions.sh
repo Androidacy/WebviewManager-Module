@@ -227,7 +227,15 @@ device_check() {
 }
 
 cp_ch_nb() {
-  if [ -z $4 ]; then ALLBAK=false; else ALLBAK=$4; fi
+  if [ -z $4 ]; then 
+    case $2 in
+      /system/*|/vendor/*) ALLBAK=true;;
+      */system/*|*/vendor/*) ALLBAK=false;;
+      *) ALLBAK=true;;
+    esac
+  else 
+    ALLBAK=$4
+  fi
   if ( ! $MAGISK || $SYSOVERRIDE || $ALLBAK ) && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
   mkdir -p "$(dirname $2)"
   cp -f "$1" "$2"
@@ -246,6 +254,7 @@ cp_ch_nb() {
 
 cp_ch() {
   case $2 in
+    /system/*|/vendor/*) ALLBAK=true;;
     */system/*|*/vendor/*) ALLBAK=false;;
     *) ALLBAK=true;;
   esac
