@@ -7,7 +7,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
-### v1.5.2 - 4.xx.2018
+### v1.5.2 - 4.16.2018
 * Removed ALWAYSRW
 
 ### v1.5.1 - 4.12.2018
