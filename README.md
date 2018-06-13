@@ -7,6 +7,9 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.5.5 - x.x.2018
+* Fix propfile removal on system uninstalls
+
 ### v1.5.4 - 5.7.2018
 * Added support for init.d injector late_start and post-fs-data method
 
