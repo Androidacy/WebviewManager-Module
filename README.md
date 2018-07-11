@@ -9,6 +9,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 ## Change Log
 ### v1.5.5 - x.x.2018
 * Fix propfile removal on system uninstalls
+* Update functions with magisk 16.6 stuff
 
 ### v1.5.4 - 5.7.2018
 * Added support for init.d injector late_start and post-fs-data method

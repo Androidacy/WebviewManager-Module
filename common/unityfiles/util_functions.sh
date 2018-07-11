@@ -8,42 +8,65 @@
 #
 ##########################################################################################
 
+toupper() {
+  echo "$@" | tr '[:lower:]' '[:upper:]'
+}
+
+find_block() {
+  for BLOCK in "$@"; do
+    DEVICE=`find /dev/block -type l -iname $BLOCK | head -n 1` 2>/dev/null
+    if [ ! -z $DEVICE ]; then
+      readlink -f $DEVICE
+      return 0
+    fi
+  done
+  # Fallback by parsing sysfs uevents
+  for uevent in /sys/dev/block/*/uevent; do
+    local DEVNAME=`grep_prop DEVNAME $uevent`
+    local PARTNAME=`grep_prop PARTNAME $uevent`
+    for p in "$@"; do
+      if [ "`toupper $p`" = "`toupper $PARTNAME`" ]; then
+        echo /dev/block/$DEVNAME
+        return 0
+      fi
+    done
+  done
+  return 1
+}
+
 mount_partitions() {
   # Check A/B slot
-  SLOT=`getprop ro.boot.slot_suffix`
+  SLOT=`grep_cmdline androidboot.slot_suffix`
   if [ -z $SLOT ]; then
-    SLOT=_`getprop ro.boot.slot`
+    SLOT=_`grep_cmdline androidboot.slot`
     [ $SLOT = "_" ] && SLOT=
   fi
-  # Check the boot image to make sure the slot actually make sense
-  find_boot_image
-  find_dtbo_image
-  [ -z $SLOT ] || ui_print "- A/B partition detected, current slot: $SLOT"
+  [ -z $SLOT ] || ui_print "- Current boot slot: $SLOT"
   ui_print "- Mounting /system, /vendor"
   REALSYS=/system
-  is_mounted /system || [ -f /system/build.prop ] || mount -o rw /system 2>/dev/null
+  [ -f /system/build.prop ] || is_mounted /system || mount -o ro /system 2>/dev/null
   if ! is_mounted /system && ! [ -f /system/build.prop ]; then
-    SYSTEMBLOCK=`find /dev/block -iname system$SLOT | head -n 1`
+    SYSTEMBLOCK=`find_block system$SLOT`
     mount -t ext4 -o rw $SYSTEMBLOCK /system
   fi
-  is_mounted /system || [ -f /system/build.prop ] || abort "! Cannot mount /system"
-  cat /proc/mounts | grep -E '/dev/root|/system_root' >/dev/null && SKIP_INITRAMFS=true || SKIP_INITRAMFS=false
-  if [ -f /system/init.rc ]; then
-    SKIP_INITRAMFS=true
+  [ -f /system/build.prop ] || is_mounted /system || abort "! Cannot mount /system"
+  cat /proc/mounts | grep -E '/dev/root|/system_root' >/dev/null && SYSTEM_ROOT=true || SYSTEM_ROOT=false
+  if [ -f /system/init ]; then
+    ROOT=/system_root
+    REALSYS=/system_root/system
+    SYSTEM_ROOT=true
     mkdir /system_root 2>/dev/null
     mount --move /system /system_root
     mount -o bind /system_root/system /system
-    ROOT=/system_root
-    REALSYS=/system_root/system
   fi
-  $SKIP_INITRAMFS && ui_print "- Device skip_initramfs detected"
+  $SYSTEM_ROOT && ui_print "- Device using system_root_image"
   if [ -L /system/vendor ]; then
     # Seperate /vendor partition
     VEN=/vendor
     REALVEN=/vendor
     is_mounted /vendor || mount -o rw /vendor 2>/dev/null
     if ! is_mounted /vendor; then
-      VENDORBLOCK=`find /dev/block -iname vendor$SLOT | head -n 1`
+      VENDORBLOCK=`find_block vendor$SLOT`
       mount -t ext4 -o rw $VENDORBLOCK /vendor
     fi
     is_mounted /vendor || abort "! Cannot mount /vendor"
@@ -53,65 +76,43 @@ mount_partitions() {
   fi
 }
 
+grep_cmdline() {
+  local REGEX="s/^$1=//p"
+  sed -E 's/ +/\n/g' /proc/cmdline | sed -n "$REGEX" 2>/dev/null
+}
+
+grep_prop() {
+  local REGEX="s/^$1=//p"
+  shift
+  local FILES=$@
+  [ -z "$FILES" ] && FILES='/system/build.prop'
+  sed -n "$REGEX" $FILES 2>/dev/null | head -n 1
+}
+
+is_mounted() {
+  cat /proc/mounts | grep -q " `readlink -f $1` " 2>/dev/null
+  return $?
+}
+
 api_level_arch_detect() {
   API=`grep_prop ro.build.version.sdk`
   ABI=`grep_prop ro.product.cpu.abi | cut -c-3`
   ABI2=`grep_prop ro.product.cpu.abi2 | cut -c-3`
   ABILONG=`grep_prop ro.product.cpu.abi`
   ARCH=arm
+  ARCH32=arm
   IS64BIT=false
-  if [ "$ABI" = "x86" ]; then ARCH=x86; fi;
-  if [ "$ABI2" = "x86" ]; then ARCH=x86; fi;
-  if [ "$ABILONG" = "arm64-v8a" ]; then ARCH=arm64; IS64BIT=true; fi;
-  if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; IS64BIT=true; fi;
-}
-
-grep_prop() {
-  REGEX="s/^$1=//p"
-  shift
-  FILES=$@
-  [ -z "$FILES" ] && FILES='/system/build.prop'
-  sed -n "$REGEX" $FILES 2>/dev/null | head -n 1
-}
-
-find_boot_image() {
-  BOOTIMAGE=
-  if [ ! -z $SLOT ]; then
-    BOOTIMAGE=`find /dev/block -iname boot$SLOT | head -n 1` 2>/dev/null
-  fi
-  if [ -z $BOOTIMAGE ]; then
-    # The slot info is incorrect...
-    SLOT=
-    for BLOCK in ramdisk boot_a kern-a android_boot kernel boot lnx bootimg; do
-      BOOTIMAGE=`find /dev/block -iname $BLOCK | head -n 1` 2>/dev/null
-      [ ! -z $BOOTIMAGE ] && break
-    done
-  fi
-  # Recovery fallback
-  if [ -z $BOOTIMAGE ]; then
-    for FSTAB in /etc/*fstab*; do
-      BOOTIMAGE=`grep -v '#' $FSTAB | grep -E '/boot[^a-zA-Z]' | grep -oE '/dev/[a-zA-Z0-9_./-]*'`
-      [ ! -z $BOOTIMAGE ] && break
-    done
-  fi
-  [ ! -z $BOOTIMAGE ] && BOOTIMAGE=`readlink -f $BOOTIMAGE`
-}
-
-find_dtbo_image() {
-  DTBOIMAGE=`find /dev/block -iname dtbo$SLOT | head -n 1` 2>/dev/null
-  [ ! -z $DTBOIMAGE ] && DTBOIMAGE=`readlink -f $DTBOIMAGE`
-}
-
-is_mounted() {
-  TARGET="`readlink -f $1`"
-  cat /proc/mounts | grep " $TARGET " >/dev/null
-  return $?
+  if [ "$ABI" = "x86" ]; then ARCH=x86; ARCH32=x86; fi;
+  if [ "$ABI2" = "x86" ]; then ARCH=x86; ARCH32=x86; fi;
+  if [ "$ABILONG" = "arm64-v8a" ]; then ARCH=arm64; ARCH32=arm; IS64BIT=true; fi;
+  if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
 }
 
 recovery_cleanup() {
   mv /sbin_tmp /sbin 2>/dev/null
-  export LD_LIBRARY_PATH=$OLD_LD_PATH
   [ -z $OLD_PATH ] || export PATH=$OLD_PATH
+  [ -z $OLD_LD_LIB ] || export LD_LIBRARY_PATH=$OLD_LD_LIB
+  [ -z $OLD_LD_PRE ] || export LD_PRELOAD=$OLD_LD_PRE
   ui_print "- Unmounting partitions"
   umount -l /system_root 2>/dev/null
   umount -l /system 2>/dev/null
