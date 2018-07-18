@@ -179,7 +179,7 @@ supersuimg_mount() {
       mount -t ext4 -o rw,noatime $supersuimg /su 2>/dev/null
       for i in 0 1 2 3 4 5 6 7; do
         is_mounted /su && break
-        loop=/dev/block/loop$i
+        local loop=/dev/block/loop$i
         mknod $loop b 7 $i
         losetup $loop $supersuimg
         mount -t ext4 -o loop $loop /su 2>/dev/null
@@ -235,7 +235,7 @@ cleanup() {
   exit 0
 }
 
-device_check() { 
+device_check() {
   if [ "$(grep_prop ro.product.device)" == "$1" ] || [ "$(grep_prop ro.build.product)" == "$1" ]; then
     return 0
   else
@@ -250,6 +250,8 @@ check_bak() {
     *) BAK=true;;
   esac
   if ! $MAGISK || $SYSOVERRIDE; then BAK=true; fi
+  $BAK && return 0
+  return 1
 }
 
 cp_ch_nb() {
@@ -305,7 +307,7 @@ patch_script() {
     sed -i "s|<SYS>|/system|" $1
     sed -i "s|<SHEBANG>|#!/system/bin/sh|" $1
     sed -i "s|<SEINJECT>|magiskpolicy|" $1
-    sed -i "s|\$MOUNTPATH|/sbin/.core/img|g" $1                                   
+    sed -i "s|\$MOUNTPATH|/sbin/.core/img|g" $1
   else
     if [ ! -z $ROOT ]; then sed -i "s|<ROOT>|$ROOT|" $1; else sed -i "s|<ROOT>|\"\"|" $1; fi
     sed -i "s|<SYS>|$REALSYS|" $1
@@ -334,14 +336,14 @@ remove_old_aml() {
   ui_print " "
   ui_print "   ! Old AML Detected! Removing..."
   if $MAGISK; then
-    MODS=$(grep "^fi #.*" $(dirname $OLD_AML_VER)/post-fs-data.sh | sed "s/fi #//g")
-    if $BOOTMODE; then DIR=/sbin/.core/img; else DIR=$MOUNTPATH; fi
+    local MODS=$(grep "^fi #.*" $(dirname $OLD_AML_VER)/post-fs-data.sh | sed "s/fi #//g")
+    if $BOOTMODE; then local DIR=/sbin/.core/img; else local DIR=$MOUNTPATH; fi
   else
-    MODS=$(sed -n "/^# MOD PATCHES/,/^$/p" $MODPATH/audmodlib-post-fs-data | sed -e "/^# MOD PATCHES/d" -e "/^$/d" -e "s/^#//g")
-    if [ -d /system/addon.d ]; then DIR=/system/addon.d; else DIR=/system/etc; fi
+    local MODS=$(sed -n "/^# MOD PATCHES/,/^$/p" $MODPATH/audmodlib-post-fs-data | sed -e "/^# MOD PATCHES/d" -e "/^$/d" -e "s/^#//g")
+    if [ -d /system/addon.d ]; then local DIR=/system/addon.d; else local DIR=/system/etc; fi
   fi
   for MOD in ${MODS} audmodlib; do
-    if $MAGISK; then FILE=$DIR/$MOD/$MOD-files; else $DIR/$MOD-files; fi
+    if $MAGISK; then local FILE=$DIR/$MOD/$MOD-files; else local FILE=$DIR/$MOD-files; fi
     if [ -f $FILE ]; then
       while read LINE; do
         if [ -f "$LINE.bak" ]; then
@@ -353,7 +355,7 @@ remove_old_aml() {
         fi
         if [ ! "$(ls -A "${LINE%/*}")" ]; then
           rm -rf ${LINE%/*}
-        fi      
+        fi
       done < $FILE
       rm -f $FILE
     fi
