@@ -29,7 +29,7 @@ ZIP=$3
 MAGISK=true
 DYNAMICOREO=false
 DYNAMICAPP=false
-case $ZIP in
+case $(basename $ZIP) in
   *sysover*|*Sysover*|*SYSOVER*) SYSOVERRIDE=true;;
   *) SYSOVERRIDE=false;;
 esac
@@ -156,9 +156,9 @@ set_vars() {
       OLD_AML_VER="/system/etc/audmodlib-module.prop"
     fi
   fi
-  if $DYNAMICOREO && [ $API -ge 26 ]; then 
+  if $DYNAMICOREO && [ $API -ge 26 ]; then
     LIBPATCH="\/vendor"; LIBDIR=$VEN
-  else 
+  else
     LIBPATCH="\/system"; LIBDIR=/system
   fi
 }
@@ -171,10 +171,10 @@ unity_install() {
   # MAKE INFO FILE
   rm -f $INFO
   mktouch $INFO
-    
+
   # RUN USER INSTALL SCRIPT
   . $INSTALLER/common/install.sh
-  
+
   # INSTALL SCRIPTS
   if $MAGISK; then
     ui_print "   Installing scripts for MagiskSU..."
@@ -199,24 +199,24 @@ unity_install() {
       ui_print "   ! Addon.d not detected. Backup script not installed..."
     fi
   fi
-  
+
   # HANDLE REPLACE FOLDERS
   for TARGET in $REPLACE; do
     if $MAGISK; then mktouch $MODPATH$TARGET/.replace; else rm -rf $TARGET; fi
   done
-  
+
   # PROP FILES - add prop function for system installs
   $PROPFILE && { prop_process $INSTALLER/common/system.prop; $MAGISK || echo $PROP >> $INFO; }
-  
+
   # MODULE INFO
   cp_ch_nb $INSTALLER/module.prop $MOD_VER
-  
+
   #INSTALL POST-FS-DATA MODE SCRIPTS
   $POSTFSDATA && install_script $INSTALLER/common/post-fs-data.sh
-  
+
   # SERVICE MODE SCRIPTS
   $LATESTARTSERVICE && install_script $INSTALLER/common/service.sh -ls
-   
+
   # INSTALL FILES
   ui_print "   Installing files for $ARCH SDK $API device..."
   rm -f $INSTALLER/system/placeholder
@@ -235,15 +235,15 @@ unity_install() {
     fi
     cp_ch $INSTALLER$FILE $UNITY$FILE2
   done
-  
+
   # ADD BLANK LINE TO END OF ALL PROP/SCRIPT FILES IF NOT ALREADY PRESENT
   for FILE in $MODPATH/*.sh $MODPATH/*.prop; do
     [ -f $FILE ] && { [ "$(tail -1 $FILE)" ] && echo "" >> $FILE; }
   done
-  
+
   # REMOVE INFO FILE IF NOT NEEDED
   $MAGISK && [ ! -s $INFO ] && rm -f $INFO
-  
+
   # SET PERMISSIONS
   ui_print " "
   ui_print "- Setting Permissions"
@@ -254,7 +254,7 @@ unity_install() {
 unity_uninstall() {
   ui_print " "
   ui_print "- Uninstalling"
-  
+
   # REMOVE FILES
   FILE=$INFO
   $BOOTMODE && [ -f /sbin/.core/img/$MODID/$MODID-files ] && FILE=/sbin/.core/img/$MODID/$MODID-files
@@ -280,12 +280,12 @@ unity_uninstall() {
   else
     $MAGISK || abort "   ! Mod not detected !"
   fi
-  
+
   $MAGISK && { rm -rf $MODPATH /sbin/.core/img/$MODID; rm -f $MOUNTPATH/.core/post-fs-data.d/$MODID-sysover.sh; }
-  
+
   # RUN USER INSTALL SCRIPT
   . $INSTALLER/common/uninstall.sh
-  
+
   ui_print " "
   ui_print "- Completing uninstall -"
 }
