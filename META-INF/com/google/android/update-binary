@@ -29,9 +29,11 @@ ZIP=$3
 MAGISK=true
 DYNAMICOREO=false
 DYNAMICAPP=false
+SYSOVERRIDE=false
+DEBUG=false
 case $(basename $ZIP) in
+  *debug*|*Debug*|*DEBUG*) DEBUG=true;;
   *sysover*|*Sysover*|*SYSOVER*) SYSOVERRIDE=true;;
-  *) SYSOVERRIDE=false;;
 esac
 
 # DEFAULT PERMISSIONS
@@ -354,15 +356,21 @@ done
 # REMOVE OLD AML & MODS
 [ -f "$OLD_AML_VER" ] && remove_old_aml
 
+#DEBUG
+if $DEBUG; then
+  $BOOTMODE && { ui_print " "; ui_print "  Debug info will be written to magisk log"; ui_print "  Save log in magisk manager after flashing!"; sleep 3; } || exec 3>&1 1>&2 2>&3 2>/data/media/0/$MODID-log.log
+  set -x
+fi
+
 # LOAD USER VARS/FUNCTIONS
 unity_custom
 
 # DETERMINE MOD INSTALLATION STATUS
 if $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/system/etc/$MODID-files" ]; then
   ui_print " "
-  ui_print "   ! Previous system override install detected!"
-  ui_print "   ! Removing...!"
-  $BOOTMODE && { ui_print "   ! Magisk manager isn't supported!"; abort "   ! Install in TWRP !"; }
+  ui_print "  ! Previous system override install detected!"
+  ui_print "  ! Removing...!"
+  $BOOTMODE && { ui_print "  ! Magisk manager isn't supported!"; abort "   ! Install in TWRP !"; }
   mount -o rw,remount /system
   [ -L /system/vendor ] && mount -o rw,remount /vendor
   sysover_partitions
@@ -375,11 +383,11 @@ if $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/syst
 elif [ -f "$MOD_VER" ]; then
   if [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $INSTALLER/module.prop) ]; then
     ui_print " "
-    ui_print "   ! Current or newer version detected!"
+    ui_print "  ! Current or newer version detected!"
     unity_uninstall
   else
     ui_print " "
-    ui_print "   ! Older version detected! Upgrading..."
+    ui_print "  ! Older version detected! Upgrading..."
     unity_uninstall
     unity_install
   fi

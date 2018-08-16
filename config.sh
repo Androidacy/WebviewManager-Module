@@ -40,11 +40,13 @@ LATESTARTSERVICE=false
 # Uncomment DYNAMICOREO if you want libs installed to vendor for oreo and newer and system for anything older
 # Uncomment DYNAMICAPP if you want anything in $INSTALLER/system/app to be installed to the optimal app directory (/system/priv-app if it exists, /system/app otherwise)
 # Uncomment SYSOVERRIDE if you want the mod to always be installed to system (even on magisk)
+# Uncomment DEBUG if you want full debug logs (saved to SDCARD if in twrp, part of regular log if in magisk manager (user will need to save log after flashing)
 #MINAPI=21
 #MAXAPI=25
 #SYSOVERRIDE=true
 #DYNAMICOREO=true
 #DYNAMICAPP=true
+#DEBUG=true
 
 # Custom Variables - Keep everything within this function
 unity_custom() {
