@@ -89,6 +89,56 @@ grep_prop() {
   sed -n "$REGEX" $FILES 2>/dev/null | head -n 1
 }
 
+find_boot_image() {
+  BOOTIMAGE=
+  if [ ! -z $SLOT ]; then
+    BOOTIMAGE=`find_block boot$SLOT ramdisk$SLOT`
+  else
+    BOOTIMAGE=`find_block boot ramdisk boot_a kern-a android_boot kernel lnx bootimg`
+  fi
+  if [ -z $BOOTIMAGE ]; then
+    # Lets see what fstabs tells me
+    BOOTIMAGE=`grep -v '#' /etc/*fstab* | grep -E '/boot[^a-zA-Z]' | grep -oE '/dev/[a-zA-Z0-9_./-]*' | head -n 1`
+  fi
+}
+
+flash_boot_image() {
+  # Make sure all blocks are writable
+  $BINDIR/magisk --unlock-blocks 2>/dev/null
+  case "$1" in
+    *.gz) COMMAND="gzip -d < '$1'";;
+    *)    COMMAND="cat '$1'";;
+  esac
+  if $BOOTSIGNED; then
+    SIGNCOM="$BOOTSIGNER -sign"
+    ui_print "- Sign boot image with test keys"
+  else
+    SIGNCOM="cat -"
+  fi
+  case "$2" in
+    /dev/block/*)
+      ui_print "- Flashing new boot image"
+      eval $COMMAND | eval $SIGNCOM | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
+      ;;
+    *)
+      ui_print "- Storing new boot image"
+      eval $COMMAND | eval $SIGNCOM | dd of="$2" bs=4096 2>/dev/null
+      ;;
+  esac
+}
+
+sign_chromeos() {
+  ui_print "- Signing ChromeOS boot image"
+
+  echo > empty
+  ./chromeos/futility vbutil_kernel --pack new-boot.img.signed \
+  --keyblock ./chromeos/kernel.keyblock --signprivate ./chromeos/kernel_data_key.vbprivk \
+  --version 1 --vmlinuz new-boot.img --config empty --arch arm --bootloader empty --flags 0x1
+
+  rm -f empty new-boot.img
+  mv new-boot.img.signed new-boot.img
+}
+
 is_mounted() {
   cat /proc/mounts | grep -q " `readlink -f $1` " 2>/dev/null
   return $?
@@ -106,6 +156,46 @@ api_level_arch_detect() {
   if [ "$ABI2" = "x86" ]; then ARCH=x86; ARCH32=x86; fi;
   if [ "$ABILONG" = "arm64-v8a" ]; then ARCH=arm64; ARCH32=arm; IS64BIT=true; fi;
   if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
+}
+
+setup_bb() {
+  if [ -x /sbin/.core/busybox/busybox ]; then
+    # Make sure this path is in the front
+    echo $PATH | grep -q '^/sbin/.core/busybox' || export PATH=/sbin/.core/busybox:$PATH
+  elif [ -x $TMPDIR/bin/busybox ]; then
+    # Make sure this path is in the front
+    echo $PATH | grep -q "^$TMPDIR/bin" || export PATH=$TMPDIR/bin:$PATH
+  else
+    # Construct the PATH
+    mkdir -p $TMPDIR/bin
+    ln -s $MAGISKBIN/busybox $TMPDIR/bin/busybox
+    $MAGISKBIN/busybox --install -s $TMPDIR/bin
+    export PATH=$TMPDIR/bin:$PATH
+  fi
+}
+
+boot_actions() {
+  if [ ! -d /sbin/.core/mirror/bin ]; then
+    mkdir -p /sbin/.core/mirror/bin
+    mount -o bind $MAGISKBIN /sbin/.core/mirror/bin
+  fi
+  MAGISKBIN=/sbin/.core/mirror/bin
+  setup_bb
+}
+
+recovery_actions() {
+  # TWRP bug fix
+  mount -o bind /dev/urandom /dev/random
+  # Preserve environment varibles
+  OLD_PATH=$PATH
+  setup_bb
+  # Temporarily block out all custom recovery binaries/libs
+  mv /sbin /sbin_tmp
+  # Unset library paths
+  OLD_LD_LIB=$LD_LIBRARY_PATH
+  OLD_LD_PRE=$LD_PRELOAD
+  unset LD_LIBRARY_PATH
+  unset LD_PRELOAD
 }
 
 recovery_cleanup() {
@@ -361,4 +451,62 @@ remove_old_aml() {
     fi
     if $MAGISK; then rm -rf $MOUNTPATH/$MOD /sbin/.core/img/$MOD; else rm -f /system/addon.d/$MODID.sh; fi
   done
+}
+
+boot_mod() {
+  BOOTSIGNER="/system/bin/dalvikvm -Xnodex2oat -Xnoimage-dex2oat -cp \$INSTALLER/common/unityfiles/magisk.apk com.topjohnwu.magisk.utils.BootSigner"
+  BINDIR=$INSTALLER/common/unityfiles/$ARCH32
+  local DIR compext repackcmd
+  BOOTSIGNED=false; KEEPVERITY=false; KEEPFORCEENCRYPT=false; HIGHCOMP=false; CHROMEOS=false; DIR=$(pwd)
+
+  mkdir $INSTALLER/common/unityfiles/tmp
+  cp -af $BINDIR/. $CHROMEDIR $TMPDIR/bin/busybox $INSTALLER/common/unityfiles/tmp
+  chmod -R 755 $INSTALLER/common/unityfiles/tmp
+  cd $INSTALLER/common/unityfiles/tmp
+
+  find_boot_image
+  [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
+  ui_print "- Target image: $BOOTIMAGE"
+
+  eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
+  $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"
+
+  cd $BINDIR
+  ./magiskinit -x magisk magisk
+  ui_print "- Unpacking boot image"
+  ./magiskboot --unpack "$BOOTIMAGE"
+  case $? in
+    1 ) abort "! Unable to unpack boot image";;
+    2 ) HIGHCOMP=true;;
+    3 ) ui_print "- ChromeOS boot image detected"; CHROMEOS=true;;
+    4 ) ui_print "! Sony ELF32 format detected"; abort "! Please use BootBridge from @AdrianDC to flash this mod";;
+    5 ) ui_print "! Sony ELF64 format detected" abort "! Stock kernel cannot be patched, please use a custom kernel";;
+  esac
+  ui_print "- Checking ramdisk status"
+  ./magiskboot --cpio ramdisk.cpio test
+  if [ $? -eq 2 ]; then
+    HIGHCOMP=true
+    ui_print "! Insufficient boot partition size detected"
+    ui_print "- Enable high compression mode"
+  fi
+  ui_print "- Patching ramdisk"
+  mkdir ramdisk
+  cd ramdisk
+  cp -af ../magiskboot magiskboot
+  ./magiskboot --cpio ../ramdisk.cpio "extract"
+  rm -f magiskboot
+  #Add patching here
+  ui_print "- Repacking ramdisk"
+  find . | cpio -H newc -o > ../ramdisk.cpio
+  cd ..
+  ui_print "- Repacking boot image"
+  ./magiskboot --repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
+  # Sign chromeos boot
+  $CHROMEOS && sign_chromeos
+  ./magiskboot --cleanup
+
+  flash_boot_image new-boot.img "$BOOTIMAGE"
+  rm -f new-boot.img
+
+  cd $DIR
 }
