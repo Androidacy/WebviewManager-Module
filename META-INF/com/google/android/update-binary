@@ -76,6 +76,7 @@ unzip -o "$ZIP" -d $INSTALLER 2>/dev/null
 
 [ ! -f $INSTALLER/config.sh ] && { ui_print "! Unable to extract zip file !"; exit 1; }
 
+chmod -R 755 $INSTALLER/common/unityfiles/*
 # LOAD FUNCTIONS
 . $INSTALLER/common/unityfiles/util_functions.sh
 
