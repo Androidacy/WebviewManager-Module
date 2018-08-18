@@ -110,7 +110,8 @@ flash_boot_image() {
     *)    COMMAND="cat '$1'";;
   esac
   if $BOOTSIGNED; then
-    SIGNCOM="$BOOTSIGNER -sign"
+    SIGNCOM="$BOOTSIGNER /boot $1 $AVB/verity.pk8 $AVB/verity.x509.pem"
+    # SIGNCOM="$BOOTSIGNER -sign"
     ui_print "- Sign boot image with test keys"
   else
     SIGNCOM="cat -"
@@ -336,7 +337,7 @@ device_check() {
 check_bak() {
   case $1 in
     /system/*|/vendor/*) BAK=true;;
-    $MOUNTPATH/*|/sbin/.core/img/*) BAK=false;;
+    $MOUNTPATH/*|/sbin/.core/img/*|$RAMDISK*) BAK=false;;
     *) BAK=true;;
   esac
   if ! $MAGISK || $SYSOVERRIDE; then BAK=true; fi
@@ -348,7 +349,7 @@ cp_ch_nb() {
   if [ -z $4 ]; then check_bak $2; else BAK=$4; fi
   if $BAK && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
   mkdir -p "$(dirname $2)"
-  cp -f "$1" "$2"
+  cp -af "$1" "$2"
   if [ -z $3 ]; then
     chmod 0644 "$2"
   else
@@ -453,10 +454,13 @@ remove_old_aml() {
   done
 }
 
-boot_mod() {
-  BOOTSIGNER="/system/bin/dalvikvm -Xnodex2oat -Xnoimage-dex2oat -cp \$INSTALLER/common/unityfiles/magisk.apk com.topjohnwu.magisk.utils.BootSigner"
+ramdisk_mod() {
+  # BOOTSIGNER="/system/bin/dalvikvm -Xnodex2oat -Xnoimage-dex2oat -cp \$INSTALLER/common/unityfiles/magisk.apk com.topjohnwu.magisk.utils.BootSigner"
   BINDIR=$INSTALLER/common/unityfiles/$ARCH32
-  local DIR compext repackcmd
+  AVB=$INSTALLER/common/unityfiles/avb
+  RAMDISK=$INSTALLER/common/unityfiles/tmp/ramdisk
+  BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
+  local DIR
   BOOTSIGNED=false; KEEPVERITY=false; KEEPFORCEENCRYPT=false; HIGHCOMP=false; CHROMEOS=false; DIR=$(pwd)
 
   mkdir $INSTALLER/common/unityfiles/tmp
@@ -468,7 +472,8 @@ boot_mod() {
   [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
   ui_print "- Target image: $BOOTIMAGE"
 
-  eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
+  # eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
+  eval $BOOTSIGNER -verify $BOOTIMAGE 2>&1 | grep "VALID" && BOOTSIGNED=true
   $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"
 
   cd $BINDIR
@@ -495,7 +500,12 @@ boot_mod() {
   cp -af ../magiskboot magiskboot
   ./magiskboot --cpio ../ramdisk.cpio "extract"
   rm -f magiskboot
-  #Add patching here
+  # User ramdisk patches
+  case $1 in
+    1) . $INSTALLER/common/ramdiskinstall.sh
+       [ "$(ls $INSTALLER/ramdisk)" ] && cp_ch_nb $INSTALLER/ramdisk/* $RAMDISK false;;
+    2) . $INSTALLER/common/ramdiskuninstall.sh;;
+  esac
   ui_print "- Repacking ramdisk"
   find . | cpio -H newc -o > ../ramdisk.cpio
   cd ..
