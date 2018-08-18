@@ -76,7 +76,6 @@ unzip -o "$ZIP" -d $INSTALLER 2>/dev/null
 
 [ ! -f $INSTALLER/config.sh ] && { ui_print "! Unable to extract zip file !"; exit 1; }
 
-chmod -R 755 $INSTALLER/common/unityfiles/*
 # LOAD FUNCTIONS
 . $INSTALLER/common/unityfiles/util_functions.sh
 
@@ -246,6 +245,9 @@ unity_install() {
 
   # REMOVE INFO FILE IF NOT NEEDED
   $MAGISK && [ ! -s $INFO ] && rm -f $INFO
+  
+  # RAMDISK PATCHES
+  ramdisk_mod 1
 
   # SET PERMISSIONS
   ui_print " "
@@ -288,6 +290,9 @@ unity_uninstall() {
 
   # RUN USER INSTALL SCRIPT
   . $INSTALLER/common/uninstall.sh
+  
+  # RAMDISK PATCHES
+  ramdisk_mod 2
 
   ui_print " "
   ui_print "- Completing uninstall -"
