@@ -337,7 +337,7 @@ device_check() {
 check_bak() {
   case $1 in
     /system/*|/vendor/*) BAK=true;;
-    $MOUNTPATH/*|/sbin/.core/img/*|$RAMDISK*) BAK=false;;
+    $MOUNTPATH/*|/sbin/.core/img/*|$RD*) BAK=false;;
     *) BAK=true;;
   esac
   if ! $MAGISK || $SYSOVERRIDE; then BAK=true; fi
@@ -458,7 +458,7 @@ ramdisk_mod() {
   # BOOTSIGNER="/system/bin/dalvikvm -Xnodex2oat -Xnoimage-dex2oat -cp \$INSTALLER/common/unityfiles/magisk.apk com.topjohnwu.magisk.utils.BootSigner"
   BINDIR=$INSTALLER/common/unityfiles/$ARCH32
   AVB=$INSTALLER/common/unityfiles/avb
-  RAMDISK=$INSTALLER/common/unityfiles/tmp/ramdisk
+  RD=$INSTALLER/common/unityfiles/tmp/ramdisk
   BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
   local DIR
   BOOTSIGNED=false; KEEPVERITY=false; KEEPFORCEENCRYPT=false; HIGHCOMP=false; CHROMEOS=false; DIR=$(pwd)
@@ -503,7 +503,7 @@ ramdisk_mod() {
   # User ramdisk patches
   case $1 in
     1) . $INSTALLER/common/ramdiskinstall.sh
-       [ "$(ls $INSTALLER/ramdisk)" ] && cp -af $INSTALLER/ramdisk/* $RAMDISK;;
+       [ "$(ls $INSTALLER/ramdisk)" ] && cp -af $INSTALLER/ramdisk/* $RD;;
     2) . $INSTALLER/common/ramdiskuninstall.sh;;
   esac
   ui_print "- Repacking ramdisk"
