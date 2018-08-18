@@ -30,6 +30,7 @@ MAGISK=true
 DYNAMICOREO=false
 DYNAMICAPP=false
 SYSOVERRIDE=false
+RAMDISK=false
 DEBUG=false
 case $(basename $ZIP) in
   *debug*|*Debug*|*DEBUG*) DEBUG=true;;
@@ -247,7 +248,7 @@ unity_install() {
   $MAGISK && [ ! -s $INFO ] && rm -f $INFO
   
   # RAMDISK PATCHES
-  ramdisk_mod 1
+  $RAMDISK && ramdisk_mod 1
 
   # SET PERMISSIONS
   ui_print " "
@@ -292,7 +293,7 @@ unity_uninstall() {
   . $INSTALLER/common/uninstall.sh
   
   # RAMDISK PATCHES
-  ramdisk_mod 2
+  $RAMDISK && ramdisk_mod 2
 
   ui_print " "
   ui_print "- Completing uninstall -"
