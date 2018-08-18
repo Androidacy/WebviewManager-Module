@@ -503,7 +503,7 @@ ramdisk_mod() {
   # User ramdisk patches
   case $1 in
     1) . $INSTALLER/common/ramdiskinstall.sh
-       [ "$(ls $INSTALLER/ramdisk)" ] && cp_ch_nb $INSTALLER/ramdisk/* $RAMDISK false;;
+       [ "$(ls $INSTALLER/ramdisk)" ] && cp -af $INSTALLER/ramdisk/* $RAMDISK;;
     2) . $INSTALLER/common/ramdiskuninstall.sh;;
   esac
   ui_print "- Repacking ramdisk"
