@@ -159,46 +159,6 @@ api_level_arch_detect() {
   if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
 }
 
-setup_bb() {
-  if [ -x /sbin/.core/busybox/busybox ]; then
-    # Make sure this path is in the front
-    echo $PATH | grep -q '^/sbin/.core/busybox' || export PATH=/sbin/.core/busybox:$PATH
-  elif [ -x $TMPDIR/bin/busybox ]; then
-    # Make sure this path is in the front
-    echo $PATH | grep -q "^$TMPDIR/bin" || export PATH=$TMPDIR/bin:$PATH
-  else
-    # Construct the PATH
-    mkdir -p $TMPDIR/bin
-    ln -s $MAGISKBIN/busybox $TMPDIR/bin/busybox
-    $MAGISKBIN/busybox --install -s $TMPDIR/bin
-    export PATH=$TMPDIR/bin:$PATH
-  fi
-}
-
-boot_actions() {
-  if [ ! -d /sbin/.core/mirror/bin ]; then
-    mkdir -p /sbin/.core/mirror/bin
-    mount -o bind $MAGISKBIN /sbin/.core/mirror/bin
-  fi
-  MAGISKBIN=/sbin/.core/mirror/bin
-  setup_bb
-}
-
-recovery_actions() {
-  # TWRP bug fix
-  mount -o bind /dev/urandom /dev/random
-  # Preserve environment varibles
-  OLD_PATH=$PATH
-  setup_bb
-  # Temporarily block out all custom recovery binaries/libs
-  mv /sbin /sbin_tmp
-  # Unset library paths
-  OLD_LD_LIB=$LD_LIBRARY_PATH
-  OLD_LD_PRE=$LD_PRELOAD
-  unset LD_LIBRARY_PATH
-  unset LD_PRELOAD
-}
-
 recovery_cleanup() {
   mv /sbin_tmp /sbin 2>/dev/null
   [ -z $OLD_PATH ] || export PATH=$OLD_PATH
@@ -303,6 +263,19 @@ require_new_api() {
 }
 
 cleanup() {
+  if $RAMDISK; then
+    ui_print "- Repacking ramdisk"
+    cd $RD
+    find . | cpio -H newc -o > ../ramdisk.cpio
+    cd ..
+    ui_print "- Repacking boot image"
+    ./magiskboot --repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
+    $CHROMEOS && sign_chromeos
+    ./magiskboot --cleanup
+    flash_boot_image new-boot.img "$BOOTIMAGE"
+    rm -f new-boot.img
+    cd $DIR
+  fi
   if $MAGISK; then
     # UNMOUNT MAGISK IMAGE AND SHRINK IF POSSIBLE
     unmount_magisk_img
@@ -372,16 +345,6 @@ cp_ch() {
   if [ -z $3 ]; then cp_ch_nb $1 $2 0644 $BAK; else cp_ch_nb $1 $2 $3 $BAK; fi
 }
 
-install_script() {
-  if $MAGISK; then
-    cp_ch_nb $1 $MODPATH/$(basename $1)
-    patch_script $MODPATH/$(basename $1)
-  else
-    cp_ch_nb $1 $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$2 0700
-    patch_script $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$2
-  fi
-}
-
 patch_script() {
   sed -i "s|<MAGISK>|$MAGISK|" $1
   sed -i "s|<LIBDIR>|$LIBDIR|" $1
@@ -409,6 +372,16 @@ patch_script() {
   fi
 }
 
+install_script() {
+  if $MAGISK; then
+    cp_ch_nb $1 $MODPATH/$(basename $1)
+    patch_script $MODPATH/$(basename $1)
+  else
+    cp_ch_nb $1 $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$2 0700
+    patch_script $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$2
+  fi
+}
+
 prop_process() {
   sed -i "/^#/d" $1
   if $MAGISK; then
@@ -421,6 +394,67 @@ prop_process() {
     echo "$LINE" >> $PROP
   done < $1
   $MAGISK || chmod 0700 $PROP
+}
+
+script_type() {
+  supersuimg_mount
+  SHEBANG="#!/system/bin/sh"; ROOTTYPE="other root or rootless"; MODPATH=/system/etc/init.d; SEINJECT=/sbin/sepolicy-inject
+  if [ "$supersuimg" ] || [ -d /su ]; then
+    SHEBANG="#!/su/bin/sush"; ROOTTYPE="systemless SuperSU"; MODPATH=/su/su.d; SEINJECT=supolicy
+  elif [ -e "$(find /data /cache -name supersu_is_here | head -n1)" ]; then
+    SHEBANG="#!/su/bin/sush"; ROOTTYPE="systemless SuperSU"
+    MODPATH=$(dirname `find /data /cache -name supersu_is_here | head -n1`)/su.d
+    SEINJECT=supolicy
+  elif [ -d /system/su ] || [ -f /system/xbin/daemonsu ] || [ -f /system/xbin/sugote ]; then
+    MODPATH=/system/su.d; SEINJECT=supolicy; ROOTTYPE="system SuperSU"
+  elif [ -f /system/xbin/su ]; then
+    if [ "$(grep "SuperSU" /system/xbin/su)" ]; then
+      MODPATH=/system/su.d; ROOTTYPE="system SuperSU"; SEINJECT=supolicy
+    else
+      ROOTTYPE="LineageOS SU"
+    fi
+  fi
+}
+
+set_vars() {
+  SYS=/system
+  if [ -d /system/priv-app ]; then OLDAPP=false; else OLDAPP=true; fi
+  if $BOOTMODE; then
+    MOD_VER="/sbin/.core/img/$MODID/module.prop"
+    OLD_AML_VER="/sbin/.core/img/audmodlib/module.prop"
+  else
+    MOD_VER="$MODPATH/module.prop"
+    OLD_AML_VER="$MOUNTPATH/audmodlib/module.prop"
+  fi
+  INFO="$MODPATH/$MODID-files"
+  PROP=$MODPATH/system.prop
+  if $MAGISK && ! $SYSOVERRIDE; then
+    VEN=/system/vendor
+    UNITY="$MODPATH"
+  else
+    UNITY=""
+    if [ -d /system/addon.d ]; then
+      INFO=/system/addon.d/$MODID-files
+    else
+      INFO=/system/etc/$MODID-files
+    fi
+    if $MAGISK && $SYSOVERRIDE; then
+      patch_script $INSTALLER/common/unityfiles/modidsysover.sh
+      sed -i -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/uninstall.sh" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/modidsysover.sh
+      cp_ch_nb $INSTALLER/common/unityfiles/modidsysover.sh $MOUNTPATH/.core/post-fs-data.d/$MODID-sysover.sh 0755 false
+    else
+      # DETERMINE SYSTEM BOOT SCRIPT TYPE
+      script_type
+      PROP=$MODPATH/$MODID-props.sh
+      MOD_VER="/system/etc/$MODID-module.prop"
+      OLD_AML_VER="/system/etc/audmodlib-module.prop"
+    fi
+  fi
+  if $DYNAMICOREO && [ $API -ge 26 ]; then
+    LIBPATCH="\/vendor"; LIBDIR=$VEN
+  else
+    LIBPATCH="\/system"; LIBDIR=/system
+  fi
 }
 
 remove_old_aml() {
@@ -452,71 +486,4 @@ remove_old_aml() {
     fi
     if $MAGISK; then rm -rf $MOUNTPATH/$MOD /sbin/.core/img/$MOD; else rm -f /system/addon.d/$MODID.sh; fi
   done
-}
-
-ramdisk_mod() {
-  # BOOTSIGNER="/system/bin/dalvikvm -Xnodex2oat -Xnoimage-dex2oat -cp \$INSTALLER/common/unityfiles/magisk.apk com.topjohnwu.magisk.utils.BootSigner"
-  BINDIR=$INSTALLER/common/unityfiles/$ARCH32
-  AVB=$INSTALLER/common/unityfiles/avb
-  RD=$INSTALLER/common/unityfiles/tmp/ramdisk
-  BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
-  local DIR
-  BOOTSIGNED=false; KEEPVERITY=false; KEEPFORCEENCRYPT=false; HIGHCOMP=false; CHROMEOS=false; DIR=$(pwd)
-
-  mkdir $INSTALLER/common/unityfiles/tmp
-  cp -af $BINDIR/. $CHROMEDIR $TMPDIR/bin/busybox $INSTALLER/common/unityfiles/tmp
-  chmod -R 755 $INSTALLER/common/unityfiles/tmp
-  cd $INSTALLER/common/unityfiles/tmp
-
-  find_boot_image
-  [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-  ui_print "- Target image: $BOOTIMAGE"
-
-  # eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
-  eval $BOOTSIGNER -verify $BOOTIMAGE 2>&1 | grep "VALID" && BOOTSIGNED=true
-  $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"
-
-  cd $BINDIR
-  ./magiskinit -x magisk magisk
-  ui_print "- Unpacking boot image"
-  ./magiskboot --unpack "$BOOTIMAGE"
-  case $? in
-    1 ) abort "! Unable to unpack boot image";;
-    2 ) HIGHCOMP=true;;
-    3 ) ui_print "- ChromeOS boot image detected"; CHROMEOS=true;;
-    4 ) ui_print "! Sony ELF32 format detected"; abort "! Please use BootBridge from @AdrianDC to flash this mod";;
-    5 ) ui_print "! Sony ELF64 format detected" abort "! Stock kernel cannot be patched, please use a custom kernel";;
-  esac
-  ui_print "- Checking ramdisk status"
-  ./magiskboot --cpio ramdisk.cpio test
-  if [ $? -eq 2 ]; then
-    HIGHCOMP=true
-    ui_print "! Insufficient boot partition size detected"
-    ui_print "- Enable high compression mode"
-  fi
-  ui_print "- Patching ramdisk"
-  mkdir ramdisk
-  cd ramdisk
-  cp -af ../magiskboot magiskboot
-  ./magiskboot --cpio ../ramdisk.cpio "extract"
-  rm -f magiskboot
-  # User ramdisk patches
-  case $1 in
-    1) . $INSTALLER/common/ramdiskinstall.sh
-       [ "$(ls $INSTALLER/ramdisk)" ] && cp -af $INSTALLER/ramdisk/* $RD;;
-    2) . $INSTALLER/common/ramdiskuninstall.sh;;
-  esac
-  ui_print "- Repacking ramdisk"
-  find . | cpio -H newc -o > ../ramdisk.cpio
-  cd ..
-  ui_print "- Repacking boot image"
-  ./magiskboot --repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
-  # Sign chromeos boot
-  $CHROMEOS && sign_chromeos
-  ./magiskboot --cleanup
-
-  flash_boot_image new-boot.img "$BOOTIMAGE"
-  rm -f new-boot.img
-
-  cd $DIR
 }
