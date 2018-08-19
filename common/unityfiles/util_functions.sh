@@ -104,7 +104,7 @@ find_boot_image() {
 
 flash_boot_image() {
   # Make sure all blocks are writable
-  $BINDIR/magisk --unlock-blocks 2>/dev/null
+  $BOOTDIR/magisk --unlock-blocks 2>/dev/null
   case "$1" in
     *.gz) COMMAND="gzip -d < '$1'";;
     *)    COMMAND="cat '$1'";;

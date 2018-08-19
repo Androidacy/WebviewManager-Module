@@ -330,15 +330,14 @@ if $RAMDISK; then
   mkdir -p $RD
   cp -af $INSTALLER/common/unityfiles/$ARCH32/. $CHROMEDIR $BOOTDIR
   chmod -R 755 $BOOTDIR
-  cp -af $BINDIR/magiskboot $RD/magiskboot
-  cd $BOOTDIR
+  cp -af $BOOTDIR/magiskboot $RD/magiskboot
   find_boot_image
   [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
   ui_print "- Target image: $BOOTIMAGE"
   # eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
   eval $BOOTSIGNER -verify $BOOTIMAGE 2>&1 | grep "VALID" && BOOTSIGNED=true
   $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"
-  cd $BINDIR
+  cd $BOOTDIR
   ./magiskinit -x magisk magisk
   ui_print "- Unpacking boot image"
   ./magiskboot --unpack "$BOOTIMAGE"
@@ -358,7 +357,7 @@ if $RAMDISK; then
   fi
   cd ramdisk
   ./magiskboot --cpio ../ramdisk.cpio "extract"
-  rm -f magiskboot
+  rm -f magiskboot ../ramdisk.cpio
   cd $DIR
 fi
 
