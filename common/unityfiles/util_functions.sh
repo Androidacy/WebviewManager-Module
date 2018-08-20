@@ -102,28 +102,33 @@ find_boot_image() {
   fi
 }
 
-flash_boot_image() {
+flash_boot_image_unity() {
   # Make sure all blocks are writable
-  $BOOTDIR/magisk --unlock-blocks 2>/dev/null
+  magisk --unlock-blocks 2>/dev/null
   case "$1" in
     *.gz) COMMAND="gzip -d < '$1'";;
     *)    COMMAND="cat '$1'";;
   esac
   if $BOOTSIGNED; then
-    SIGNCOM="$BOOTSIGNER /boot $1 $AVB/verity.pk8 $AVB/verity.x509.pem"
+    SIGNCOM="$BOOTSIGNER /boot $1 $AVB/verity.pk8 $AVB/verity.x509.pem boot-new-signed.img"
     # SIGNCOM="$BOOTSIGNER -sign"
-    ui_print "- Sign boot image with test keys"
+    ui_print "- Signing boot image"
   else
     SIGNCOM="cat -"
   fi
   case "$2" in
     /dev/block/*)
       ui_print "- Flashing new boot image"
-      eval $COMMAND | eval $SIGNCOM | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
+      # eval $COMMAND | eval $SIGNCOM | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
+      eval $COMMAND | eval $SIGNCOM
+      dd if=/dev/zero of="$2" 2>/dev/null
+      dd if=boot-new-signed.img of="$2"
       ;;
     *)
       ui_print "- Storing new boot image"
-      eval $COMMAND | eval $SIGNCOM | dd of="$2" bs=4096 2>/dev/null
+      # eval $COMMAND | eval $SIGNCOM | dd of="$2" bs=4096 2>/dev/null
+      eval $COMMAND | eval $SIGNCOM
+      dd if=boot-new-signed.img of="$2"
       ;;
   esac
 }
@@ -272,7 +277,7 @@ cleanup() {
     ./magiskboot --repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
     $CHROMEOS && sign_chromeos
     ./magiskboot --cleanup
-    flash_boot_image new-boot.img "$BOOTIMAGE"
+    flash_boot_image_unity new-boot.img "$BOOTIMAGE"
     rm -f new-boot.img
     cd $DIR
   fi
