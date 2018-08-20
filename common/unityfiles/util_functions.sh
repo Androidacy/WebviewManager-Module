@@ -103,34 +103,28 @@ find_boot_image() {
 }
 
 flash_boot_image_unity() {
+  local COMMAND BLOCK
   # Make sure all blocks are writable
   magisk --unlock-blocks 2>/dev/null
   case "$1" in
     *.gz) COMMAND="gzip -d < '$1'";;
     *)    COMMAND="cat '$1'";;
   esac
-  if $BOOTSIGNED; then
-    SIGNCOM="$BOOTSIGNER /boot $1 $AVB/verity.pk8 $AVB/verity.x509.pem boot-new-signed.img"
-    # SIGNCOM="$BOOTSIGNER -sign"
-    ui_print "- Signing boot image"
-  else
-    SIGNCOM="cat -"
-  fi
   case "$2" in
-    /dev/block/*)
-      ui_print "- Flashing new boot image"
-      # eval $COMMAND | eval $SIGNCOM | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
-      eval $COMMAND | eval $SIGNCOM
-      dd if=/dev/zero of="$2" 2>/dev/null
-      dd if=boot-new-signed.img of="$2"
-      ;;
-    *)
-      ui_print "- Storing new boot image"
-      # eval $COMMAND | eval $SIGNCOM | dd of="$2" bs=4096 2>/dev/null
-      eval $COMMAND | eval $SIGNCOM
-      dd if=boot-new-signed.img of="$2"
-      ;;
+    /dev/block/*) BLOCK=true;;
+    *) BLOCK=false;;
   esac
+  if $BOOTSIGNED; then
+    ui_print "- Signing boot image"
+    eval $COMMAND | $BOOTSIGNER /boot $1 $AVB/verity.pk8 $AVB/verity.x509.pem boot-new-signed.img
+    ui_print "- Flashing new boot image"
+    $BLOCK && dd if=/dev/zero of="$2" 2>/dev/null
+    dd if=boot-new-signed.img of="$2"
+  elif $BLOCK; then
+    eval $COMMAND | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
+  else
+    eval $COMMAND | dd of="$2" bs=4096 2>/dev/null
+  fi
 }
 
 sign_chromeos() {

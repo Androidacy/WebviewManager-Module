@@ -322,7 +322,6 @@ if $RAMDISK; then
   BOOTDIR=$INSTALLER/common/unityfiles/boot
   AVB=$INSTALLER/common/unityfiles/avb
   RD=$BOOTDIR/ramdisk
-  # BOOTSIGNER="/system/bin/dalvikvm -Xnodex2oat -Xnoimage-dex2oat -cp \$INSTALLER/common/unityfiles/magisk.apk com.topjohnwu.magisk.utils.BootSigner"
   BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
   BOOTSIGNED=false; HIGHCOMP=false; CHROMEOS=false; DIR=$(pwd)
   mkdir -p $RD
@@ -334,7 +333,6 @@ if $RAMDISK; then
   ui_print "- Checking boot image signature"
   cd $BOOTDIR
   dd if=$BOOTIMAGE of=boot.img
-  # eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
   eval $BOOTSIGNER -verify boot.img 2>&1 | grep "VALID" && BOOTSIGNED=true
   $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"
   rm -f boot.img
