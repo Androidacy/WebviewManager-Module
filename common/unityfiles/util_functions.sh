@@ -310,18 +310,21 @@ device_check() {
 
 check_bak() {
   case $1 in
-    /system/*|/vendor/*) BAK=true;;
-    $MOUNTPATH/*|/sbin/.core/img/*|$RD*) BAK=false;;
-    *) BAK=true;;
+    /system/*|/vendor/*) BAK=true; BAKFILE=$INFO;;
+    $MOUNTPATH/*|/sbin/.core/img/*) if ! $MAGISK || $SYSOVERRIDE; then 
+                                      BAK=true
+                                    else
+                                      BAK=false
+                                    fi
+                                    BAKFILE=$INFO;;
+    $RD*) BAK=true; BAKFILE=$INFORD;;
+    *) BAK=true; BAKFILE=$INFO;;
   esac
-  if ! $MAGISK || $SYSOVERRIDE; then BAK=true; fi
-  $BAK && return 0
-  return 1
 }
 
 cp_ch_nb() {
   if [ -z $4 ]; then check_bak $2; else BAK=$4; fi
-  if $BAK && [ ! "$(grep "$2$" $INFO)" ]; then echo "$2" >> $INFO; fi
+  if $BAK && [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ]; then echo "$2" >> $BAKFILE; fi
   mkdir -p "$(dirname $2)"
   cp -af "$1" "$2"
   if [ -z $3 ]; then
@@ -339,9 +342,14 @@ cp_ch_nb() {
 
 cp_ch() {
   check_bak $2
-  if [ -f "$2" ] && [ ! -f "$2.bak" ] && $BAK; then
-    cp -af $2 $2.bak
-    echo "$2.bak" >> $INFO
+  local EXT 
+  case $2 in
+    $RD*) EXT="~";;
+    *) EXT=".bak";;
+  esac
+  if [ -f "$2" ] && [ ! -f "$2$EXT" ] && $BAK; then
+    cp -af $2 $2$EXT
+    echo "$2$EXT" >> $BAKFILE
   fi
   if [ -z $3 ]; then cp_ch_nb $1 $2 0644 $BAK; else cp_ch_nb $1 $2 $3 $BAK; fi
 }

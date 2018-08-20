@@ -161,7 +161,7 @@ unity_install() {
 
   # INSTALL FILES
   ui_print "   Installing files for $ARCH SDK $API device..."
-  rm -f $INSTALLER/system/placeholder
+  rm -f $INSTALLER/system/placeholder $INSTALLER/ramdisk/placeholder
   $IS64BIT || rm -rf $INSTALLER/system/lib64 $INSTALLER/system/vendor/lib64
   for FILE in $(find $INSTALLER/system -type f 2>/dev/null | sed "s|$INSTALLER||" 2>/dev/null); do
     if $DYNAMICAPP; then
@@ -177,7 +177,7 @@ unity_install() {
     fi
     cp_ch $INSTALLER$FILE $UNITY$FILE2
   done
-
+  
   # ADD BLANK LINE TO END OF ALL PROP/SCRIPT FILES IF NOT ALREADY PRESENT
   for FILE in $MODPATH/*.sh $MODPATH/*.prop; do
     [ -f $FILE ] && { [ "$(tail -1 $FILE)" ] && echo "" >> $FILE; }
@@ -191,8 +191,11 @@ unity_install() {
     cd $RD
     echo "#$MODID-UnityIndicator" >> init.rc
     . $INSTALLER/common/ramdiskinstall.sh
-    cd $DIR
-    [ "$(ls $INSTALLER/ramdisk 2>/dev/null)" ] && cp -af $INSTALLER/ramdisk/* $RD
+    cd /
+    for FILE in $(find $INSTALLER/ramdisk -type f 2>/dev/null | sed "s|$INSTALLER||" 2>/dev/null); do
+      cp_ch $INSTALLER$FILE $BOOTDIR$FILE
+    done
+    ls $RD
   fi
 
   # SET PERMISSIONS
@@ -207,30 +210,36 @@ unity_uninstall() {
   ui_print "- Uninstalling"
 
   # REMOVE FILES
-  FILE=$INFO
-  $BOOTMODE && [ -f /sbin/.core/img/$MODID/$MODID-files ] && FILE=/sbin/.core/img/$MODID/$MODID-files
-  if [ -f $FILE ]; then
-    while read LINE; do
-      if [ "$(echo -n $LINE | tail -c 4)" == ".bak" ]; then
-        continue
-      elif [ -f "$LINE.bak" ]; then
-        mv -f $LINE.bak $LINE
-      else
-        rm -f $LINE
-        while true; do
-          LINE=$(dirname $LINE)
-          if [ "$(ls $LINE)" ]; then
-            break 1
-          else
-            rm -rf $LINE
-          fi
-        done
-      fi
-    done < $FILE
-    rm -f $FILE
-  else
-    $MAGISK || abort "   ! Mod not detected !"
-  fi
+  for FILE in $INFO $INFORD; do
+    if [ "$FILE" == "$INFO" ]; then
+      $BOOTMODE && [ -f /sbin/.core/img/$MODID/$MODID-files ] && FILE=/sbin/.core/img/$MODID/$MODID-files
+      TMP=".bak"
+      $MAGISK || [ -f $FILE ] || abort "   ! Mod not detected !"
+    else
+      $RAMDISK || continue
+      TMP="~"
+    fi
+    if [ -f $FILE ]; then
+      while read LINE; do
+        if [ "$(echo -n $LINE | tail -c 4)" == ".bak" ] || [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
+          continue
+        elif [ -f "$LINE$TMP" ]; then
+          mv -f $LINE$TMP $LINE
+        else
+          rm -f $LINE
+          while true; do
+            LINE=$(dirname $LINE)
+            if [ "$(ls $LINE)" ]; then
+              break 1
+            else
+              rm -rf $LINE
+            fi
+          done
+        fi
+      done < $FILE
+      rm -f $FILE
+    fi
+  done
 
   $MAGISK && { rm -rf $MODPATH /sbin/.core/img/$MODID; rm -f $MOUNTPATH/.core/post-fs-data.d/$MODID-sysover.sh; }
 
@@ -242,7 +251,7 @@ unity_uninstall() {
     cd $RD
     sed -i "/#$MODID-UnityIndicator/d" init.rc
     . $INSTALLER/common/ramdiskuninstall.sh
-    cd $DIR
+    cd /
   fi
 
   ui_print " "
@@ -324,8 +333,9 @@ if $RAMDISK; then
   BOOTDIR=$INSTALLER/common/unityfiles/boot
   AVB=$INSTALLER/common/unityfiles/avb
   RD=$BOOTDIR/ramdisk
+  INFORD="$RD/$MODID-files"
   BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
-  BOOTSIGNED=false; HIGHCOMP=false; CHROMEOS=false; DIR=$(pwd)
+  BOOTSIGNED=false; HIGHCOMP=false; CHROMEOS=false
   mkdir -p $RD
   cp -af $INSTALLER/common/unityfiles/$ARCH32/. $CHROMEDIR $BOOTDIR
   chmod -R 755 $BOOTDIR
@@ -358,7 +368,7 @@ if $RAMDISK; then
   cd ramdisk
   ./magiskboot --cpio ../ramdisk.cpio "extract"
   rm -f magiskboot ../ramdisk.cpio
-  cd $DIR
+  cd /
 fi
 
 # LOAD USER VARS/FUNCTIONS
@@ -370,10 +380,8 @@ if $MAGISK && $RAMDISK && [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc)" ] && 
   ui_print "  ! Mod was removed in magisk manager but"
   ui_print "  ! Ramdisk changes are still present!"
   ui_print "- Uninstalling mod from ramdisk"
-  cd $RD
-  sed -i "/#$MODID-UnityIndicator/d" init.rc
-  . $INSTALLER/common/ramdiskuninstall.sh
-  cd $DIR
+  rm -f $INSTALLER/common/uninstall.sh
+  unity_uninstall
 elif $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/system/etc/$MODID-files" ]; then
   ui_print " "
   ui_print "  ! Previous system override install detected!"
