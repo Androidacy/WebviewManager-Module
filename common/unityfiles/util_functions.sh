@@ -121,8 +121,10 @@ flash_boot_image_unity() {
     $BLOCK && dd if=/dev/zero of="$2" 2>/dev/null
     dd if=boot-new-signed.img of="$2"
   elif $BLOCK; then
+    ui_print "- Flashing new boot image"
     eval $COMMAND | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
   else
+    ui_print "- Storing new boot image"
     eval $COMMAND | dd of="$2" bs=4096 2>/dev/null
   fi
 }
