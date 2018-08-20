@@ -163,7 +163,7 @@ unity_install() {
   ui_print "   Installing files for $ARCH SDK $API device..."
   rm -f $INSTALLER/system/placeholder
   $IS64BIT || rm -rf $INSTALLER/system/lib64 $INSTALLER/system/vendor/lib64
-  for FILE in $(find $INSTALLER/system -type f | sed "s|$INSTALLER||"); do
+  for FILE in $(find $INSTALLER/system -type f 2>/dev/null | sed "s|$INSTALLER||" 2>/dev/null); do
     if $DYNAMICAPP; then
       if $OLDAPP; then FILE2=$(echo $FILE | sed 's|/system/app/.*/|/system/app/|'); else FILE2=$(echo $FILE | sed 's|/system/app/|/system/priv-app/|'); fi
     else
@@ -189,9 +189,10 @@ unity_install() {
   # RAMDISK PATCHES
   if $RAMDISK; then
     cd $RD
+    echo "#$MODID-UnityIndicator" >> init.rc
     . $INSTALLER/common/ramdiskinstall.sh
     cd $DIR
-    [ "$(ls $INSTALLER/ramdisk)" ] && cp -af $INSTALLER/ramdisk/* $RD
+    [ "$(ls $INSTALLER/ramdisk 2>/dev/null)" ] && cp -af $INSTALLER/ramdisk/* $RD
   fi
 
   # SET PERMISSIONS
@@ -239,6 +240,7 @@ unity_uninstall() {
   # RAMDISK PATCHES
   if $RAMDISK; then
     cd $RD
+    sed -i "/#$MODID-UnityIndicator/d" init.rc
     . $INSTALLER/common/ramdiskuninstall.sh
     cd $DIR
   fi
@@ -334,7 +336,7 @@ if $RAMDISK; then
   cd $BOOTDIR
   dd if=$BOOTIMAGE of=boot.img
   eval $BOOTSIGNER -verify boot.img 2>&1 | grep "VALID" && BOOTSIGNED=true
-  $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"
+  $BOOTSIGNED && ui_print "   Boot image is signed with AVB 1.0"
   rm -f boot.img
   ./magiskinit -x magisk magisk
   ui_print "- Unpacking boot image"
@@ -363,7 +365,16 @@ fi
 unity_custom
 
 # DETERMINE MOD INSTALLATION STATUS
-if $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/system/etc/$MODID-files" ]; then
+if $MAGISK && $RAMDISK && [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc)" ] && [ ! -f "$MOD_VER" ]; then
+  ui_print " "
+  ui_print "  ! Mod was removed in magisk manager but"
+  ui_print "  ! Ramdisk changes are still present!"
+  ui_print "- Uninstalling mod from ramdisk"
+  cd $RD
+  sed -i "/#$MODID-UnityIndicator/d" init.rc
+  . $INSTALLER/common/ramdiskuninstall.sh
+  cd $DIR
+elif $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/system/etc/$MODID-files" ]; then
   ui_print " "
   ui_print "  ! Previous system override install detected!"
   ui_print "  ! Removing...!"
