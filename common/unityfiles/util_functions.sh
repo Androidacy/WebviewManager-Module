@@ -275,7 +275,7 @@ cleanup() {
     ./magiskboot --cleanup
     flash_boot_image_unity new-boot.img "$BOOTIMAGE"
     rm -f new-boot.img
-    cd $DIR
+    cd /
   fi
   if $MAGISK; then
     # UNMOUNT MAGISK IMAGE AND SHRINK IF POSSIBLE
