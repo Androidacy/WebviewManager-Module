@@ -188,7 +188,6 @@ unity_install() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
-    ui_print "- Patching ramdisk"
     cd $RD
     . $INSTALLER/common/ramdiskinstall.sh
     cd $DIR
@@ -239,7 +238,6 @@ unity_uninstall() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
-    ui_print "- Uninstalling ramdisk patches"
     cd $RD
     . $INSTALLER/common/ramdiskuninstall.sh
     cd $DIR
@@ -333,11 +331,13 @@ if $RAMDISK; then
   cp -af $BOOTDIR/magiskboot $RD/magiskboot
   find_boot_image
   [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-  ui_print "- Target image: $BOOTIMAGE"
-  # eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
-  eval $BOOTSIGNER -verify $BOOTIMAGE 2>&1 | grep "VALID" && BOOTSIGNED=true
-  $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"
+  ui_print "- Checking boot image signature"
   cd $BOOTDIR
+  dd if=$BOOTIMAGE of=boot.img
+  # eval $BOOTSIGNER -verify < $BOOTIMAGE && BOOTSIGNED=true
+  eval $BOOTSIGNER -verify boot.img 2>&1 | grep "VALID" && BOOTSIGNED=true
+  $BOOTSIGNED && ui_print "- Boot image is signed with AVB 1.0"
+  rm -f boot.img
   ./magiskinit -x magisk magisk
   ui_print "- Unpacking boot image"
   ./magiskboot --unpack "$BOOTIMAGE"
