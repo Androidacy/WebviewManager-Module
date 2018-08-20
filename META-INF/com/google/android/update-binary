@@ -115,7 +115,7 @@ unity_install() {
   mktouch $INFO
 
   # RUN USER INSTALL SCRIPT
-  . $INSTALLER/common/install.sh
+  [ -f "$INSTALLER/common/install.sh" ] && . $INSTALLER/common/install.sh
 
   # INSTALL SCRIPTS
   if $MAGISK; then
@@ -190,7 +190,7 @@ unity_install() {
   if $RAMDISK; then
     cd $RD
     echo "#$MODID-UnityIndicator" >> init.rc
-    . $INSTALLER/common/ramdiskinstall.sh
+    [ -f "$INSTALLER/common/ramdiskinstall.sh" ] && . $INSTALLER/common/ramdiskinstall.sh
     cd /
     for FILE in $(find $INSTALLER/ramdisk -type f 2>/dev/null | sed "s|$INSTALLER||" 2>/dev/null); do
       cp_ch $INSTALLER$FILE $BOOTDIR$FILE
@@ -244,13 +244,13 @@ unity_uninstall() {
   $MAGISK && { rm -rf $MODPATH /sbin/.core/img/$MODID; rm -f $MOUNTPATH/.core/post-fs-data.d/$MODID-sysover.sh; }
 
   # RUN USER INSTALL SCRIPT
-  . $INSTALLER/common/uninstall.sh
+  [ -f "$INSTALLER/common/uninstall.sh" ] && . $INSTALLER/common/uninstall.sh
   
   # RAMDISK PATCHES
   if $RAMDISK; then
     cd $RD
     sed -i "/#$MODID-UnityIndicator/d" init.rc
-    . $INSTALLER/common/ramdiskuninstall.sh
+    [ -f "$INSTALLER/common/ramdiskuninstall.sh" ] && . $INSTALLER/common/ramdiskuninstall.sh
     cd /
   fi
 
@@ -378,8 +378,8 @@ unity_custom
 if $MAGISK && $RAMDISK && [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc)" ] && [ ! -f "$MOD_VER" ]; then
   ui_print " "
   ui_print "  ! Mod was removed in magisk manager but"
-  ui_print "  ! Ramdisk changes are still present!"
-  ui_print "- Uninstalling mod from ramdisk"
+  ui_print "    Ramdisk changes are still present!"
+  ui_print "  ! Ramdisk modifications will be uninstalled!"
   rm -f $INSTALLER/common/uninstall.sh
   unity_uninstall
 elif $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/system/etc/$MODID-files" ]; then
