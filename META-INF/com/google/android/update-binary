@@ -324,7 +324,18 @@ done
 
 #DEBUG
 if $DEBUG; then
-  $BOOTMODE && { ui_print " "; ui_print "  Debug info will be written to magisk log"; ui_print "  Save log in magisk manager after flashing!"; sleep 3; } || exec 3>&1 1>&2 2>&3 2>/data/media/0/$MODID-log.log
+  if $BOOTMODE; then
+    ui_print " "
+    ui_print "- Debug mode"
+    ui_print "  Debug info will be written to magisk log"
+    ui_print "  Save log in magisk manager after flashing!"
+    sleep 3
+  else
+    ui_print " "
+    ui_print "- Debug mode"
+    ui_print "  Debug log will be written to: /sdcard/$MODID-debug.log"
+    exec 3>&1 1>&2 2>&3 2>/data/media/0/$MODID-debug.log
+  fi
   set -x
 fi
 
@@ -338,7 +349,7 @@ unity_custom
 if $MAGISK && $RAMDISK && [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc)" ] && [ ! -f "$MOD_VER" ]; then
   ui_print " "
   ui_print "  ! Mod was removed in magisk manager but"
-  ui_print "    Ramdisk changes are still present!"
+  ui_print "     ramdisk changes are still present!"
   ui_print "  ! Ramdisk modifications will be uninstalled!"
   rm -f $INSTALLER/common/uninstall.sh
   unity_uninstall
