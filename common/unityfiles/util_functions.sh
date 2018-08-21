@@ -466,6 +466,51 @@ set_vars() {
   fi
 }
 
+unpack_ramdisk() {
+  BOOTDIR=$INSTALLER/common/unityfiles/boot
+  AVB=$INSTALLER/common/unityfiles/avb
+  RD=$BOOTDIR/ramdisk
+  INFORD="$RD/$MODID-files"
+  BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
+  RAMDISK=true; BOOTSIGNED=false; HIGHCOMP=false; CHROMEOS=false
+  # Exit function if already run
+  [ -d "$RD" ] && return 0
+  mkdir -p $RD
+  cp -af $INSTALLER/common/unityfiles/$ARCH32/. $CHROMEDIR $BOOTDIR
+  chmod -R 755 $BOOTDIR
+  cp -af $BOOTDIR/magiskboot $RD/magiskboot
+  find_boot_image
+  ui_print " "
+  [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
+  ui_print "- Checking boot image signature"
+  cd $BOOTDIR
+  dd if=$BOOTIMAGE of=boot.img
+  eval $BOOTSIGNER -verify boot.img 2>&1 | grep "VALID" && BOOTSIGNED=true
+  $BOOTSIGNED && ui_print "   Boot image is signed with AVB 1.0"
+  rm -f boot.img
+  ./magiskinit -x magisk magisk
+  ui_print "- Unpacking boot image"
+  ./magiskboot --unpack "$BOOTIMAGE"
+  case $? in
+    1 ) abort "  ! Unable to unpack boot image";;
+    2 ) HIGHCOMP=true;;
+    3 ) ui_print "   ChromeOS boot image detected"; CHROMEOS=true;;
+    4 ) ui_print "  ! Sony ELF32 format detected"; abort "  ! Please use BootBridge from @AdrianDC to flash this mod";;
+    5 ) ui_print "  ! Sony ELF64 format detected" abort "  ! Stock kernel cannot be patched, please use a custom kernel";;
+  esac
+  ui_print "- Checking ramdisk status"
+  ./magiskboot --cpio ramdisk.cpio test
+  if [ $? -eq 2 ]; then
+    HIGHCOMP=true
+    ui_print "   ! Insufficient boot partition size detected"
+    ui_print "   Enabling high compression mode"
+  fi
+  cd ramdisk
+  ./magiskboot --cpio ../ramdisk.cpio "extract"
+  rm -f magiskboot ../ramdisk.cpio
+  cd /
+}
+
 remove_old_aml() {
   ui_print " "
   ui_print "   ! Old AML Detected! Removing..."
