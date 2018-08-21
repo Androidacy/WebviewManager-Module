@@ -188,6 +188,7 @@ unity_install() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
+    [ "$RD" ] || unpack_ramdisk
     cd $RD
     echo "#$MODID-UnityIndicator" >> init.rc
     [ -f "$INSTALLER/common/ramdiskinstall.sh" ] && . $INSTALLER/common/ramdiskinstall.sh
@@ -248,6 +249,7 @@ unity_uninstall() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
+    [ "$RD" ] || unpack_ramdisk
     cd $RD
     sed -i "/#$MODID-UnityIndicator/d" init.rc
     [ -f "$INSTALLER/common/ramdiskuninstall.sh" ] && . $INSTALLER/common/ramdiskuninstall.sh
@@ -299,6 +301,9 @@ fi
 [ -z $MINAPI ] || { [ $API -lt $MINAPI ] && require_new_api 'minimum'; }
 [ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && require_new_api 'maximum'; }
 
+# UNPACK RAMDISK
+$RAMDISK && unpack_ramdisk
+
 # SET MODID and MODPATH variables
 [ -z $MODID ] && MODID=`grep_prop id $INSTALLER/module.prop`
 MODPATH=$MOUNTPATH/$MODID
@@ -338,9 +343,6 @@ if $DEBUG; then
   fi
   set -x
 fi
-
-# RAMDISK
-$RAMDISK && unpack_ramdisk
 
 # LOAD USER VARS/FUNCTIONS
 unity_custom

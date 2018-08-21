@@ -473,8 +473,6 @@ unpack_ramdisk() {
   INFORD="$RD/$MODID-files"
   BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
   RAMDISK=true; BOOTSIGNED=false; HIGHCOMP=false; CHROMEOS=false
-  # Exit function if already run
-  [ -d "$RD" ] && return 0
   mkdir -p $RD
   cp -af $INSTALLER/common/unityfiles/$ARCH32/. $CHROMEDIR $BOOTDIR
   chmod -R 755 $BOOTDIR
