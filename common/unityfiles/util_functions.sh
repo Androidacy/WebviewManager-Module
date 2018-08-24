@@ -115,16 +115,16 @@ flash_boot_image_unity() {
     *) BLOCK=false;;
   esac
   if $BOOTSIGNED; then
-    ui_print "- Signing boot image"
+    ui_print "   Signing boot image..."
     eval $COMMAND | $BOOTSIGNER /boot $1 $AVB/verity.pk8 $AVB/verity.x509.pem boot-new-signed.img
-    ui_print "- Flashing new boot image"
+    ui_print "   Flashing new boot image..."
     $BLOCK && dd if=/dev/zero of="$2" 2>/dev/null
     dd if=boot-new-signed.img of="$2"
   elif $BLOCK; then
-    ui_print "- Flashing new boot image"
+    ui_print "   Flashing new boot image..."
     eval $COMMAND | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
   else
-    ui_print "- Storing new boot image"
+    ui_print "   Storing new boot image..."
     eval $COMMAND | dd of="$2" bs=4096 2>/dev/null
   fi
 }
@@ -265,11 +265,11 @@ require_new_api() {
 
 cleanup() {
   if $RAMDISK; then
-    ui_print "- Repacking ramdisk"
+    ui_print "   Repacking ramdisk..."
     cd $RD
     find . | cpio -H newc -o > ../ramdisk.cpio
     cd ..
-    ui_print "- Repacking boot image"
+    ui_print "   Repacking boot image..."
     ./magiskboot --repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
     $CHROMEOS && sign_chromeos
     ./magiskboot --cleanup
@@ -320,11 +320,16 @@ check_bak() {
     $RD*) BAK=true; BAKFILE=$INFORD;;
     *) BAK=true; BAKFILE=$INFO;;
   esac
+  [ -z $2 ] || BAK=$2
 }
 
 cp_ch_nb() {
-  if [ -z $4 ]; then check_bak $2; else BAK=$4; fi
-  if $BAK && [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ]; then echo "$2" >> $BAKFILE; fi
+  if [ -z $4 ]; then check_bak $2; else check_bak $2 $4; fi
+  if $BAK && [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ]; then 
+    echo "$2" >> $BAKFILE
+  elif [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ]; then 
+    echo "$2NOBAK" >> $BAKFILE
+  fi
   mkdir -p "$(dirname $2)"
   cp -af "$1" "$2"
   if [ -z $3 ]; then
@@ -466,7 +471,48 @@ set_vars() {
   fi
 }
 
+uninstall_files() {
+  local FILE="$1"
+  if [ "$1" == "$INFO" ]; then
+    $BOOTMODE && [ -f /sbin/.core/img/$MODID/$MODID-files ] && FILE=/sbin/.core/img/$MODID/$MODID-files
+    TMP=".bak"
+    $MAGISK || [ -f $FILE ] || abort "   ! Mod not detected !"
+  elif [ "$1" == "$INFORD" ]; then
+    $RAMDISK || continue
+    TMP="~"
+  else
+    return 1
+  fi
+  if [ -f $FILE ]; then
+    while read LINE; do
+      LINE=$(echo $LINE | sed -r "s/(.*)NOBAK$/\1/")
+      if [ "$(echo -n $LINE | tail -c 4)" == ".bak" ] || [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
+        continue
+      elif [ -f "$LINE$TMP" ]; then
+        mv -f $LINE$TMP $LINE
+      else
+        rm -f $LINE
+        while true; do
+          LINE=$(dirname $LINE)
+          if [ "$(ls $LINE)" ]; then
+            break 1
+          else
+            rm -rf $LINE
+          fi
+        done
+      fi
+    done < $FILE
+    rm -f $FILE
+  fi
+}
+
 unpack_ramdisk() {
+  local PRE POST
+  if [ "$1" == "late" ]; then
+    PRE="  "; POST="..."
+  else
+    PRE="-"; POST=""
+  fi
   BOOTDIR=$INSTALLER/common/unityfiles/boot
   AVB=$INSTALLER/common/unityfiles/avb
   RD=$BOOTDIR/ramdisk
@@ -479,24 +525,24 @@ unpack_ramdisk() {
   cp -af $BOOTDIR/magiskboot $RD/magiskboot
   find_boot_image
   ui_print " "
-  [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-  ui_print "- Checking boot image signature"
+  [ -z $BOOTIMAGE ] && abort "   ! Unable to detect target image"
+  ui_print "$PRE Checking boot image signature$POST"
   cd $BOOTDIR
   dd if=$BOOTIMAGE of=boot.img
   eval $BOOTSIGNER -verify boot.img 2>&1 | grep "VALID" && BOOTSIGNED=true
   $BOOTSIGNED && ui_print "   Boot image is signed with AVB 1.0"
   rm -f boot.img
   ./magiskinit -x magisk magisk
-  ui_print "- Unpacking boot image"
+  ui_print "$PRE Unpacking boot image$POST"
   ./magiskboot --unpack "$BOOTIMAGE"
   case $? in
     1 ) abort "  ! Unable to unpack boot image";;
     2 ) HIGHCOMP=true;;
     3 ) ui_print "   ChromeOS boot image detected"; CHROMEOS=true;;
-    4 ) ui_print "  ! Sony ELF32 format detected"; abort "  ! Please use BootBridge from @AdrianDC to flash this mod";;
-    5 ) ui_print "  ! Sony ELF64 format detected" abort "  ! Stock kernel cannot be patched, please use a custom kernel";;
+    4 ) ui_print "   ! Sony ELF32 format detected"; abort "   ! Please use BootBridge from @AdrianDC to flash this mod";;
+    5 ) ui_print "   ! Sony ELF64 format detected" abort "   ! Stock kernel cannot be patched, please use a custom kernel";;
   esac
-  ui_print "- Checking ramdisk status"
+  ui_print "$PRE Checking ramdisk status$POST"
   ./magiskboot --cpio ramdisk.cpio test
   if [ $? -eq 2 ]; then
     HIGHCOMP=true
@@ -507,6 +553,7 @@ unpack_ramdisk() {
   ./magiskboot --cpio ../ramdisk.cpio "extract"
   rm -f magiskboot ../ramdisk.cpio
   cd /
+  [ "$POST" ] && ui_print " "
 }
 
 remove_old_aml() {
