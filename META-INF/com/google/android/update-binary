@@ -188,15 +188,13 @@ unity_install() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
-    [ "$RD" ] || unpack_ramdisk
-    cd $RD
-    echo "#$MODID-UnityIndicator" >> init.rc
+    [ "$RD" ] || unpack_ramdisk "late"
+    echo "#$MODID-UnityIndicator" >> $RD/init.rc
     [ -f "$INSTALLER/common/ramdiskinstall.sh" ] && . $INSTALLER/common/ramdiskinstall.sh
-    cd /
     for FILE in $(find $INSTALLER/ramdisk -type f 2>/dev/null | sed "s|$INSTALLER||" 2>/dev/null); do
       cp_ch $INSTALLER$FILE $BOOTDIR$FILE
     done
-    ls $RD
+    [ ! -s $INFORD ] && rm -f $INFORD
   fi
 
   # SET PERMISSIONS
@@ -209,38 +207,9 @@ unity_install() {
 unity_uninstall() {
   ui_print " "
   ui_print "- Uninstalling"
-
+  
   # REMOVE FILES
-  for FILE in $INFO $INFORD; do
-    if [ "$FILE" == "$INFO" ]; then
-      $BOOTMODE && [ -f /sbin/.core/img/$MODID/$MODID-files ] && FILE=/sbin/.core/img/$MODID/$MODID-files
-      TMP=".bak"
-      $MAGISK || [ -f $FILE ] || abort "   ! Mod not detected !"
-    else
-      $RAMDISK || continue
-      TMP="~"
-    fi
-    if [ -f $FILE ]; then
-      while read LINE; do
-        if [ "$(echo -n $LINE | tail -c 4)" == ".bak" ] || [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
-          continue
-        elif [ -f "$LINE$TMP" ]; then
-          mv -f $LINE$TMP $LINE
-        else
-          rm -f $LINE
-          while true; do
-            LINE=$(dirname $LINE)
-            if [ "$(ls $LINE)" ]; then
-              break 1
-            else
-              rm -rf $LINE
-            fi
-          done
-        fi
-      done < $FILE
-      rm -f $FILE
-    fi
-  done
+  uninstall_files $INFO
 
   $MAGISK && { rm -rf $MODPATH /sbin/.core/img/$MODID; rm -f $MOUNTPATH/.core/post-fs-data.d/$MODID-sysover.sh; }
 
@@ -249,11 +218,10 @@ unity_uninstall() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
-    [ "$RD" ] || unpack_ramdisk
-    cd $RD
-    sed -i "/#$MODID-UnityIndicator/d" init.rc
+    [ -z $RD ] && unpack_ramdisk "late"
+    uninstall_files $INFORD
+    sed -i "/#$MODID-UnityIndicator/d" $RD/init.rc
     [ -f "$INSTALLER/common/ramdiskuninstall.sh" ] && . $INSTALLER/common/ramdiskuninstall.sh
-    cd /
   fi
 
   ui_print " "
