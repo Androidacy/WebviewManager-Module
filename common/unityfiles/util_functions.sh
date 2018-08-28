@@ -308,36 +308,33 @@ device_check() {
   fi
 }
 
-check_bak() {
-  case $1 in
-    $INSTALLER/system/*) BAK=false; BAKFILE=$INFO;;
-    /system/*|/vendor/*) BAK=true; BAKFILE=$INFO;;
-    $MOUNTPATH/*|/sbin/.core/img/*) if ! $MAGISK || $SYSOVERRIDE; then 
-                                      BAK=true
-                                    else
-                                      BAK=false
-                                    fi
-                                    BAKFILE=$INFO;;
-    $RD*) BAK=true; BAKFILE=$INFORD;;
-    *) BAK=true; BAKFILE=$INFO;;
+cp_ch() {
+  local BAK BAKFILE EXT PERM UBAK
+  UBAK=true
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -np|-pn) shift; PERM=$1; UBAK=false; shift;;
+      -n) shift; UBAK=false;;
+      -p) shift; PERM=$1; shift;;
+      *) break;;
+    esac
+  done
+  case $2 in
+    $INSTALLER/*|$MOUNTPATH/*|/sbin/.core/img/*) BAK=false; BAKFILE=$INFO; EXT=".bak";;
+    /system/*|/vendor/*) BAK=true; BAKFILE=$INFO; EXT=".bak";;
+    $RD/*) BAK=true; BAKFILE=$INFORD; EXT="~";;
+    *) BAK=true; BAKFILE=$INFO; EXT=".bak";;
   esac
-  [ -z $2 ] || BAK=$2
-}
-
-cp_ch_nb() {
-  if [ -z $4 ]; then check_bak $2; else check_bak $2 $4; fi
-  if $BAK && [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ]; then 
-    echo "$2" >> $BAKFILE
-  elif [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ]; then 
-    echo "$2NOBAK" >> $BAKFILE
-  fi
+  [ -z $PERM ] && PERM=0644
+  if $BAK && $UBAK; then
+    [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ] && echo "$2" >> $BAKFILE
+    [ -f "$2" ] && [ ! -f "$2$EXT" ] && { cp -af $2 $2$EXT; echo "$2$EXT" >> $BAKFILE; }
+  elif $BAK && ! $UBAK; then
+    [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ] && echo "$2" >> $BAKFILE
+  fi  
   mkdir -p "$(dirname $2)"
   cp -af "$1" "$2"
-  if [ -z $3 ]; then
-    chmod 0644 "$2"
-  else
-    chmod $3 "$2"
-  fi
+  chmod $PERM "$2"
   case $2 in
     */vendor/etc/*) chcon u:object_r:vendor_configs_file:s0 $2;;
     */vendor/*.apk) chcon u:object_r:vendor_app_file:s0 $2;;
@@ -346,54 +343,35 @@ cp_ch_nb() {
   esac
 }
 
-cp_ch() {
-  check_bak $2
-  local EXT 
-  case $2 in
-    $RD*) EXT="~";;
-    *) EXT=".bak";;
-  esac
-  if [ -f "$2" ] && [ ! -f "$2$EXT" ] && $BAK; then
-    cp -af $2 $2$EXT
-    echo "$2$EXT" >> $BAKFILE
-  fi
-  if [ -z $3 ]; then cp_ch_nb $1 $2 0644 $BAK; else cp_ch_nb $1 $2 $3 $BAK; fi
-}
-
 patch_script() {
-  sed -i "s|<MAGISK>|$MAGISK|" $1
-  sed -i "s|<LIBDIR>|$LIBDIR|" $1
-  sed -i "s|<SYSOVERRIDE>|$SYSOVERRIDE|" $1
-  sed -i "s|<MODID>|$MODID|" $1
+  sed -i -e "s|<MAGISK>|$MAGISK|" -e "s|<LIBDIR>|$LIBDIR|" -e "s|<SYSOVERRIDE>|$SYSOVERRIDE|" -e "s|<MODID>|$MODID|" $1
   if $MAGISK; then
     if $SYSOVERRIDE; then
-      sed -i "s|<INFO>|$INFO|" $1
-      sed -i "s|<VEN>|$REALVEN|" $1
+      sed -i -e "s|<INFO>|$INFO|" -e "s|<VEN>|$REALVEN|" $1
     else
       sed -i "s|<VEN>|$VEN|" $1
     fi
-    sed -i "s|<ROOT>|\"\"|" $1
-    sed -i "s|<SYS>|/system|" $1
-    sed -i "s|<SHEBANG>|#!/system/bin/sh|" $1
-    sed -i "s|<SEINJECT>|magiskpolicy|" $1
-    sed -i "s|\$MOUNTPATH|/sbin/.core/img|g" $1
+    sed -i -e "s|<ROOT>|\"\"|" "s|<SYS>|/system|" -e "s|<SHEBANG>|#!/system/bin/sh|" -e "s|<SEINJECT>|magiskpolicy|" -e "s|\$MOUNTPATH|/sbin/.core/img|g" $1
   else
-    if [ ! -z $ROOT ]; then sed -i "s|<ROOT>|$ROOT|" $1; else sed -i "s|<ROOT>|\"\"|" $1; fi
-    sed -i "s|<SYS>|$REALSYS|" $1
-    sed -i "s|<VEN>|$REALVEN|" $1
-    sed -i "s|<SHEBANG>|$SHEBANG|" $1
-    sed -i "s|<SEINJECT>|$SEINJECT|" $1
-    sed -i "s|\$MOUNTPATH||g" $1
+    sed -i -e "s|<ROOT>|\"$ROOT\"|" -e "s|<SYS>|$REALSYS|" -e "s|<VEN>|$REALVEN|" -e "s|<SHEBANG>|$SHEBANG|" -e "s|<SEINJECT>|$SEINJECT|" -e "s|\$MOUNTPATH||g" $1
   fi
 }
 
 install_script() {
+  case "$1" in
+    -l) shift; local PATH="$MOUNTPATH/.core/service.d" EXT="-ls";;
+    -p) shift; local PATH="$MOUNTPATH/.core/post-fs-data.d" EXT="";;
+    *) local LS=false;;
+  esac
   if $MAGISK; then
-    cp_ch_nb $1 $MODPATH/$(basename $1)
-    patch_script $MODPATH/$(basename $1)
+    case $(basename $1) in
+      post-fs-data.sh|service.sh) local PATH=$MODPATH; cp_ch -n $1 $PATH/$(basename $1);;
+      *) cp_ch -np 0755 $1 $PATH/$(basename $1);;
+    esac
+    patch_script $PATH/$(basename $1)
   else
-    cp_ch_nb $1 $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$2 0700
-    patch_script $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$2
+    cp_ch -np 0700 $1 $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$EXT
+    patch_script $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$EXT
   fi
 }
 
@@ -454,9 +432,9 @@ set_vars() {
       INFO=/system/etc/$MODID-files
     fi
     if $MAGISK && $SYSOVERRIDE; then
-      patch_script $INSTALLER/common/unityfiles/modidsysover.sh
       sed -i -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/uninstall.sh" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/modidsysover.sh
-      cp_ch_nb $INSTALLER/common/unityfiles/modidsysover.sh $MOUNTPATH/.core/post-fs-data.d/$MODID-sysover.sh 0755 false
+      mv -f $INSTALLER/common/unityfiles/modidsysover.sh $INSTALLER/common/unityfiles/$MODID-sysover.sh
+      install_script -p $INSTALLER/common/unityfiles/$MODID-sysover.sh
     else
       # DETERMINE SYSTEM BOOT SCRIPT TYPE
       script_type
@@ -486,7 +464,6 @@ uninstall_files() {
   fi
   if [ -f $FILE ]; then
     while read LINE; do
-      LINE=$(echo $LINE | sed -r "s/(.*)NOBAK$/\1/")
       if [ "$(echo -n $LINE | tail -c 4)" == ".bak" ] || [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
         continue
       elif [ -f "$LINE$TMP" ]; then
