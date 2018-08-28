@@ -4,7 +4,7 @@
 MODID=<MODID>
 list_files() {
 cat <<EOF
-$(cat /tmp/addon.d/$MODID-files2)
+$(cat /tmp/addon.d/$MODID-files)
 EOF
 }
 
@@ -22,8 +22,7 @@ case "$1" in
     done
   ;;
   pre-backup)
-    cp -f /tmp/addon.d/$MODID-files /tmp/addon.d/$MODID-files2
-    sed -i "/*NOBAK$/d" /tmp/addon.d/$MODID-files2
+    # Stub
   ;;
   post-backup)
     # Stub
@@ -32,6 +31,6 @@ case "$1" in
     # Stub
   ;;
   post-restore)
-    rm -f /tmp/addon.d/$MODID-files2
+    # Stub
   ;;
 esac

@@ -7,6 +7,12 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.6.1 - 8.xx.2018
+* Fix/improve cp_ch functions. Combine cp_ch, cp_ch_nb, and check_bak into cp_ch function - see OP on xda for how it works
+* Improve how unity handles ramdisk stuff
+* Modify install_script function so it can be used by devs - see OP on xda for details
+* Misc bug fixes
+
 ### v1.6 - 8.24.2018
 * Added debug flag (set debug to true in config.sh or add debug to zipname)
 * Added ramdisk patching capability - limited usage, most people won't need this
