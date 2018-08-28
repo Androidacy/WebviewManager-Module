@@ -289,9 +289,6 @@ fi
 [ -z $MINAPI ] || { [ $API -lt $MINAPI ] && require_new_api 'minimum'; }
 [ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && require_new_api 'maximum'; }
 
-# UNPACK RAMDISK
-$RAMDISK && unpack_ramdisk
-
 # SET MODID and MODPATH variables
 [ -z $MODID ] && MODID=`grep_prop id $INSTALLER/module.prop`
 MODPATH=$MOUNTPATH/$MODID
@@ -314,6 +311,9 @@ done
 
 # REMOVE OLD AML & MODS
 [ -f "$OLD_AML_VER" ] && remove_old_aml
+
+# UNPACK RAMDISK
+$RAMDISK && unpack_ramdisk
 
 #DEBUG
 if $DEBUG; then

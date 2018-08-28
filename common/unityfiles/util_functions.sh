@@ -115,16 +115,16 @@ flash_boot_image_unity() {
     *) BLOCK=false;;
   esac
   if $BOOTSIGNED; then
-    ui_print "- Signing boot image..."
-    eval $COMMAND | $BOOTSIGNER /boot $1 $AVB/verity.pk8 $AVB/verity.x509.pem boot-new-signed.img
-    ui_print "- Flashing new boot image..."
+    ui_print "- Signing boot image"
+    eval $COMMAND | $BOOTSIGNER /boot $1 $INSTALLER/common/unityfiles/avb/verity.pk8 $INSTALLER/common/unityfiles/avb/verity.x509.pem boot-new-signed.img
+    ui_print "- Flashing new boot image"
     $BLOCK && dd if=/dev/zero of="$2" 2>/dev/null
     dd if=boot-new-signed.img of="$2"
   elif $BLOCK; then
-    ui_print "- Flashing new boot image..."
+    ui_print "- Flashing new boot image"
     eval $COMMAND | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
   else
-    ui_print "- Storing new boot image..."
+    ui_print "- Storing new boot image"
     eval $COMMAND | dd of="$2" bs=4096 2>/dev/null
   fi
 }
@@ -160,13 +160,17 @@ api_level_arch_detect() {
   if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
 }
 
-setup_bb() {
-  local BB=$INSTALLER/common/unityfiles/$ARCH32/busybox
-  chmod 755 $BB
-  mkdir -p $TMPDIR/bin
-  ln -s $BB $TMPDIR/bin/busybox
-  $BB --install -s $TMPDIR/bin
-  export PATH=$TMPDIR/bin:$PATH
+setup_bb() { 
+  if [ -x /sbin/.core/busybox/busybox ]; then
+    # Make sure this path is in the front
+    echo $PATH | grep -q '^/sbin/.core/busybox' || export PATH=/sbin/.core/busybox:$PATH
+  else
+    # Use in-house busybox
+    local BBDIR=$INSTALLER/common/unityfiles/$ARCH32
+    chmod 755 $BBDIR/busybox
+    $BBDIR/busybox --install -s .
+    echo $PATH | grep -q "^$BBDIR" || export PATH=$BBDIR:$PATH
+  fi
 }
 
 recovery_actions() {
@@ -466,6 +470,7 @@ set_vars() {
   else
     LIBPATCH="\/system"; LIBDIR=/system
   fi
+  RD=$INSTALLER/common/unityfiles/boot/ramdisk
 }
 
 uninstall_files() {
@@ -503,22 +508,18 @@ uninstall_files() {
 }
 
 unpack_ramdisk() {
-  local PRE POST
+  local PRE POST PATHDIR BOOTDIR=$INSTALLER/common/unityfiles/boot
   if [ "$1" == "late" ]; then
     PRE="  "; POST="..."
   else
     PRE="-"; POST=""
   fi
-  AVB=$INSTALLER/common/unityfiles/avb
-  CHROMEDIR=$INSTALLER/common/unityfiles/chromeos
-  BOOTDIR=$INSTALLER/common/unityfiles/boot
-  RD=$BOOTDIR/ramdisk
-  ln -s $INSTALLER/common/unityfiles/$ARCH32/magiskboot $INSTALLER/common/unityfiles/$ARCH32/magiskinit $TMPDIR/bin
-  chmod 0755 $TMPDIR/bin/magiskboot $TMPDIR/bin/magiskinit
-  cp -af $CHROMEDIR $BOOTDIR
+  chmod -R 755 $INSTALLER/common/unityfiles/$ARCH32
+  echo $PATH | grep -q "^$INSTALLER/common/unityfiles/$ARCH32" || export PATH=$INSTALLER/common/unityfiles/$ARCH32:$PATH
+  cp -af $INSTALLER/common/unityfiles/chromeos $BOOTDIR
   chmod -R 0755 $BOOTDIR
   INFORD="$RD/$MODID-files"
-  BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
+  BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $INSTALLER/common/unityfiles/avb/BootSignature_Android.jar com.android.verity.BootSignature"
   RAMDISK=true; BOOTSIGNED=false; HIGHCOMP=false; CHROMEOS=false
   mkdir -p $RD
   find_boot_image
