@@ -309,11 +309,13 @@ device_check() {
 }
 
 cp_ch() {
-  local BAK BAKFILE EXT PERM UBAK
-  UBAK=true
+  #UBAK: false for no backup file creation. REST: false for no file restore on uninstall
+  local BAK BAKFILE EXT PERM UBAK=true REST=true
   while [ $# -gt 0 ]; do
     case "$1" in
+      -nnp|-pnn) shift; PERM=$1; UBAK=false; REST=false; shift;;
       -np|-pn) shift; PERM=$1; UBAK=false; shift;;
+      -nn) shift; UBAK=false; REST=false;;
       -n) shift; UBAK=false;;
       -p) shift; PERM=$1; shift;;
       *) break;;
@@ -326,14 +328,16 @@ cp_ch() {
     *) BAK=true; BAKFILE=$INFO; EXT=".bak";;
   esac
   [ -z $PERM ] && PERM=0644
-  if $BAK && $UBAK; then
+  if $BAK && $UBAK && $REST; then
     [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ] && echo "$2" >> $BAKFILE
     [ -f "$2" ] && [ ! -f "$2$EXT" ] && { cp -af $2 $2$EXT; echo "$2$EXT" >> $BAKFILE; }
-  elif $BAK && ! $UBAK; then
+  elif $BAK && ! $UBAK && $REST; then
     [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ] && echo "$2" >> $BAKFILE
+  elif $BAK && ! $UBAK && ! $REST; then
+    [ ! "$(grep "$2NORESTORE$" $BAKFILE 2>/dev/null)" ] && echo "$2NORESTORE" >> $BAKFILE
   fi  
   mkdir -p "$(dirname $2)"
-  cp -af "$1" "$2"
+  cp -af "$1" "$2" 2>/dev/null
   chmod $PERM "$2"
   case $2 in
     */vendor/etc/*) chcon u:object_r:vendor_configs_file:s0 $2;;
@@ -344,16 +348,16 @@ cp_ch() {
 }
 
 patch_script() {
-  sed -i -e "s|<MAGISK>|$MAGISK|" -e "s|<LIBDIR>|$LIBDIR|" -e "s|<SYSOVERRIDE>|$SYSOVERRIDE|" -e "s|<MODID>|$MODID|" $1
+  sed -i -e "s|<MAGISK>|$MAGISK|" -e "s|<LIBDIR>|$LIBDIR|" -e "s|<SYSOVERRIDE>|$SYSOVERRIDE|" -e "s|<MODID>|$MODID|" -e "s|<INFO>|$(echo $INFO | sed "s|$MOUNTPATH|/sbin/.core/img|")|" $1
   if $MAGISK; then
     if $SYSOVERRIDE; then
-      sed -i -e "s|<INFO>|$INFO|" -e "s|<VEN>|$REALVEN|" $1
+      sed -i "s|<VEN>|$REALVEN|" $1
     else
       sed -i "s|<VEN>|$VEN|" $1
     fi
-    sed -i -e "s|<ROOT>|\"\"|" -e "s|<SYS>|/system|" -e "s|<SHEBANG>|#!/system/bin/sh|" -e "s|<SEINJECT>|magiskpolicy|" -e "s|\$MOUNTPATH|/sbin/.core/img|g" $1
+    sed -i -e "s|<ROOT>|\"\"|" -e "s|<SYS>|/system|" -e "s|<SHEBANG>|#!/system/bin/sh|" -e "s|<SEINJECT>|magiskpolicy|" -e "s|\$MOUNTPATH|/sbin/.core/img|g" -e "s|\$UNITY|/sbin/.core/img|g" $1
   else
-    sed -i -e "s|<ROOT>|\"$ROOT\"|" -e "s|<SYS>|$REALSYS|" -e "s|<VEN>|$REALVEN|" -e "s|<SHEBANG>|$SHEBANG|" -e "s|<SEINJECT>|$SEINJECT|" -e "s|\$MOUNTPATH||g" $1
+    sed -i -e "s|<ROOT>|\"$ROOT\"|" -e "s|<SYS>|$REALSYS|" -e "s|<VEN>|$REALVEN|" -e "s|<SHEBANG>|$SHEBANG|" -e "s|<SEINJECT>|$SEINJECT|" -e "s|\$MOUNTPATH||g" -e "s|\$UNITY||g" $1
   fi
 }
 
@@ -460,7 +464,7 @@ uninstall_files() {
   fi
   if [ -f $FILE ]; then
     while read LINE; do
-      if [ "$(echo -n $LINE | tail -c 4)" == ".bak" ] || [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
+      if [ "$(echo -n $LINE | tail -c 4)" == ".bak" ] || [ "$(echo -n $LINE | tail -c 1)" == "~" ] || [ "$(echo -n $LINE | tail -c 9)" == "NORESTORE" ]; then
         continue
       elif [ -f "$LINE$TMP" ]; then
         mv -f $LINE$TMP $LINE
