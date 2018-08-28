@@ -431,11 +431,7 @@ set_vars() {
     else
       INFO=/system/etc/$MODID-files
     fi
-    if $MAGISK && $SYSOVERRIDE; then
-      sed -i -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/uninstall.sh" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/modidsysover.sh
-      mv -f $INSTALLER/common/unityfiles/modidsysover.sh $INSTALLER/common/unityfiles/$MODID-sysover.sh
-      install_script -p $INSTALLER/common/unityfiles/$MODID-sysover.sh
-    else
+    if ! $MAGISK; then
       # DETERMINE SYSTEM BOOT SCRIPT TYPE
       script_type
       PROP=$MODPATH/$MODID-props.sh
