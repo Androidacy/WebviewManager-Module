@@ -351,7 +351,7 @@ patch_script() {
     else
       sed -i "s|<VEN>|$VEN|" $1
     fi
-    sed -i -e "s|<ROOT>|\"\"|" "s|<SYS>|/system|" -e "s|<SHEBANG>|#!/system/bin/sh|" -e "s|<SEINJECT>|magiskpolicy|" -e "s|\$MOUNTPATH|/sbin/.core/img|g" $1
+    sed -i -e "s|<ROOT>|\"\"|" -e "s|<SYS>|/system|" -e "s|<SHEBANG>|#!/system/bin/sh|" -e "s|<SEINJECT>|magiskpolicy|" -e "s|\$MOUNTPATH|/sbin/.core/img|g" $1
   else
     sed -i -e "s|<ROOT>|\"$ROOT\"|" -e "s|<SYS>|$REALSYS|" -e "s|<VEN>|$REALVEN|" -e "s|<SHEBANG>|$SHEBANG|" -e "s|<SEINJECT>|$SEINJECT|" -e "s|\$MOUNTPATH||g" $1
   fi
@@ -359,16 +359,16 @@ patch_script() {
 
 install_script() {
   case "$1" in
-    -l) shift; local PATH="$MOUNTPATH/.core/service.d" EXT="-ls";;
-    -p) shift; local PATH="$MOUNTPATH/.core/post-fs-data.d" EXT="";;
-    *) local LS=false;;
+    -l) shift; local INPATH="$MOUNTPATH/.core/service.d" EXT="-ls";;
+    -p) shift; local INPATH="$MOUNTPATH/.core/post-fs-data.d" EXT="";;
+    *) local INPATH="$MOUNTPATH/.core/post-fs-data.d" EXT="";;
   esac
   if $MAGISK; then
     case $(basename $1) in
-      post-fs-data.sh|service.sh) local PATH=$MODPATH; cp_ch -n $1 $PATH/$(basename $1);;
-      *) cp_ch -np 0755 $1 $PATH/$(basename $1);;
+      post-fs-data.sh|service.sh) local INPATH=$MODPATH; cp_ch -n $1 $INPATH/$(basename $1);;
+      *) cp_ch -np 0755 $1 $INPATH/$(basename $1);;
     esac
-    patch_script $PATH/$(basename $1)
+    patch_script $INPATH/$(basename $1)
   else
     cp_ch -np 0700 $1 $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$EXT
     patch_script $MODPATH/$MODID-$(basename $1 | sed 's/.sh$//')$EXT
