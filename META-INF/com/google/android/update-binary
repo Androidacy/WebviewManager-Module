@@ -333,10 +333,9 @@ fi
 unity_custom
 
 # DETERMINE MOD INSTALLATION STATUS
-if $MAGISK && $RAMDISK && [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ] && [ ! -f "$MOD_VER" ]; then
+if $RAMDISK && [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ] && [ ! -f "$MOD_VER" ]; then
   ui_print " "
-  ui_print "  ! Mod was removed in magisk manager but"
-  ui_print "     ramdisk changes are still present!"
+  ui_print "  ! Mod present in ramdisk but not in system!"
   ui_print "  ! Ramdisk modifications will be uninstalled!"
   rm -f $INSTALLER/common/uninstall.sh
   unity_uninstall
