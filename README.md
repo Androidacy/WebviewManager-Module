@@ -11,6 +11,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * Fix/improve cp_ch functions. Combine cp_ch, cp_ch_nb, and check_bak into cp_ch function - see OP on xda for how it works
 * Improve how unity handles ramdisk stuff
 * Modify install_script function so it can be used by devs - see OP on xda for details
+* Need busybox for ramdisk stuff - note that since busybox is now bundled into unity, you can use it with any of your mods (it replaces sbin in path like magisk does so you can call it like any binary)
 * Misc bug fixes and improvements
 
 ### v1.6 - 8.24.2018

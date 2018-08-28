@@ -280,6 +280,9 @@ if $MAGISK; then
   request_zip_size_check "$ZIP"
   # THIS FUNCTION WILL MOUNT $IMG TO $MOUNTPATH, AND RESIZE THE IMAGE BASED ON $REQSIZEM
   mount_magisk_img
+else
+  # SETUP BUSYBOX AND BINARIES
+  recovery_actions
 fi
 
 # CHECK FOR MIN & MAX API VERSION

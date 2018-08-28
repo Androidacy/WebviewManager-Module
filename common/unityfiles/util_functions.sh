@@ -115,16 +115,16 @@ flash_boot_image_unity() {
     *) BLOCK=false;;
   esac
   if $BOOTSIGNED; then
-    ui_print "   Signing boot image..."
+    ui_print "- Signing boot image..."
     eval $COMMAND | $BOOTSIGNER /boot $1 $AVB/verity.pk8 $AVB/verity.x509.pem boot-new-signed.img
-    ui_print "   Flashing new boot image..."
+    ui_print "- Flashing new boot image..."
     $BLOCK && dd if=/dev/zero of="$2" 2>/dev/null
     dd if=boot-new-signed.img of="$2"
   elif $BLOCK; then
-    ui_print "   Flashing new boot image..."
+    ui_print "- Flashing new boot image..."
     eval $COMMAND | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
   else
-    ui_print "   Storing new boot image..."
+    ui_print "- Storing new boot image..."
     eval $COMMAND | dd of="$2" bs=4096 2>/dev/null
   fi
 }
@@ -160,28 +160,47 @@ api_level_arch_detect() {
   if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
 }
 
+setup_bb() {
+  local BB=$INSTALLER/common/unityfiles/$ARCH32/busybox
+  chmod 755 $BB
+  mkdir -p $TMPDIR/bin
+  ln -s $BB $TMPDIR/bin/busybox
+  $BB --install -s $TMPDIR/bin
+  export PATH=$TMPDIR/bin:$PATH
+}
+
+recovery_actions() {
+  # TWRP bug fix
+  mount -o bind /dev/urandom /dev/random
+  # Preserve environment varibles
+  OLD_PATH=$PATH
+  . $INSTALLER/common/unityfiles/busybox.sh
+  setup_bb
+  # Temporarily block out all custom recovery binaries/libs
+  mv /sbin /sbin_tmp
+  # Unset library paths
+  OLD_LD_LIB=$LD_LIBRARY_PATH
+  OLD_LD_PRE=$LD_PRELOAD
+  unset LD_LIBRARY_PATH
+  unset LD_PRELOAD
+}
+
 recovery_cleanup() {
   mv /sbin_tmp /sbin 2>/dev/null
   [ -z $OLD_PATH ] || export PATH=$OLD_PATH
   [ -z $OLD_LD_LIB ] || export LD_LIBRARY_PATH=$OLD_LD_LIB
   [ -z $OLD_LD_PRE ] || export LD_PRELOAD=$OLD_LD_PRE
   ui_print "- Unmounting partitions"
+  [ "$supersuimg" -o -d /su ] && umount /su 2>/dev/null
   umount -l /system_root 2>/dev/null
   umount -l /system 2>/dev/null
   umount -l /vendor 2>/dev/null
   umount -l /dev/random 2>/dev/null
 }
 
-unmount_partitions() {
-  [ "$supersuimg" -o -d /su ] && umount /su 2>/dev/null
-  umount -l /system_root 2>/dev/null
-  umount -l /system 2>/dev/null
-  umount -l /vendor 2>/dev/null
-}
-
 abort() {
   ui_print "$1"
-  unmount_partitions
+  recovery_cleanup
   exit 1
 }
 
@@ -265,14 +284,14 @@ require_new_api() {
 
 cleanup() {
   if $RAMDISK; then
-    ui_print "   Repacking ramdisk..."
+    ui_print "- Repacking ramdisk"
     cd $RD
     find . | cpio -H newc -o > ../ramdisk.cpio
     cd ..
-    ui_print "   Repacking boot image..."
-    ./magiskboot --repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
+    ui_print "- Repacking boot image"
+    magiskboot --repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
     $CHROMEOS && sign_chromeos
-    ./magiskboot --cleanup
+    magiskboot --cleanup
     flash_boot_image_unity new-boot.img "$BOOTIMAGE"
     rm -f new-boot.img
     cd /
@@ -288,8 +307,7 @@ cleanup() {
     ui_print "    *      Powered by Magisk (@topjohnwu)     *"
     ui_print "    *******************************************"
   else
-    ui_print "   Unmounting partitions..."
-    unmount_partitions
+    recovery_cleanup
     rm -rf $TMPDIR
   fi
   ui_print " "
@@ -491,16 +509,18 @@ unpack_ramdisk() {
   else
     PRE="-"; POST=""
   fi
-  BOOTDIR=$INSTALLER/common/unityfiles/boot
   AVB=$INSTALLER/common/unityfiles/avb
+  CHROMEDIR=$INSTALLER/common/unityfiles/chromeos
+  BOOTDIR=$INSTALLER/common/unityfiles/boot
   RD=$BOOTDIR/ramdisk
+  ln -s $INSTALLER/common/unityfiles/$ARCH32/magiskboot $INSTALLER/common/unityfiles/$ARCH32/magiskinit $TMPDIR/bin
+  chmod 0755 $TMPDIR/bin/magiskboot $TMPDIR/bin/magiskinit
+  cp -af $CHROMEDIR $BOOTDIR
+  chmod -R 0755 $BOOTDIR
   INFORD="$RD/$MODID-files"
   BOOTSIGNER="/system/bin/dalvikvm -Xbootclasspath:/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/bouncycastle.jar -Xnodex2oat -Xnoimage-dex2oat -cp $AVB/BootSignature_Android.jar com.android.verity.BootSignature"
   RAMDISK=true; BOOTSIGNED=false; HIGHCOMP=false; CHROMEOS=false
   mkdir -p $RD
-  cp -af $INSTALLER/common/unityfiles/$ARCH32/. $CHROMEDIR $BOOTDIR
-  chmod -R 755 $BOOTDIR
-  cp -af $BOOTDIR/magiskboot $RD/magiskboot
   find_boot_image
   ui_print " "
   [ -z $BOOTIMAGE ] && abort "   ! Unable to detect target image"
@@ -510,9 +530,9 @@ unpack_ramdisk() {
   eval $BOOTSIGNER -verify boot.img 2>&1 | grep "VALID" && BOOTSIGNED=true
   $BOOTSIGNED && ui_print "   Boot image is signed with AVB 1.0"
   rm -f boot.img
-  ./magiskinit -x magisk magisk
+  magiskinit -x magisk magisk
   ui_print "$PRE Unpacking boot image$POST"
-  ./magiskboot --unpack "$BOOTIMAGE"
+  magiskboot --unpack "$BOOTIMAGE"
   case $? in
     1 ) abort "  ! Unable to unpack boot image";;
     2 ) HIGHCOMP=true;;
@@ -521,15 +541,14 @@ unpack_ramdisk() {
     5 ) ui_print "   ! Sony ELF64 format detected" abort "   ! Stock kernel cannot be patched, please use a custom kernel";;
   esac
   ui_print "$PRE Checking ramdisk status$POST"
-  ./magiskboot --cpio ramdisk.cpio test
+  magiskboot --cpio ramdisk.cpio test
   if [ $? -eq 2 ]; then
     HIGHCOMP=true
     ui_print "   ! Insufficient boot partition size detected"
     ui_print "   Enabling high compression mode"
   fi
   cd ramdisk
-  ./magiskboot --cpio ../ramdisk.cpio "extract"
-  rm -f magiskboot ../ramdisk.cpio
+  magiskboot --cpio ../ramdisk.cpio "extract"
   cd /
   [ "$POST" ] && ui_print " "
 }
