@@ -160,7 +160,7 @@ api_level_arch_detect() {
   if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
 }
 
-setup_bb() { 
+setup_bb() {
   if [ -x /sbin/.core/busybox/busybox ]; then
     # Make sure this path is in the front
     echo $PATH | grep -q '^/sbin/.core/busybox' || export PATH=/sbin/.core/busybox:$PATH
@@ -178,7 +178,6 @@ recovery_actions() {
   mount -o bind /dev/urandom /dev/random
   # Preserve environment varibles
   OLD_PATH=$PATH
-  . $INSTALLER/common/unityfiles/busybox.sh
   setup_bb
   # Temporarily block out all custom recovery binaries/libs
   mv /sbin /sbin_tmp
@@ -204,7 +203,7 @@ recovery_cleanup() {
 
 abort() {
   ui_print "$1"
-  recovery_cleanup
+  $BOOTMODE || recovery_cleanup
   exit 1
 }
 
