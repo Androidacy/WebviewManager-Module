@@ -436,6 +436,7 @@ script_type() {
 
 set_vars() {
   SYS=/system
+  ROOTTYPE="MagiskSU"
   if [ -d /system/priv-app ]; then OLDAPP=false; else OLDAPP=true; fi
   if $BOOTMODE; then
     MOD_VER="/sbin/.core/img/$MODID/module.prop"

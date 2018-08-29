@@ -118,8 +118,8 @@ unity_install() {
   [ -f "$INSTALLER/common/install.sh" ] && . $INSTALLER/common/install.sh
 
   # INSTALL SCRIPTS
+  ui_print "   Installing scripts for $ROOTTYPE..."
   if $MAGISK; then
-    ui_print "   Installing scripts for MagiskSU..."
     # AUTO MOUNT
     $AUTOMOUNT && ! $SYSOVERRIDE && mktouch $MODPATH/auto_mount
     # UPDATE INFO FOR MAGISK MANAGER
@@ -127,9 +127,11 @@ unity_install() {
       mktouch /sbin/.core/img/$MODID/update
       cp_ch -n $INSTALLER/module.prop $MODPATH/module.prop
     fi
-  else
-    ui_print "   Installing scripts for $ROOTTYPE..."
-    [ "$ROOTTYPE" == "LineageOS SU" -o "$ROOTTYPE" == "other root or rootless" ] && { ui_print " "; ui_print "   ! This root method has no boot script support !"; ui_print "   ! You will need to add init.d support !"; ui_print " "; }
+  elif [ "$ROOTTYPE" == "LineageOS SU" ] || [ "$ROOTTYPE" == "other root or rootless" ]; then
+    ui_print " "
+    ui_print "   ! This root method has no boot script support !"
+    ui_print "   ! You will need to add init.d support !"
+    ui_print " "
   fi
   if $MAGISK && $SYSOVERRIDE; then
     cp -f $INSTALLER/common/unityfiles/modidsysover.sh $INSTALLER/common/unityfiles/$MODID-sysover.sh
@@ -192,7 +194,7 @@ unity_install() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
-    [ "$RD" ] || unpack_ramdisk "late"
+    [ -d "$RD" ] || unpack_ramdisk "late"
     # REMOVE RAMDISK MOD IF EXISTS
     if [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ]; then
       ui_print "   ! Mod detected in ramdisk!"
@@ -235,7 +237,7 @@ unity_uninstall() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
-    [ -z $RD ] && unpack_ramdisk "late"
+    [ -d "$RD" ] || unpack_ramdisk "late"
     uninstall_files $INFORD
     sed -i "/#$MODID-UnityIndicator/d" $RD/init.rc
     [ -f "$INSTALLER/common/ramdiskuninstall.sh" ] && . $INSTALLER/common/ramdiskuninstall.sh
