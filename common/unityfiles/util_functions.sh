@@ -474,7 +474,7 @@ set_vars() {
 }
 
 uninstall_files() {
-  local FILE="$1"
+  local TMP FILE="$1"
   if [ "$1" == "$INFO" ]; then
     $BOOTMODE && [ -f /sbin/.core/img/$MODID/$MODID-files ] && FILE=/sbin/.core/img/$MODID/$MODID-files
     TMP=".bak"
