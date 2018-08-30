@@ -52,11 +52,11 @@ if [ "$?" -eq "0" ]; then
   for FD in `ls /proc/$$/fd`; do
     readlink /proc/$$/fd/$FD 2>/dev/null | grep pipe >/dev/null
     if [ "$?" -eq "0" ]; then
-    ps | grep " 3 $FD " | grep -v grep >/dev/null
-    if [ "$?" -eq "0" ]; then
-      OUTFD=$FD
-      break
-    fi
+      ps | grep " 3 $FD " | grep -v grep >/dev/null
+      if [ "$?" -eq "0" ]; then
+        OUTFD=$FD
+        break
+      fi
     fi
   done
 fi
@@ -277,7 +277,7 @@ api_level_arch_detect
 
 if $MAGISK; then
   # SETUP BUSYBOX AND BINARIES
-  $BOOTMODE && boot_actions || recovery_actions
+  $BOOTMODE && boot_actions || { recovery_actions; [ -z $OLD_PATH ] && { OLD_PATH=$PATH; setup_bb; }; }
   # GET THE VARIABLE REQSIZEM
   request_zip_size_check "$ZIP"
   # THIS FUNCTION WILL MOUNT $IMG TO $MOUNTPATH, AND RESIZE THE IMAGE BASED ON $REQSIZEM
