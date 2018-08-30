@@ -74,6 +74,7 @@ ui_print() {
 ui_print " "
 ui_print "Unzipping files..."
 unzip -o "$ZIP" -d $INSTALLER 2>/dev/null
+tar -xf $INSTALLER/common/unityfiles/tools.tar.xz -C $INSTALLER/common/unityfiles 2>/dev/null
 
 [ ! -f $INSTALLER/config.sh ] && { ui_print "! Unable to extract zip file !"; exit 1; }
 
