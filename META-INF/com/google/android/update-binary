@@ -83,6 +83,7 @@ unzip -o "$ZIP" -d $INSTALLER 2>/dev/null
 [ "$(grep_prop id $INSTALLER/module.prop)" == "UnityTemplate" ] && { ui_print "! Unity Template is not a separate module !"; abort "! This template is for devs only !"; }
 
 # INSERT MODULE INFO INTO CONFIG.SH
+(
 for TMP in version name author; do
   NEW=$(grep_prop $TMP $INSTALLER/module.prop)
   [ "$TMP" == "author" ] && NEW="by ${NEW}"
@@ -95,6 +96,7 @@ for TMP in version name author; do
   fi
   if [ $(((41-$CHARS) % 2)) == 1 ]; then sed -i "s/<$TMP>/$SPACES$NEW${SPACES} /" $INSTALLER/config.sh; else sed -i "s/<$TMP>/$SPACES$NEW$SPACES/" $INSTALLER/config.sh; fi
 done
+)
 
 . $INSTALLER/config.sh
 
