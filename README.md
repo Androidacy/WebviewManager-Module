@@ -12,6 +12,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * Improve how unity handles ramdisk stuff
 * Modify install_script function so it can be used by devs - see OP on xda for details
 * Need busybox for ramdisk stuff - note that since busybox is now bundled into unity, you can use it with any of your mods (it replaces sbin in path like magisk does so you can call it like any binary)
+* Compress unity tools to save space (cut size in ~half)
 * Fix debug in magisk manager
 * Misc bug fixes and improvements
 
