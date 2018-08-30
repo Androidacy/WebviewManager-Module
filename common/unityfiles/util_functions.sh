@@ -266,7 +266,7 @@ require_new_magisk() {
   ui_print "*******************************"
   ui_print " Please install Magisk $(echo $MINMAGISK | sed -r "s/(.{2})(.{1}).*/v\1.\2+\!/") "
   ui_print "*******************************"
-  exit 1
+  abort
 }
 
 require_new_api() {
@@ -282,7 +282,7 @@ require_new_api() {
     ui_print "!    of android with at most API $MAXAPI"
   fi
   ui_print "***********************************"
-  exit 1
+  abort
 }
 
 cleanup() {
