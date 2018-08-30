@@ -100,6 +100,15 @@ done
 
 . $INSTALLER/config.sh
 
+#DEBUG
+if $DEBUG; then
+  ui_print " "
+  ui_print "- Debug mode"
+  ui_print "  Debug log will be written to: /sdcard/$MODID-debug.log"
+  if $BOOTMODE; then exec 2>/storage/emulated/0/$MODID-debug.log; else exec 2>/data/media/0/$MODID-debug.log; fi
+  set -x
+fi
+
 # PRINT MOD NAME
 print_modname
 
@@ -318,23 +327,6 @@ done
 
 # UNPACK RAMDISK
 $RAMDISK && unpack_ramdisk
-
-#DEBUG
-if $DEBUG; then
-  if $BOOTMODE; then
-    ui_print " "
-    ui_print "- Debug mode"
-    ui_print "  Debug info will be written to magisk log"
-    ui_print "  Save log in magisk manager after flashing!"
-    sleep 3
-  else
-    ui_print " "
-    ui_print "- Debug mode"
-    ui_print "  Debug log will be written to: /sdcard/$MODID-debug.log"
-    exec 3>&1 1>&2 2>&3 2>/data/media/0/$MODID-debug.log
-  fi
-  set -x
-fi
 
 # LOAD USER VARS/FUNCTIONS
 unity_custom
