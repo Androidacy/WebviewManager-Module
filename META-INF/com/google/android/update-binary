@@ -252,7 +252,7 @@ if [ -f /data/adb/magisk/util_functions.sh ]; then
 elif [ -f /data/magisk/util_functions.sh ]; then
   MAGISKBIN=/data/magisk
 fi
-IMG=$(dirname $MAGISKBIN)/magisk.img
+if $BOOTMODE; then IMG=/data/adb/magisk_merge.img; else IMG=$(dirname $MAGISKBIN)/magisk.img; fi
 
 if [ -z $MAGISKBIN ]; then
   MAGISK=false
