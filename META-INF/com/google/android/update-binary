@@ -18,11 +18,7 @@ $BOOTMODE || id | grep -q 'uid=0' || BOOTMODE=true
 # TEMP INSTALLER PATH
 TMPDIR=/dev/tmp
 INSTALLER=$TMPDIR/install
-
-# MAGISK PATHS
-MAGISKBIN=/data/adb/magisk
 MOUNTPATH=$TMPDIR/magisk_img
-$BOOTMODE && IMG=/data/adb/magisk_merge.img
 
 # OTHER VARIABLES
 ZIP=$3
@@ -44,22 +40,27 @@ umask 022
 rm -rf $TMPDIR 2>/dev/null
 mkdir -p $INSTALLER
 
+
 # GET OUTFD
-OUTFD=$2
-readlink /proc/$$/fd/$OUTFD 2>/dev/null | grep /tmp >/dev/null
-if [ "$?" -eq "0" ]; then
-  OUTFD=0
-  for FD in `ls /proc/$$/fd`; do
-    readlink /proc/$$/fd/$FD 2>/dev/null | grep pipe >/dev/null
-    if [ "$?" -eq "0" ]; then
-      ps | grep " 3 $FD " | grep -v grep >/dev/null
-      if [ "$?" -eq "0" ]; then
-        OUTFD=$FD
-        break
+setup_flashable() {
+  # Preserve environment varibles
+  OLD_PATH=$PATH
+  setup_bb
+  if [ -z $OUTFD ] || readlink /proc/$$/fd/$OUTFD | grep -q /tmp; then
+    # We will have to manually find out OUTFD
+    for FD in `ls /proc/$$/fd`; do
+      if readlink /proc/$$/fd/$FD | grep -q pipe; then
+        if ps | grep -v grep | grep -q " 3 $FD "; then
+          OUTFD=$FD
+          break
+        fi
       fi
-    fi
-  done
-fi
+    done
+  fi
+}
+
+OUTFD=$2
+$BOOTMODE || setup_flashable
 
 # NEED THIS LOADED BEFORE UTIL_FUNCTIONS
 ui_print() {
@@ -253,20 +254,24 @@ unity_uninstall() {
 ##########################################################################################
 # (UN)INSTALL
 ##########################################################################################
-
 # CHECK FOR OLD MAGISK, DETERMINE IF SYSTEM INSTALL OR MAGISK INSTALL, CHECK MAGISK VERSION (IF APPLICABLE)
 MINMAGISK=$(grep_prop minMagisk $INSTALLER/module.prop)
-if [ ! -d $MAGISKBIN ] && [ ! -d /data/magisk ]; then
+if [ -f /data/adb/magisk/util_functions.sh ]; then
+  MAGISKBIN=/data/adb/magisk
+elif [ -f /data/magisk/util_functions.sh ]; then
+  MAGISKBIN=/data/magisk
+fi
+IMG=$(dirname $MAGISKBIN)/magisk.img
+
+if [ -z $MAGISKBIN ]; then
   MAGISK=false
   ui_print "- System install detected"
-elif [ ! -f $MAGISKBIN/util_functions.sh ]; then
-  require_new_magisk
 else
   ui_print "- Magisk install detected"
   cp -f $MAGISKBIN/util_functions.sh $INSTALLER/common/unityfiles/util_functions_mag.sh
   if $SYSOVERRIDE; then
     ui_print "- Overriding paths for system install"
-    $BOOTMODE && { ui_print "   ! Magisk manager isn't supported!"; abort "   ! Install in TWRP !"; }
+    $BOOTMODE && { ui_print "   ! Magisk manager isn't supported!"; abort "   ! Install in recovery !"; }
     sed -i "s/-o ro/-o rw/g" $INSTALLER/common/unityfiles/util_functions_mag.sh
     sysover_partitions
   fi
@@ -280,7 +285,7 @@ api_level_arch_detect
 
 if $MAGISK; then
   # SETUP BUSYBOX AND BINARIES
-  $BOOTMODE && boot_actions || { recovery_actions; [ -z $OLD_PATH ] && { OLD_PATH=$PATH; setup_bb; }; }
+  $BOOTMODE && boot_actions || recovery_actions
   # GET THE VARIABLE REQSIZEM
   request_zip_size_check "$ZIP"
   # THIS FUNCTION WILL MOUNT $IMG TO $MOUNTPATH, AND RESIZE THE IMAGE BASED ON $REQSIZEM
