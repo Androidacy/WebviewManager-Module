@@ -9,6 +9,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 ## Change Log
 ### v1.7 - 9.2.2018
 * Updated to new magisk module template - only compatible with magisk 17 and newer now
+* Fix old BOOTMODE bug - rework busybox logic
 
 ### v1.6.1 - 8.30.2018
 * Fix/improve cp_ch functions. Combine cp_ch, cp_ch_nb, and check_bak into cp_ch function - see OP on xda for how it works
