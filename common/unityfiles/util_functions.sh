@@ -103,17 +103,20 @@ find_boot_image() {
 }
 
 flash_boot_image_unity() {
-  local COMMAND BLOCK
   # Make sure all blocks are writable
   magisk --unlock-blocks 2>/dev/null
   case "$1" in
-    *.gz) COMMAND="gzip -d < '$1'";;
-    *)    COMMAND="cat '$1'";;
+    *.gz) local COMMAND="magiskboot --decompress '$1' - 2>/dev/null";;
+    *)    local COMMAND="cat '$1'";;
   esac
-  case "$2" in
-    /dev/block/*) BLOCK=true;;
-    *) BLOCK=false;;
-  esac
+  if [ -b "$2" ]; then
+    local BLOCK=true
+    local s_size=`stat -c '%s' "$1"`
+    local t_size=`blockdev --getsize64 "$2"`
+    [ $s_size -gt $t_size ] && return 1
+  else
+    local BLOCK=false
+  fi
   if $BOOTSIGNED; then
     ui_print "- Signing boot image"
     eval $COMMAND | $BOOTSIGNER /boot $1 $INSTALLER/common/unityfiles/avb/verity.pk8 $INSTALLER/common/unityfiles/avb/verity.x509.pem boot-new-signed.img
@@ -124,9 +127,10 @@ flash_boot_image_unity() {
     ui_print "- Flashing new boot image"
     eval $COMMAND | cat - /dev/zero 2>/dev/null | dd of="$2" bs=4096 2>/dev/null
   else
-    ui_print "- Storing new boot image"
+    ui_print "- Not block device, storing image"
     eval $COMMAND | dd of="$2" bs=4096 2>/dev/null
   fi
+  return 0
 }
 
 sign_chromeos() {
@@ -161,24 +165,16 @@ api_level_arch_detect() {
 }
 
 setup_bb() {
-  if [ -x /sbin/.core/busybox/busybox ]; then
-    # Make sure this path is in the front
-    echo $PATH | grep -q '^/sbin/.core/busybox' || export PATH=/sbin/.core/busybox:$PATH
-  else
-    # Use in-house busybox
-    local BBDIR=$INSTALLER/common/unityfiles/$ARCH32
-    chmod 755 $BBDIR/busybox
-    $BBDIR/busybox --install -s .
-    echo $PATH | grep -q "^$BBDIR" || export PATH=$BBDIR:$PATH
-  fi
+  # Use in-house busybox
+  local BBDIR=$INSTALLER/common/unityfiles/$ARCH32
+  chmod 755 $BBDIR/busybox
+  $BBDIR/busybox --install -s .
+  echo $PATH | grep -q "^$BBDIR" || export PATH=$BBDIR:$PATH
 }
 
 recovery_actions() {
   # TWRP bug fix
   mount -o bind /dev/urandom /dev/random
-  # Preserve environment varibles
-  OLD_PATH=$PATH
-  setup_bb
   # Temporarily block out all custom recovery binaries/libs
   mv /sbin /sbin_tmp
   # Unset library paths
@@ -295,7 +291,7 @@ cleanup() {
     magiskboot --repack "$BOOTIMAGE" || abort "! Unable to repack boot image!"
     $CHROMEOS && sign_chromeos
     magiskboot --cleanup
-    flash_boot_image_unity new-boot.img "$BOOTIMAGE"
+    flash_boot_image_unity new-boot.img "$BOOTIMAGE" || abort "! Insufficient partition size"
     rm -f new-boot.img
     cd /
   fi
