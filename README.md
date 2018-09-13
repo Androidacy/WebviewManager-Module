@@ -7,6 +7,9 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.7.1 - x.xx.2018
+* Fix bug with ramdisk file copying
+
 ### v1.7 - 9.2.2018
 * Updated to new magisk module template - only compatible with magisk 17 and newer now
 * Fix old BOOTMODE bug - rework busybox logic
