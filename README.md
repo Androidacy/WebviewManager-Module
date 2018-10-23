@@ -7,6 +7,11 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.7.2 - 10.23.2018
+* Fix dynamicoreo for lib64
+* Update magisk binaries to 17.3 for pixel 3 support
+* Fix bug with ramdisk uninstall
+
 ### v1.7.1 - 9.20.2018
 * Fix bug with ramdisk file copying
 
