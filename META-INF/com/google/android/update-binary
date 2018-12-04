@@ -28,6 +28,7 @@ DYNAMICAPP=false
 SYSOVERRIDE=false
 RAMDISK=false
 DEBUG=false
+INITD=false
 case $(basename $ZIP) in
   *debug*|*Debug*|*DEBUG*) DEBUG=true;;
   *sysover*|*Sysover*|*SYSOVER*) SYSOVERRIDE=true;;
@@ -111,6 +112,28 @@ unity_install() {
 
   # RUN USER INSTALL SCRIPT
   [ -f "$INSTALLER/common/install.sh" ] && . $INSTALLER/common/install.sh
+  
+  # SEPOLICY
+  if $SEPOLICY; then
+    [ "$SEINJECT" == "sepolicy-inject" ] && unpack_ramdisk -s
+    if [ "$SEINJECT" == "sepolicy-inject" ] && ! $INITD; then
+      ui_print "   Patching sepolicy..."; ui_print " "
+    else
+      LATESTARTSERVICE=true
+    fi
+    sed -i '/^#.*/d' $INSTALLER/common/sepolicy.sh
+    while read LINE; do
+      if [ "$SEINJECT" != "sepolicy-inject" ]; then
+        LINE=$(echo $LINE | sed -r -e "s|(^.* )(.*$)|$SEINJECT --live \"\1 { \2 }\"|" -e "s/,/ /g")
+        echo $LINE >> $INSTALLER/common/service.sh
+      elif $INITD; then
+        LINE=$(echo $LINE | sed -r "s|(^.* )(.* )(.* )(.* )(.*$)|$SEINJECT \1-s \2-t \3 -c \4 -p \5 -l|")
+      else
+        LINE=$(echo $LINE | sed -r -e "s|(^.* )(.*$)|magiskpolicy --load $RD/sepolicy --save $RD/sepolicy \"\1 { \2 }\"|" -e "s/,/ /g")
+        $LINE
+      fi
+    done < $INSTALLER/common/sepolicy.sh
+  fi
 
   # INSTALL SCRIPTS
   ui_print "   Installing scripts for $ROOTTYPE..."
@@ -122,11 +145,8 @@ unity_install() {
       mktouch /sbin/.core/img/$MODID/update
       cp_ch -n $INSTALLER/module.prop $MODPATH/module.prop
     fi
-  elif [ "$ROOTTYPE" == "LineageOS SU" ] || [ "$ROOTTYPE" == "other root or rootless" ]; then
-    ui_print " "
-    ui_print "   ! This root method has no boot script support !"
-    ui_print "   ! You will need to add init.d support !"
-    ui_print " "
+  elif [ "$SEINJECT" == "sepolicy-inject" ] && ($POSTFSDATA || $LATESTARTSERVICE); then
+    initd_message
   fi
   if $MAGISK && $SYSOVERRIDE; then
     cp -f $INSTALLER/common/unityfiles/modidsysover.sh $INSTALLER/common/unityfiles/$MODID-sysover.sh
@@ -189,7 +209,7 @@ unity_install() {
   
   # RAMDISK PATCHES
   if $RAMDISK; then
-    [ -d "$RD" ] || unpack_ramdisk "late"
+    [ -d "$RD" ] || unpack_ramdisk -l
     # REMOVE RAMDISK MOD IF EXISTS
     if [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ]; then
       ui_print "   ! Mod detected in ramdisk!"
@@ -221,7 +241,7 @@ unity_install() {
 unity_uninstall() {
   ui_print " "
   ui_print "- Uninstalling"
-  
+
   # REMOVE FILES
   uninstall_files $INFO
 
@@ -231,8 +251,12 @@ unity_uninstall() {
   [ -f "$INSTALLER/common/uninstall.sh" ] && . $INSTALLER/common/uninstall.sh
   
   # RAMDISK PATCHES
-  if $RAMDISK; then
-    [ -d "$RD" ] || unpack_ramdisk "late"
+  if $RAMDISK || $SEPOLICY; then
+    [ -d "$RD" ] || { if $SEPOLICY; then
+      unpack_ramdisk -s
+    else
+      unpack_ramdisk -l
+    fi; }
     uninstall_files $INFORD
     sed -i "/#$MODID-UnityIndicator/d" $RD/init.rc
     [ -f "$INSTALLER/common/ramdiskuninstall.sh" ] && . $INSTALLER/common/ramdiskuninstall.sh
@@ -329,7 +353,7 @@ fi
 unity_custom
 
 # UNPACK RAMDISK IF CHANGED TO TRUE IN UNITY_CUSTOM
-$RAMDISK && [ ! -d "$RD" ] && unpack_ramdisk "late"
+$RAMDISK && [ ! -d "$RD" ] && unpack_ramdisk -l
 
 # DETERMINE MOD INSTALLATION STATUS
 if $RAMDISK && [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ] && [ ! -f "$MOD_VER" ]; then
