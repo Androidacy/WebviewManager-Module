@@ -128,6 +128,7 @@ unity_install() {
         echo $LINE >> $INSTALLER/common/service.sh
       elif $INITD; then
         LINE=$(echo $LINE | sed -r "s|(^.* )(.* )(.* )(.* )(.*$)|$SEINJECT \1-s \2-t \3 -c \4 -p \5 -l|")
+        echo $LINE >> $INSTALLER/common/service.sh
       else
         LINE=$(echo $LINE | sed -r -e "s|(^.* )(.*$)|magiskpolicy --load $RD/sepolicy --save $RD/sepolicy \"\1 { \2 }\"|" -e "s/,/ /g")
         $LINE
