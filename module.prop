@@ -1,8 +1,8 @@
 id=UnityTemplate
 name=Unity (Un)Installer Template
-version=v1.7.3
+version=v1.8
 versionCode=16
 author=ahrion, zackptg5
 description=
 support=https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612
-minMagisk=17000
+minMagisk=18000
