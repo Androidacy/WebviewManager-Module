@@ -112,23 +112,19 @@ unity_install() {
   
   # SEPOLICY
   if $SEPOLICY; then
-    [ "$SEINJECT" == "sepolicy-inject" ] && unpack_ramdisk -s
-    if [ "$SEINJECT" == "sepolicy-inject" ] && ! $INITD; then
+    [ "$MODPATH" == "/system/etc/init.d" ] && unpack_ramdisk -s
+    if [ "$MODPATH" == "/system/etc/init.d" ] && ! $INITD; then
       ui_print "   Patching sepolicy..."; ui_print " "
     else
       LATESTARTSERVICE=true
+      echo -n "supolicy --live" >> $INSTALLER/common/service.sh
     fi
     sed -i '/^#.*/d' $INSTALLER/common/sepolicy.sh
     while read LINE; do
-      if [ "$SEINJECT" != "sepolicy-inject" ]; then
-        LINE=$(echo $LINE | sed -r -e "s|(^.* )(.*$)|$SEINJECT --live \"\1 { \2 }\"|" -e "s/,/ /g")
-        echo $LINE >> $INSTALLER/common/service.sh
-      elif $INITD; then
-        LINE=$(echo $LINE | sed -r "s|(^.* )(.* )(.* )(.* )(.*$)|$SEINJECT \1-s \2-t \3 -c \4 -p \5 -l|")
-        echo $LINE >> $INSTALLER/common/service.sh
+      if [ "$MODPATH" != "/system/etc/init.d" ] || $INITD; then
+        echo -n " \"$LINE\"" >> $INSTALLER/common/service.sh        
       else
-        LINE=$(echo $LINE | sed -r -e "s|(^.* )(.*$)|magiskpolicy --load $RD/sepolicy --save $RD/sepolicy \"\1 { \2 }\"|" -e "s/,/ /g")
-        $LINE
+        magiskpolicy --load $RD/sepolicy --save $RD/sepolicy "$LINE"
       fi
     done < $INSTALLER/common/sepolicy.sh
   fi
