@@ -119,10 +119,10 @@ unity_install() {
       LATESTARTSERVICE=true
       echo -n "supolicy --live" >> $INSTALLER/common/service.sh
     fi
-    sed -i '/^#.*/d' $INSTALLER/common/sepolicy.sh
+    sed -i -e '/^#.*/d' -e '/^$/d' $INSTALLER/common/sepolicy.sh
     while read LINE; do
       if [ "$MODPATH" != "/system/etc/init.d" ] || $INITD; then
-        echo -n " \"$LINE\"" >> $INSTALLER/common/service.sh        
+        echo -n " \"$LINE\"" >> $INSTALLER/common/service.sh
       else
         magiskpolicy --load $RD/sepolicy --save $RD/sepolicy "$LINE"
       fi
