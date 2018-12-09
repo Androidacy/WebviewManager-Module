@@ -7,6 +7,9 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v1.8.2 12.x.2018
+* Fixed boot img mounting but on uninstall
+
 ### v1.8.1 12.9.2018
 * Got rid of sepolicy-inject support (init.d injector uses magiskpolicy now)
 * Above means that all sepolicy statements should be crafted like the typical magisk/superu one - see support thread for usage

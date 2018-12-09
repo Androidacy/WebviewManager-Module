@@ -245,12 +245,8 @@ unity_uninstall() {
   [ -f "$INSTALLER/common/uninstall.sh" ] && . $INSTALLER/common/uninstall.sh
   
   # RAMDISK PATCHES
-  if $RAMDISK || $SEPOLICY; then
-    [ -d "$RD" ] || { if $SEPOLICY; then
-      unpack_ramdisk -s
-    else
-      unpack_ramdisk -l
-    fi; }
+  if $RAMDISK; then
+    [ -d "$RD" ] || unpack_ramdisk -l
     uninstall_files $INFORD
     sed -i "/#$MODID-UnityIndicator/d" $RD/init.rc
     [ -f "$INSTALLER/common/ramdiskuninstall.sh" ] && . $INSTALLER/common/ramdiskuninstall.sh
