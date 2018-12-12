@@ -7,98 +7,11 @@
 ##########################################################################################
 
 ##########################################################################################
-# PREP WORK
+# FUNCTIONS
 ##########################################################################################
-
-# PRELIMINARY DETECTION OF BOOTMODE
-ps | grep zygote | grep -qv grep >/dev/null && BOOTMODE=true || BOOTMODE=false
-$BOOTMODE || ps -A 2>/dev/null | grep zygote | grep -qv grep >/dev/null && BOOTMODE=true
-
-# TEMP INSTALLER PATH
-TMPDIR=/dev/tmp; INSTALLER=$TMPDIR/install; MOUNTPATH=$TMPDIR/magisk_img
-NVBASE=/data/adb; MAGISKBIN=$NVBASE/magisk; MAGISKTMP=/sbin/.magisk
-if $BOOTMODE; then IMG=$NVBASE/magisk_merge.img; else IMG=$NVBASE/magisk.img; fi
-SYSOVERRIDE=false; DEBUG=false; DYNAMICOREO=false; DYNAMICAPP=false; RAMDISK=false; SEPOLICY=false
-OUTFD=$2; ZIP=$3
-OIFS=$IFS; IFS=\|; 
-case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
-  *debug*) DEBUG=true;;
-  *sysover*) SYSOVERRIDE=true;;
-esac
-IFS=$OIFS
-
-# DEFAULT PERMISSIONS
-umask 022
-
-# INITIAL CLEANUP
-rm -rf $TMPDIR 2>/dev/null
-mkdir -p $INSTALLER
-
-# GET OUTFD
-if [ -z $OUTFD ] || readlink /proc/$$/fd/$OUTFD | grep -q /tmp; then
-  # We will have to manually find out OUTFD
-  for FD in `ls /proc/$$/fd`; do
-    if readlink /proc/$$/fd/$FD | grep -q pipe; then
-      if ps | grep -v grep | grep -q " 3 $FD "; then
-        OUTFD=$FD
-        break
-      fi
-    fi
-  done
-fi
-
-# NEEDED BEFORE UTIL_FUNCTIONS IS LOADED
 ui_print() {
   $BOOTMODE && echo "$1" || echo -e "ui_print $1\nui_print" >> /proc/self/fd/$OUTFD
 }
-
-##########################################################################################
-# SETUP (UN)/INSTALL
-##########################################################################################
-
-# UNZIP FILES
-ui_print " "
-ui_print "Unzipping files..."
-unzip -oq "$ZIP" -d $INSTALLER 2>/dev/null
-[ ! -f $INSTALLER/config.sh ] && { ui_print "! Unable to extract zip file !"; exit 1; }
-
-# LOAD FUNCTIONS
-tar -xf $INSTALLER/common/unityfiles.tar.xz -C $INSTALLER/common 2>/dev/null
-. $INSTALLER/common/unityfiles/util_functions.sh
-setup_flashable
-
-[ "$(grep_prop id $INSTALLER/module.prop)" == "UnityTemplate" ] && { ui_print "! Unity Template is not a separate module !"; abort "! This template is for devs only !"; }
-
-# INSERT MODULE INFO INTO CONFIG.SH
-(
-for TMP in version name author; do
-  NEW=$(grep_prop $TMP $INSTALLER/module.prop)
-  [ "$TMP" == "author" ] && NEW="by ${NEW}"
-  CHARS=$((${#NEW}-$(echo "$NEW" | tr -cd "©®™" | wc -m)))
-  SPACES=""
-  if [ $CHARS -le 41 ]; then
-    for i in $(seq $(((41-$CHARS) / 2))); do
-      SPACES="${SPACES} "
-    done
-  fi
-  if [ $(((41-$CHARS) % 2)) == 1 ]; then sed -i "s/<$TMP>/$SPACES$NEW${SPACES} /" $INSTALLER/config.sh; else sed -i "s/<$TMP>/$SPACES$NEW$SPACES/" $INSTALLER/config.sh; fi
-done
-)
-
-. $INSTALLER/config.sh
-
-[ -z $MODID ] && MODID=`grep_prop id $INSTALLER/module.prop`
-MODPATH=$MOUNTPATH/$MODID
-MINMAGISK=$(grep_prop minMagisk $INSTALLER/module.prop)
-
-# PRINT MOD NAME
-print_modname
-
-# MOUNT DATA AND CACHE
-ui_print "- Mounting /data, /cache"
-is_mounted /data || mount /data || is_mounted /cache || mount /cache || { ui_print "! Unable to mount partitions"; exit 1; }
-
-# INSTALL
 unity_install() {
   ui_print " "
   ui_print "- Installing"
@@ -122,7 +35,12 @@ unity_install() {
     sed -i -e '/^#.*/d' -e '/^$/d' $INSTALLER/common/sepolicy.sh
     while read LINE; do
       if [ "$MODPATH" != "/system/etc/init.d" ] || $INITD; then
-        echo -n " \"$LINE\"" >> $INSTALLER/common/service.sh
+        case $LINE in
+          \"*\") echo -n " $LINE" >> $INSTALLER/common/service.sh;;
+          \"*) echo -n " $LINE\"" >> $INSTALLER/common/service.sh;;
+          *\") echo -n " \"$LINE" >> $INSTALLER/common/service.sh;;
+          *) echo -n " \"$LINE\"" >> $INSTALLER/common/service.sh;;
+        esac
       else
         magiskpolicy --load $RD/sepolicy --save $RD/sepolicy "$LINE"
       fi
@@ -230,8 +148,6 @@ unity_install() {
   ui_print "- Setting Permissions"
   set_permissions
 }
-
-# UNINSTALL
 unity_uninstall() {
   ui_print " "
   ui_print "- Uninstalling"
@@ -257,10 +173,98 @@ unity_uninstall() {
 }
 
 ##########################################################################################
-# (UN)INSTALL
+# MAIN
 ##########################################################################################
+# PRELIMINARY DETECTION OF BOOTMODE
+ps | grep zygote | grep -qv grep >/dev/null && BOOTMODE=true || BOOTMODE=false
+$BOOTMODE || ps -A 2>/dev/null | grep zygote | grep -qv grep >/dev/null && BOOTMODE=true
+
+# TEMP INSTALLER PATH
+TMPDIR=/dev/tmp; INSTALLER=$TMPDIR/install; MOUNTPATH=$TMPDIR/magisk_img
+SYSOVERRIDE=false; DEBUG=false; DYNAMICOREO=false; DYNAMICAPP=false; RAMDISK=false; SEPOLICY=false
+OUTFD=$2; ZIP=$3
+OIFS=$IFS; IFS=\|; 
+case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
+  *debug*) DEBUG=true;;
+  *sysover*) SYSOVERRIDE=true;;
+esac
+IFS=$OIFS
+
+# DEFAULT PERMISSIONS
+umask 022
+
+# INITIAL CLEANUP
+rm -rf $TMPDIR 2>/dev/null
+mkdir -p $INSTALLER
+
+# GET OUTFD
+if [ -z $OUTFD ] || readlink /proc/$$/fd/$OUTFD | grep -q /tmp; then
+  # We will have to manually find out OUTFD
+  for FD in `ls /proc/$$/fd`; do
+    if readlink /proc/$$/fd/$FD | grep -q pipe; then
+      if ps | grep -v grep | grep -q " 3 $FD "; then
+        OUTFD=$FD
+        break
+      fi
+    fi
+  done
+fi
+
+# UNZIP FILES
+ui_print " "
+ui_print "Unzipping files..."
+unzip -oq "$ZIP" -d $INSTALLER 2>/dev/null
+[ ! -f $INSTALLER/config.sh ] && { ui_print "! Unable to extract zip file !"; exit 1; }
+
+# LOAD FUNCTIONS
+tar -xf $INSTALLER/common/unityfiles.tar.xz -C $INSTALLER/common 2>/dev/null
+. $INSTALLER/common/unityfiles/util_functions.sh
+setup_flashable
+
+[ "$(grep_prop id $INSTALLER/module.prop)" == "UnityTemplate" ] && { ui_print "! Unity Template is not a separate module !"; abort "! This template is for devs only !"; }
+
+# INSERT MODULE INFO INTO CONFIG.SH
+(
+for TMP in version name author; do
+  NEW=$(grep_prop $TMP $INSTALLER/module.prop)
+  [ "$TMP" == "author" ] && NEW="by ${NEW}"
+  CHARS=$((${#NEW}-$(echo "$NEW" | tr -cd "©®™" | wc -m)))
+  SPACES=""
+  if [ $CHARS -le 41 ]; then
+    for i in $(seq $(((41-$CHARS) / 2))); do
+      SPACES="${SPACES} "
+    done
+  fi
+  if [ $(((41-$CHARS) % 2)) == 1 ]; then sed -i "s/<$TMP>/$SPACES$NEW${SPACES} /" $INSTALLER/config.sh; else sed -i "s/<$TMP>/$SPACES$NEW$SPACES/" $INSTALLER/config.sh; fi
+done
+)
+
+. $INSTALLER/config.sh
+
+[ -z $MODID ] && MODID=`grep_prop id $INSTALLER/module.prop`
+MODPATH=$MOUNTPATH/$MODID
+MINMAGISK=$(grep_prop minMagisk $INSTALLER/module.prop)
+
+# PRINT MOD NAME
+print_modname
+
+# MOUNT DATA AND CACHE
+ui_print "- Mounting /data, /cache"
+is_mounted /data || mount /data || is_mounted /cache || mount /cache || { ui_print "! Unable to mount partitions"; exit 1; }
+
+# DETERMINE MAGISK PATH IF APPLICABLE
+if [ -f /data/adb/magisk/util_functions.sh ]; then
+  NVBASE=/data/adb
+elif [ -f /data/magisk/util_functions.sh ]; then
+  NVBASE=/data
+fi
+[ -z $NVBASE ] || MAGISKBIN=$NVBASE/magisk
+
 # CHECK FOR OLD MAGISK, DETERMINE IF SYSTEM INSTALL OR MAGISK INSTALL, CHECK MAGISK VERSION (IF APPLICABLE)
-if [ -d $MAGISKBIN ]; then
+if [ -z $MAGISKBIN ]; then
+  MAGISK=false
+  ui_print "- System install detected"
+else
   MAGISK=true
   ui_print "- Magisk install detected"
   cp -f $MAGISKBIN/util_functions.sh $INSTALLER/common/unityfiles/util_functions_mag.sh
@@ -272,9 +276,11 @@ if [ -d $MAGISKBIN ]; then
   fi
   . $INSTALLER/common/unityfiles/util_functions_mag.sh
   [ ! -z $MAGISK_VER_CODE -a $MAGISK_VER_CODE -ge $MINMAGISK ] || require_new_magisk
-else
-  MAGISK=false
-  ui_print "- System install detected"
+  if [ $MAGISK_VER_CODE -ge 18000 ]; then
+    MAGISKTMP=/sbin/.magisk
+  else
+    MAGISKTMP=/sbin/.core
+  fi
 fi
 
 # MOUNT PARTITIONS AND DETECT VERSION/ARCHITECTURE
@@ -288,7 +294,13 @@ set_vars
 
 if $MAGISK; then
   # SETUP BUSYBOX AND BINARIES
-  $BOOTMODE && boot_actions_unity || recovery_actions
+  if $BOOTMODE; then
+    IMG=$NVBASE/magisk_merge.img
+    boot_actions_unity
+  else
+    IMG=$NVBASE/magisk.img
+    recovery_actions
+  fi
   # GET THE VARIABLE REQSIZEM
   request_zip_size_check "$ZIP"
   # THIS FUNCTION WILL MOUNT $IMG TO $MOUNTPATH, AND RESIZE THE IMAGE BASED ON $REQSIZEM
