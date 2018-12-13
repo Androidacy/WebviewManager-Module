@@ -414,7 +414,7 @@ patch_script() {
 install_script() {
   if [ "$MAGISKTMP" == "/sbin/.magisk" ]; then
     local INPATH="$NVBASE"
-  elif $BOOTMODE;
+  elif $BOOTMODE; then
     local INPATH="$MOUNTPATH/.core"
   else
     local INPATH="$NVBASE/img/.core"
