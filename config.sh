@@ -51,7 +51,6 @@ LATESTARTSERVICE=false
 #DYNAMICAPP=true
 #RAMDISK=true
 #DEBUG=true
-#BASH=true
 
 # Custom Variables for Install AND Uninstall - Keep everything within this function
 unity_custom() {

@@ -351,7 +351,7 @@ elif $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/sy
   ui_print " "
   ui_print "  ! Previous system override install detected!"
   ui_print "  ! Removing...!"
-  $BOOTMODE && { ui_print "  ! Magisk manager isn't supported!"; abort "   ! Install in TWRP !"; }
+  $BOOTMODE && { ui_print "  ! Magisk manager isn't supported!"; abort "   ! Flash in TWRP !"; }
   mount -o rw,remount /system
   [ -L /system/vendor ] && mount -o rw,remount /vendor
   sysover_partitions
@@ -366,6 +366,7 @@ elif [ -f "$MOD_VER" ]; then
     ui_print " "
     ui_print "  ! Mod present in system but not in ramdisk!"
     ui_print "  ! Running upgrade..."
+    RAMDISK=false
     unity_uninstall
     unity_install
   elif [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $INSTALLER/module.prop) ]; then
