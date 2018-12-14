@@ -8,10 +8,11 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 
 ## Change Log
 ### v2.0 x.xx.201x
-* Added option to use bash shell
 * Added back backwards compatibility to magisk 15.3 like before
 * Fix script install paths
 * Made sepolicy more dynamic - supports quoted or unquoted statements now
+* Entire installer now runs in bash shell - no more workarounds for shitty shell
+* Cleaned up code
 
 ### v1.8.2 12.10.2018
 * Fixed boot img mounting but on uninstall
