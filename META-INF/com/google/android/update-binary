@@ -368,6 +368,7 @@ elif [ -f "$MOD_VER" ]; then
     ui_print "  ! Running upgrade..."
     RAMDISK=false
     unity_uninstall
+    RAMDISK=true
     unity_install
   elif [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $INSTALLER/module.prop) ]; then
     ui_print " "
