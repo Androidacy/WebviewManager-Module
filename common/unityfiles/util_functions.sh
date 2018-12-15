@@ -439,14 +439,11 @@ prop_process() {
 set_vars() {
   SYS=/system; INITD=false; ROOTTYPE="MagiskSU"; SHEBANG="#!/system/bin/sh"
   if [ -L /system/vendor ]; then VEN=/vendor; else VEN=/system/vendor; fi
-  if [ -d /system/priv-app ]; then OLDAPP=false; else OLDAPP=true; fi
   if $DYNAMICOREO && [ $API -ge 26 ]; then LIBPATCH="\/vendor"; LIBDIR=$VEN; else LIBPATCH="\/system"; LIBDIR=/system; fi  
   if $BOOTMODE; then MOD_VER="$MAGISKTMP/img/$MODID/module.prop"; else MOD_VER="$MODPATH/module.prop"; fi
-  INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop
+  UNITY="$MODPATH"; INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop
   RD=$INSTALLER/common/unityfiles/boot/ramdisk
-  if $MAGISK && ! $SYSOVERRIDE; then
-    UNITY="$MODPATH"
-  else
+  if ! $MAGISK || $SYSOVERRIDE; then
     if [ -d /system/addon.d ]; then INFO=/system/addon.d/$MODID-files; else INFO=/system/etc/$MODID-files; fi
     if ! $MAGISK; then
       # Determine system boot script type
@@ -468,7 +465,7 @@ set_vars() {
       fi
       PROP=$MODPATH/$MODID-props.sh; MOD_VER="/system/etc/$MODID-module.prop"
     fi
-  fi  
+  fi
 }
 
 initd_message() {
@@ -480,16 +477,13 @@ initd_message() {
 }
 
 uninstall_files() {
-  local TMP FILE="$1"
-  if [ "$1" == "$INFO" ]; then
+  local TMP FILE=$INFO
+  if [ "$1" == "$INFORD" ]; then
+    TMP="~"
+  else
     $BOOTMODE && [ -f $MAGISKTMP/img/$MODID/$MODID-files ] && FILE=$MAGISKTMP/img/$MODID/$MODID-files
     TMP=".bak"
     $MAGISK || [ -f $FILE ] || abort "   ! Mod not detected !"
-  elif [ "$1" == "$INFORD" ]; then
-    $RAMDISK || continue
-    TMP="~"
-  else
-    return 1
   fi
   if [ -f $FILE ]; then
     while read LINE; do
@@ -570,14 +564,14 @@ unity_install() {
   ui_print " "
   ui_print "- Installing"
 
-  # MAKE INFO FILE
+  # Make info file
   rm -f $INFO
   mktouch $INFO
 
-  # RUN USER INSTALL SCRIPT
+  # Run user install script
   [ -f "$INSTALLER/common/install.sh" ] && . $INSTALLER/common/install.sh
   
-  # SEPOLICY
+  # Sepolicy
   if $SEPOLICY; then
     [ "$MODPATH" == "/system/etc/init.d" ] && unpack_ramdisk -s
     if [ "$MODPATH" == "/system/etc/init.d" ] && ! $INITD; then
@@ -588,25 +582,25 @@ unity_install() {
     fi
     sed -i -e '/^#.*/d' -e '/^$/d' $INSTALLER/common/sepolicy.sh
     while read LINE; do
-      if [ "$MODPATH" != "/system/etc/init.d" ] || $INITD; then
+      if [ "$MODPATH" == "/system/etc/init.d" ] && ! $INITD; then
+        magiskpolicy --load $RD/sepolicy --save $RD/sepolicy "$LINE"
+      else
         case $LINE in
           \"*\") echo -n " $LINE" >> $INSTALLER/common/service.sh;;
           \"*) echo -n " $LINE\"" >> $INSTALLER/common/service.sh;;
           *\") echo -n " \"$LINE" >> $INSTALLER/common/service.sh;;
           *) echo -n " \"$LINE\"" >> $INSTALLER/common/service.sh;;
         esac
-      else
-        magiskpolicy --load $RD/sepolicy --save $RD/sepolicy "$LINE"
       fi
     done < $INSTALLER/common/sepolicy.sh
   fi
 
-  # INSTALL SCRIPTS
+  # Install scripts
   ui_print "   Installing scripts for $ROOTTYPE..."
   if $MAGISK; then
-    # AUTO MOUNT
+    # Auto mount
     $AUTOMOUNT && ! $SYSOVERRIDE && mktouch $MODPATH/auto_mount
-    # UPDATE INFO FOR MAGISK MANAGER
+    # Update info for magisk manager
     if $BOOTMODE; then
       mktouch $MAGISKTMP/img/$MODID/update
       cp_ch -n $INSTALLER/module.prop $MODPATH/module.prop
@@ -619,40 +613,40 @@ unity_install() {
     sed -i -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/uninstall.sh" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/$MODID-sysover.sh
     install_script -p $INSTALLER/common/unityfiles/$MODID-sysover.sh
   elif ! $MAGISK || $SYSOVERRIDE; then
-    # INSTALL ROM BACKUP SCRIPT
+    # Install rom backup script
     if [ -d /system/addon.d ]; then
       ui_print "   Installing addon.d backup script..."
       sed -i "s/<MODID>/$MODID/" $INSTALLER/common/unityfiles/addon.sh
-      cp_ch -n $INSTALLER/common/unityfiles/addon.sh /system/addon.d/$MODID.sh 0755
+      cp_ch -np $INSTALLER/common/unityfiles/addon.sh /system/addon.d/$MODID.sh 0755
     else
       ui_print "   ! Addon.d not detected. Backup script not installed..."
     fi
   fi
 
-  # HANDLE REPLACE FOLDERS
+  # Handle replace folders
   for TARGET in $REPLACE; do
     if $MAGISK; then mktouch $MODPATH$TARGET/.replace; else rm -rf $TARGET; fi
   done
 
-  # PROP FILES - add prop function for system installs
+  # Prop files
   $PROPFILE && { prop_process $INSTALLER/common/system.prop; $MAGISK || echo $PROP >> $INFO; }
 
-  # MODULE INFO
+  # Module info
   cp_ch -n $INSTALLER/module.prop $MOD_VER
 
-  #INSTALL POST-FS-DATA MODE SCRIPTS
+  #Install post-fs-data mode scripts
   $POSTFSDATA && install_script -p $INSTALLER/common/post-fs-data.sh
 
-  # SERVICE MODE SCRIPTS
+  # Service mode scripts
   $LATESTARTSERVICE && install_script -l $INSTALLER/common/service.sh
 
-  # INSTALL FILES
+  # Install files
   ui_print "   Installing files for $ARCH SDK $API device..."
   rm -f $INSTALLER/system/placeholder $INSTALLER/ramdisk/placeholder
   $IS64BIT || rm -rf $INSTALLER/system/lib64 $INSTALLER/system/vendor/lib64
   for FILE in $(find $INSTALLER/system -type f 2>/dev/null | sed "s|$INSTALLER||" 2>/dev/null); do
     if $DYNAMICAPP; then
-      if $OLDAPP; then FILE2=$(echo $FILE | sed 's|/system/app/.*/|/system/app/|'); else FILE2=$(echo $FILE | sed 's|/system/app/|/system/priv-app/|'); fi
+      if [ -d /system/priv-app ]; then FILE2=$(echo $FILE | sed 's|/system/app/|/system/priv-app/|'); else FILE2=$(echo $FILE | sed 's|/system/app/.*/|/system/app/|'); fi
     else
       FILE2=$FILE
     fi
@@ -665,18 +659,18 @@ unity_install() {
     cp_ch $INSTALLER$FILE $UNITY$FILE2
   done
   
-  # ADD BLANK LINE TO END OF ALL PROP/SCRIPT FILES IF NOT ALREADY PRESENT
+  # Add blank line to end of all prop/script files if not already present
   for FILE in $MODPATH/*.sh $MODPATH/*.prop; do
     [ -f $FILE ] && { [ "$(tail -1 $FILE)" ] && echo "" >> $FILE; }
   done
 
-  # REMOVE INFO FILE IF NOT NEEDED
+  # Remove info file if not needed
   [ ! -s $INFO ] && rm -f $INFO
   
-  # RAMDISK PATCHES
+  # Ramdisk patches
   if $RAMDISK; then
     [ -d "$RD" ] || unpack_ramdisk -l
-    # REMOVE RAMDISK MOD IF EXISTS
+    # Remove ramdisk mod if exists
     if [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ]; then
       ui_print "   ! Mod detected in ramdisk!"
       ui_print "   ! Upgrading mod ramdisk modifications..."
@@ -684,11 +678,11 @@ unity_install() {
       sed -i "/#$MODID-UnityIndicator/d" $RD/init.rc
       [ -f "$INSTALLER/common/ramdiskuninstall.sh" ] && . $INSTALLER/common/ramdiskuninstall.sh
     fi
-    # SCRIPT TO REMOVE MOD FROM SYSTEM/MAGISK IN EVENT MOD IS ONLY REMOVED FROM RAMDISK (LIKE DIRTY FLASHING)
+    # Script to remove mod from system/magisk in event mod is only removed from ramdisk (like dirty flashing)
     cp -f $INSTALLER/common/unityfiles/modidramdisk.sh $INSTALLER/common/unityfiles/$MODID-ramdisk.sh
     sed -i -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/uninstall.sh" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/$MODID-ramdisk.sh
     install_script -p $INSTALLER/common/unityfiles/$MODID-ramdisk.sh
-    # USE COMMENT AS INSTALL INDICATOR
+    # Use comment as install indicator
     echo "#$MODID-UnityIndicator" >> $RD/init.rc
     [ -f "$INSTALLER/common/ramdiskinstall.sh" ] && . $INSTALLER/common/ramdiskinstall.sh
     for FILE in $(find $INSTALLER/ramdisk -type f 2>/dev/null | sed "s|$INSTALLER||" 2>/dev/null); do
@@ -697,7 +691,7 @@ unity_install() {
     [ ! -s $INFORD ] && rm -f $INFORD
   fi
 
-  # SET PERMISSIONS
+  # Set permissions
   ui_print " "
   ui_print "- Setting Permissions"
   set_permissions
@@ -707,15 +701,15 @@ unity_uninstall() {
   ui_print " "
   ui_print "- Uninstalling"
 
-  # REMOVE FILES
-  uninstall_files $INFO
+  # Remove files
+  uninstall_files
 
   $MAGISK && { rm -rf $MODPATH $MAGISKTMP/img/$MODID; rm -f $NVBASE/post-fs-data.d/$MODID-sysover.sh; }
 
-  # RUN USER INSTALL SCRIPT
+  # Run user install script
   [ -f "$INSTALLER/common/uninstall.sh" ] && . $INSTALLER/common/uninstall.sh
   
-  # RAMDISK PATCHES
+  # Ramdisk patches
   if $RAMDISK; then
     [ -d "$RD" ] || unpack_ramdisk -l
     uninstall_files $INFORD
