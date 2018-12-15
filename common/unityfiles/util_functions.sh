@@ -250,7 +250,7 @@ recovery_cleanup() {
 }
 
 abort() {
-  ui_print "$(tput setaf 1)$1$(tput sgr0)"
+  ui_print "$1"
   $BOOTMODE || recovery_cleanup
   exit 1
 }
@@ -312,22 +312,22 @@ supersuimg_mount() {
 
 require_new_magisk() {
   ui_print "*******************************"
-  ui_print " $(tput setaf 1)Please install Magisk $(echo $MINMAGISK | sed -r "s/(.{2})(.{1}).*/v\1.\2+\!/")$(tput sgr0)"
+  ui_print " Please install Magisk $(echo $MINMAGISK | sed -r "s/(.{2})(.{1}).*/v\1.\2+\!/") "
   ui_print "*******************************"
   abort
 }
 
 require_new_api() {
   ui_print "***********************************"
-  ui_print "$(tput setaf 1)!   Your system API of $API isn't"
+  ui_print "!   Your system API of $API isn't"
   if [ "$1" == "minimum" ]; then
     ui_print "! higher than the $1 API of $MINAPI"
     ui_print "! Please upgrade to a newer version"
-    ui_print "!  of android with at least API $MINAPI$(tput sgr0)"
+    ui_print "!  of android with at least API $MINAPI"
   else
-    ui_print "$(tput setaf 1)!   lower than the $1 API of $MAXAPI"
+    ui_print "!   lower than the $1 API of $MAXAPI"
     ui_print "! Please downgrade to an older version"
-    ui_print "!    of android with at most API $MAXAPI$(tput sgr0)"
+    ui_print "!    of android with at most API $MAXAPI"
   fi
   ui_print "***********************************"
   abort
@@ -355,7 +355,7 @@ cleanup() {
     # PLEASE LEAVE THIS MESSAGE IN YOUR FLASHABLE ZIP FOR CREDITS :)
     ui_print " "
     ui_print "    *******************************************"
-    ui_print "    *      $(tput setaf 2)Powered by Magisk (@topjohnwu)$(tput sgr0)     *"
+    ui_print "    *      Powered by Magisk (@topjohnwu)     *"
     ui_print "    *******************************************"
   else
     recovery_cleanup
@@ -363,7 +363,7 @@ cleanup() {
   fi
   ui_print " "
   ui_print "    *******************************************"
-  ui_print "    *    $(tput setaf 2)Unity by ahrion & zackptg5 @ XDA$(tput sgr0)     *"
+  ui_print "    *    Unity by ahrion & zackptg5 @ XDA     *"
   ui_print "    *******************************************"
   ui_print " "
   exit 0
@@ -523,8 +523,8 @@ set_vars() {
 initd_message() {
   INITD=true
   ui_print " "
-  ui_print "   $(tput setaf 1)! This root method has no boot script support !"
-  ui_print "   ! You will need to add init.d support !$(tput sgr0)"
+  ui_print "   ! This root method has no boot script support !"
+  ui_print "   ! You will need to add init.d support !"
   ui_print " "
 }
 
@@ -574,9 +574,9 @@ unpack_ramdisk() {
   find_boot_image
   ui_print " "
   [ -z $BOOTIMAGE ] && { if [ "$1" != "-s" ]; then
-    abort "   $(tput setaf 1)! Unable to detect target image !$(tput sgr0)"
+    abort "   ! Unable to detect target image !"
   else
-    ui_print "   $(tput setaf 1)! Unable to detect target image !$(tput sgr0)"
+    ui_print "   ! Unable to detect target image !"
     $INITD || initd_message
     return
   fi; }
@@ -674,7 +674,7 @@ unity_install() {
       sed -i "s/<MODID>/$MODID/" $INSTALLER/common/unityfiles/addon.sh
       cp_ch -n $INSTALLER/common/unityfiles/addon.sh /system/addon.d/$MODID.sh 0755
     else
-      ui_print "   $(tput setaf 1)! Addon.d not detected. Backup script not installed...$(tput sgr0)"
+      ui_print "   ! Addon.d not detected. Backup script not installed..."
     fi
   fi
 
@@ -801,7 +801,7 @@ ui_print " "
 ui_print "Unzipping files..."
 unzip -oq "$ZIP" -d $INSTALLER 2>/dev/null
 [ -f "$INSTALLER/config.sh" ] || abort "! Unable to extract zip file!"
-[ "$(grep_prop id $INSTALLER/module.prop)" == "UnityTemplate" ] && { ui_print "$(tput setaf 1)! Unity Template is not a separate module !$(tput sgr0)"; abort "! This template is for devs only !"; }
+[ "$(grep_prop id $INSTALLER/module.prop)" == "UnityTemplate" ] && { ui_print "! Unity Template is not a separate module !"; abort "! This template is for devs only !"; }
 
 # INSERT MODULE INFO INTO CONFIG.SH
 (
@@ -830,7 +830,7 @@ print_modname
 
 # MOUNT DATA AND CACHE
 ui_print "- Mounting /data, /cache"
-is_mounted /data || mount /data || is_mounted /cache || mount /cache || { ui_print "$(tput setaf 1)! Unable to mount partitions"$(tput sgr0); exit 1; }
+is_mounted /data || mount /data || is_mounted /cache || mount /cache || { ui_print "! Unable to mount partitions"; exit 1; }
 
 # DETERMINE MAGISK PATH IF APPLICABLE
 if [ -f /data/adb/magisk/util_functions.sh ]; then
@@ -850,7 +850,7 @@ else
   cp -f $MAGISKBIN/util_functions.sh $INSTALLER/common/unityfiles/util_functions_mag.sh
   if $SYSOVERRIDE; then
     ui_print "- Overriding paths for system install"
-    $BOOTMODE && { ui_print "   $(tput setaf 1)! Magisk manager isn't supported!$(tput sgr0)"; abort "   ! Install in recovery !"; }
+    $BOOTMODE && { ui_print "   ! Magisk manager isn't supported!"; abort "   ! Install in recovery !"; }
     sed -i "s/-o ro/-o rw/g" $INSTALLER/common/unityfiles/util_functions_mag.sh
     sysover_partitions
   fi
@@ -931,7 +931,7 @@ elif $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/sy
   ui_print " "
   ui_print "  ! Previous system override install detected!"
   ui_print "  ! Removing...!"
-  $BOOTMODE && { ui_print "  $(tput setaf 1)! Magisk manager isn't supported!$(tput sgr0)"; abort "   ! Flash in TWRP !"; }
+  $BOOTMODE && { ui_print "  ! Magisk manager isn't supported!"; abort "   ! Flash in TWRP !"; }
   mount -o rw,remount /system
   [ -L /system/vendor ] && mount -o rw,remount /vendor
   sysover_partitions
