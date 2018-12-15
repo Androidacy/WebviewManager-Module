@@ -605,7 +605,7 @@ unity_install() {
       mktouch $MAGISKTMP/img/$MODID/update
       cp_ch -n $INSTALLER/module.prop $MODPATH/module.prop
     fi
-  elif [ "$MODPATH" == "/system/etc/init.d" ] && ($POSTFSDATA || $LATESTARTSERVICE); then
+  elif [ "$MODPATH" == "/system/etc/init.d" ] && ($POSTFSDATA || $LATESTARTSERVICE || $PROPFILE); then
     initd_message
   fi
   if $MAGISK && $SYSOVERRIDE; then
