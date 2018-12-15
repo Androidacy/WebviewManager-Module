@@ -53,6 +53,7 @@ setup_flashable() {
   # Rerun bootmode detection with proper busybox binaries
   ps | grep zygote | grep -qv grep && BOOTMODE=true || BOOTMODE=false
   $BOOTMODE || ps -A | grep zygote | grep -qv grep && BOOTMODE=true
+  # Get Outfd
   get_outfd
 }
 
@@ -95,7 +96,6 @@ mount_partitions() {
   fi
   [ -z $SLOT ] || ui_print "- Current boot slot: $SLOT"
   ui_print "- Mounting /system, /vendor"
-  REALSYS=/system
   [ -f /system/build.prop ] || is_mounted /system || mount -o rw /system 2>/dev/null
   if ! is_mounted /system && ! [ -f /system/build.prop ]; then
     SYSTEMBLOCK=`find_block system$SLOT`
@@ -104,18 +104,15 @@ mount_partitions() {
   [ -f /system/build.prop ] || is_mounted /system || abort "! Cannot mount /system"
   cat /proc/mounts | grep -E '/dev/root|/system_root' >/dev/null && SYSTEM_ROOT=true || SYSTEM_ROOT=false
   if [ -f /system/init ]; then
-    ROOT=/system_root
-    REALSYS=/system_root/system
     SYSTEM_ROOT=true
     mkdir /system_root 2>/dev/null
     mount --move /system /system_root
     mount -o bind /system_root/system /system
   fi
-  $SYSTEM_ROOT && ui_print "- Device using system_root_image"
+  $SYSTEM_ROOT && { ui_print "- Device using system_root_image"; ROOT=/system_root; }
   if [ -L /system/vendor ]; then
     # Seperate /vendor partition
     VEN=/vendor
-    REALVEN=/vendor
     is_mounted /vendor || mount -o rw /vendor 2>/dev/null
     if ! is_mounted /vendor; then
       VENDORBLOCK=`find_block vendor$SLOT`
@@ -124,7 +121,6 @@ mount_partitions() {
     is_mounted /vendor || abort "! Cannot mount /vendor"
   else
     VEN=/system/vendor
-    REALVEN=$REALSYS/vendor
   fi
 }
 
@@ -276,28 +272,12 @@ mktouch() {
   chmod 644 $1
 }
 
-sysover_partitions() {
-  if [ -f /system/init.rc ]; then
-    ROOT=/system_root
-    REALSYS=/system_root/system
-  else
-    REALSYS=/system
-  fi
-  if [ -L /system/vendor ]; then
-    VEN=/vendor
-    REALVEN=/vendor
-  else
-    VEN=/system/vendor
-    REALVEN=$REALSYS/vendor
-  fi
-}
-
 supersuimg_mount() {
   supersuimg=$(ls /cache/su.img /data/su.img 2>/dev/null)
   if [ "$supersuimg" ]; then
     if ! is_mounted /su; then
       ui_print "    Mounting /su..."
-      [ -d /su ] || mkdir /su
+      [ -d /su ] || mkdir /su 2>/dev/null
       mount -t ext4 -o rw,noatime $supersuimg /su 2>/dev/null
       for i in 0 1 2 3 4 5 6 7; do
         is_mounted /su && break
@@ -348,19 +328,15 @@ cleanup() {
     cd /
   fi
   if $MAGISK; then
-    # UNMOUNT MAGISK IMAGE AND SHRINK IF POSSIBLE
     unmount_magisk_img
-    $BOOTMODE || recovery_cleanup
-    rm -rf $TMPDIR
-    # PLEASE LEAVE THIS MESSAGE IN YOUR FLASHABLE ZIP FOR CREDITS :)
+    # Please leave this message in your flashable zip for credits :)
     ui_print " "
     ui_print "    *******************************************"
     ui_print "    *      Powered by Magisk (@topjohnwu)     *"
     ui_print "    *******************************************"
-  else
-    recovery_cleanup
-    rm -rf $TMPDIR
   fi
+  $BOOTMODE || recovery_cleanup
+  rm -rf $TMPDIR
   ui_print " "
   ui_print "    *******************************************"
   ui_print "    *    Unity by ahrion & zackptg5 @ XDA     *"
@@ -417,17 +393,8 @@ cp_ch() {
 }
 
 patch_script() {
-  sed -i -e "s|<MAGISK>|$MAGISK|" -e "s|<LIBDIR>|$LIBDIR|" -e "s|<SYSOVERRIDE>|$SYSOVERRIDE|" -e "s|<MODID>|$MODID|" -e "s|<INFO>|$(echo $INFO | sed "s|$MOUNTPATH|$MAGISKTMP/img|")|" $1
-  if $MAGISK; then
-    if $SYSOVERRIDE; then
-      sed -i "s|<VEN>|$REALVEN|" $1
-    else
-      sed -i "s|<VEN>|$VEN|" $1
-    fi
-    sed -i -e "s|<ROOT>|\"\"|" -e "s|<SYS>|/system|" -e "s|<SHEBANG>|#!/system/bin/sh|" -e "s|\$MOUNTPATH|$MAGISKTMP/img|g" -e "s|\$UNITY|$MAGISKTMP/img|g" $1
-  else
-    sed -i -e "s|<ROOT>|\"$ROOT\"|" -e "s|<SYS>|$REALSYS|" -e "s|<VEN>|$REALVEN|" -e "s|<SHEBANG>|$SHEBANG|" -e "s|\$MOUNTPATH||g" -e "s|\$UNITY||g" $1
-  fi
+  sed -i -e "s|<ROOT>|\"$ROOT\"|" -e "s|<SYS>|$ROOT/system|" -e "s|<VEN>|$ROOT$VEN|" -e "s|<SHEBANG>|$SHEBANG|" -e "s|<MAGISK>|$MAGISK|" -e "s|<LIBDIR>|$LIBDIR|" -e "s|<SYSOVERRIDE>|$SYSOVERRIDE|" -e "s|<MODID>|$MODID|" -e "s|<INFO>|$(echo $INFO | sed "s|$MOUNTPATH|$MAGISKTMP/img|")|" $1
+  if $MAGISK; then sed -i -e "s|\$MOUNTPATH|$MAGISKTMP/img|g" -e "s|\$UNITY|$MAGISKTMP/img|g" $1; else sed -i -e "s|\$MOUNTPATH||g" -e "s|\$UNITY||g" $1; fi
 }
 
 install_script() {
@@ -469,55 +436,39 @@ prop_process() {
   $MAGISK || chmod 0700 $PROP
 }
 
-script_type() {
-  supersuimg_mount
-  SHEBANG="#!/system/bin/sh"; ROOTTYPE="other root or rootless"; MODPATH=/system/etc/init.d
-  if [ "$supersuimg" ] || [ -d /su ]; then
-    SHEBANG="#!/su/bin/sush"; ROOTTYPE="systemless SuperSU"; MODPATH=/su/su.d
-  elif [ -e "$(find /data /cache -name supersu_is_here | head -n1)" ]; then
-    SHEBANG="#!/su/bin/sush"; ROOTTYPE="systemless SuperSU"
-    MODPATH=$(dirname `find /data /cache -name supersu_is_here | head -n1`)/su.d
-  elif [ -d /system/su ] || [ -f /system/xbin/daemonsu ] || [ -f /system/xbin/sugote ]; then
-    MODPATH=/system/su.d; ROOTTYPE="system SuperSU"
-  elif [ -f /system/xbin/su ]; then
-    if [ "$(grep "SuperSU" /system/xbin/su)" ]; then
-      MODPATH=/system/su.d; ROOTTYPE="system SuperSU"
-    else
-      ROOTTYPE="LineageOS SU"
-    fi
-  fi
-}
-
 set_vars() {
-  SYS=/system; INITD=false
-  ROOTTYPE="MagiskSU"
+  SYS=/system; INITD=false; ROOTTYPE="MagiskSU"; SHEBANG="#!/system/bin/sh"
+  if [ -L /system/vendor ]; then VEN=/vendor; else VEN=/system/vendor; fi
   if [ -d /system/priv-app ]; then OLDAPP=false; else OLDAPP=true; fi
+  if $DYNAMICOREO && [ $API -ge 26 ]; then LIBPATCH="\/vendor"; LIBDIR=$VEN; else LIBPATCH="\/system"; LIBDIR=/system; fi  
   if $BOOTMODE; then MOD_VER="$MAGISKTMP/img/$MODID/module.prop"; else MOD_VER="$MODPATH/module.prop"; fi
-  INFO="$MODPATH/$MODID-files"
-  PROP=$MODPATH/system.prop
+  INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop
+  RD=$INSTALLER/common/unityfiles/boot/ramdisk
   if $MAGISK && ! $SYSOVERRIDE; then
-    VEN=/system/vendor
     UNITY="$MODPATH"
   else
-    UNITY=""
-    if [ -d /system/addon.d ]; then
-      INFO=/system/addon.d/$MODID-files
-    else
-      INFO=/system/etc/$MODID-files
-    fi
+    if [ -d /system/addon.d ]; then INFO=/system/addon.d/$MODID-files; else INFO=/system/etc/$MODID-files; fi
     if ! $MAGISK; then
-      # DETERMINE SYSTEM BOOT SCRIPT TYPE
-      script_type
-      PROP=$MODPATH/$MODID-props.sh
-      MOD_VER="/system/etc/$MODID-module.prop"
+      # Determine system boot script type
+      supersuimg_mount
+      ROOTTYPE="other root or rootless"; MODPATH=/system/etc/init.d
+      if [ "$supersuimg" ] || [ -d /su ]; then
+        SHEBANG="#!/su/bin/sush"; ROOTTYPE="systemless SuperSU"; MODPATH=/su/su.d
+      elif [ -e "$(find /data /cache -name supersu_is_here | head -n1)" ]; then
+        SHEBANG="#!/su/bin/sush"; ROOTTYPE="systemless SuperSU"
+        MODPATH=$(dirname `find /data /cache -name supersu_is_here | head -n1`)/su.d
+      elif [ -d /system/su ] || [ -f /system/xbin/daemonsu ] || [ -f /system/xbin/sugote ]; then
+        MODPATH=/system/su.d; ROOTTYPE="system SuperSU"
+      elif [ -f /system/xbin/su ]; then
+        if [ "$(grep "SuperSU" /system/xbin/su)" ]; then
+          MODPATH=/system/su.d; ROOTTYPE="system SuperSU"
+        else
+          ROOTTYPE="LineageOS SU"
+        fi
+      fi
+      PROP=$MODPATH/$MODID-props.sh; MOD_VER="/system/etc/$MODID-module.prop"
     fi
-  fi
-  if $DYNAMICOREO && [ $API -ge 26 ]; then
-    LIBPATCH="\/vendor"; LIBDIR=$VEN
-  else
-    LIBPATCH="\/system"; LIBDIR=/system
-  fi
-  RD=$INSTALLER/common/unityfiles/boot/ramdisk
+  fi  
 }
 
 initd_message() {
@@ -780,7 +731,7 @@ unity_uninstall() {
 # MAIN
 ##########################################################################################
 
-# TEMP INSTALLER PATH AND VARS
+# Temp installer paths and vars
 MOUNTPATH=$TMPDIR/magisk_img; SYSOVERRIDE=false; DEBUG=false; DYNAMICOREO=false; DYNAMICAPP=false; RAMDISK=false; SEPOLICY=false
 OIFS=$IFS; IFS=\|; 
 case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
@@ -789,21 +740,21 @@ case $(echo $(basename $ZIP) | tr '[:upper:]' '[:lower:]') in
 esac
 IFS=$OIFS
 
-# PRELIMINARY DETECTION OF BOOTMODE
+# Preliminary detection of bootmode
 ps | grep zygote | grep -qv grep >/dev/null && export BOOTMODE=true || export BOOTMODE=false
 $BOOTMODE || ps -A 2>/dev/null | grep zygote | grep -qv grep >/dev/null && export BOOTMODE=true
 
-# SETUP BUSYBOX AND STUFF
+# Setup busybox and stuff
 setup_flashable
 
-# UNZIP FILES
+# Unzip files
 ui_print " "
 ui_print "Unzipping files..."
 unzip -oq "$ZIP" -d $INSTALLER 2>/dev/null
 [ -f "$INSTALLER/config.sh" ] || abort "! Unable to extract zip file!"
 [ "$(grep_prop id $INSTALLER/module.prop)" == "UnityTemplate" ] && { ui_print "! Unity Template is not a separate module !"; abort "! This template is for devs only !"; }
 
-# INSERT MODULE INFO INTO CONFIG.SH
+# Insert module info into config.sh and run it
 (
 for TMP in version name author; do
   NEW=$(grep_prop $TMP $INSTALLER/module.prop)
@@ -818,21 +769,20 @@ for TMP in version name author; do
   if [ $(((41-$CHARS) % 2)) -eq 1 ]; then sed -i "s/<$TMP>/$SPACES$NEW${SPACES} /" $INSTALLER/config.sh; else sed -i "s/<$TMP>/$SPACES$NEW$SPACES/" $INSTALLER/config.sh; fi
 done
 )
-
 . $INSTALLER/config.sh
 
 [ -z $MODID ] && MODID=`grep_prop id $INSTALLER/module.prop`
 MODPATH=$MOUNTPATH/$MODID
 MINMAGISK=$(grep_prop minMagisk $INSTALLER/module.prop)
 
-# PRINT MOD NAME
+# Print modname
 print_modname
 
-# MOUNT DATA AND CACHE
+# Mount data and cache
 ui_print "- Mounting /data, /cache"
 is_mounted /data || mount /data || is_mounted /cache || mount /cache || { ui_print "! Unable to mount partitions"; exit 1; }
 
-# DETERMINE MAGISK PATH IF APPLICABLE
+# Determine magisk path if applicable
 if [ -f /data/adb/magisk/util_functions.sh ]; then
   NVBASE=/data/adb
 elif [ -f /data/magisk/util_functions.sh ]; then
@@ -840,7 +790,7 @@ elif [ -f /data/magisk/util_functions.sh ]; then
 fi
 [ -z $NVBASE ] || MAGISKBIN=$NVBASE/magisk
 
-# CHECK FOR OLD MAGISK, DETERMINE IF SYSTEM INSTALL OR MAGISK INSTALL, CHECK MAGISK VERSION (IF APPLICABLE)
+# Determine install type
 if [ -z $MAGISKBIN ]; then
   MAGISK=false
   ui_print "- System install detected"
@@ -852,28 +802,22 @@ else
     ui_print "- Overriding paths for system install"
     $BOOTMODE && { ui_print "   ! Magisk manager isn't supported!"; abort "   ! Install in recovery !"; }
     sed -i "s/-o ro/-o rw/g" $INSTALLER/common/unityfiles/util_functions_mag.sh
-    sysover_partitions
   fi
   . $INSTALLER/common/unityfiles/util_functions_mag.sh
   [ ! -z $MAGISK_VER_CODE -a $MAGISK_VER_CODE -ge $MINMAGISK ] || require_new_magisk
-  if [ $MAGISK_VER_CODE -ge 18000 ]; then
-    MAGISKTMP=/sbin/.magisk
-  else
-    MAGISKTMP=/sbin/.core
-  fi
+  if [ $MAGISK_VER_CODE -ge 18000 ]; then MAGISKTMP=/sbin/.magisk; else MAGISKTMP=/sbin/.core; fi
 fi
 
-# MOUNT PARTITIONS AND DETECT VERSION/ARCHITECTURE
+# Mount partitions and detect version/architecture
 mount_partitions
 api_level_arch_detect
 set_vars
 
-# CHECK FOR MIN & MAX API VERSION
+# Check for min & max api version
 [ -z $MINAPI ] || { [ $API -lt $MINAPI ] && require_new_api 'minimum'; }
 [ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && require_new_api 'maximum'; }
 
 if $MAGISK; then
-  # SETUP BUSYBOX AND BINARIES
   if $BOOTMODE; then
     IMG=$NVBASE/magisk_merge.img
     boot_actions_unity
@@ -881,31 +825,28 @@ if $MAGISK; then
     IMG=$NVBASE/magisk.img
     recovery_actions
   fi
-  # GET THE VARIABLE REQSIZEM
   request_zip_size_check "$ZIP"
-  # THIS FUNCTION WILL MOUNT $IMG TO $MOUNTPATH, AND RESIZE THE IMAGE BASED ON $REQSIZEM
   mount_magisk_img
 else
-  # SETUP BUSYBOX AND BINARIES
   recovery_actions
 fi
 
-# INSERT MODID AND CUSTOM USER SCRIPT INTO MOD SCRIPT
+# Insert modid and mustom user script into mod script
 for i in "post-fs-data.sh" "service.sh"; do
   cp -f $INSTALLER/common/unityfiles/modid.sh $INSTALLER/common/unityfiles/$i
   sed -i -e "s/<MODID>/$MODID/" -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/$i" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/$i
   mv -f $INSTALLER/common/unityfiles/$i $INSTALLER/common/$i
 done
 
-# ADD BLANK LINE TO END OF ALL COMMON FILES IF NOT ALREADY PRESENT
+# Add blank line to end of all files if needbe
 for FILE in $INSTALLER/common/*.sh $INSTALLER/common/*.prop; do
   [ "$(tail -1 $FILE)" ] && echo "" >> $FILE
 done
 
-# UNPACK RAMDISK
+# Unpack ramdisk
 $RAMDISK && unpack_ramdisk
 
-#DEBUG
+#Debug
 if $DEBUG; then
   ui_print " "
   ui_print "- Debug mode"
@@ -914,13 +855,11 @@ if $DEBUG; then
   set -x
 fi
 
-# LOAD USER VARS/FUNCTIONS
+# Load user vars/function
 unity_custom
-
-# UNPACK RAMDISK IF CHANGED TO TRUE IN UNITY_CUSTOM
 $RAMDISK && [ ! -d "$RD" ] && unpack_ramdisk -l
 
-# DETERMINE MOD INSTALLATION STATUS
+# Determine mod installation status
 if $RAMDISK && [ "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ] && [ ! -f "$MOD_VER" ]; then
   ui_print " "
   ui_print "  ! Mod present in ramdisk but not in system!"
@@ -934,22 +873,17 @@ elif $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/sy
   $BOOTMODE && { ui_print "  ! Magisk manager isn't supported!"; abort "   ! Flash in TWRP !"; }
   mount -o rw,remount /system
   [ -L /system/vendor ] && mount -o rw,remount /vendor
-  sysover_partitions
-  SYSOVERRIDE=true
-  set_vars
+  if [ -d /system/addon.d ]; then INFO=/system/addon.d/$MODID-files; else INFO=/system/etc/$MODID-files; fi
   unity_uninstall
-  SYSOVERRIDE=false
-  set_vars
+  INFO="$MODPATH/$MODID-files"
   unity_install
 elif [ -f "$MOD_VER" ]; then
   if $RAMDISK && [ ! "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ]; then
     ui_print " "
     ui_print "  ! Mod present in system but not in ramdisk!"
     ui_print "  ! Running upgrade..."
-    RAMDISK=false
-    unity_uninstall
-    RAMDISK=true
-    unity_install
+    RAMDISK=false; unity_uninstall
+    RAMDISK=true; unity_install
   elif [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $INSTALLER/module.prop) ]; then
     ui_print " "
     ui_print "  ! Current or newer version detected!"
@@ -964,5 +898,5 @@ else
   unity_install
 fi
 
-# COMPLETE (UN)INSTALL
+# Complete (un)install
 cleanup
