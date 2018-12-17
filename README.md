@@ -2,9 +2,9 @@
 Unity Installer allows 1 zip to work for multiple devices and root solutions. [More details in support thread](https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612).
 
 ## Compatibility
-* Android Jellybean+
+* Android Lollipop+
 * Selinux enforcing
-* All root solutions (requires init.d support if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
+* All root solutions (requires init.d support for boot scripts if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
 ### v2.0 x.xx.201x
