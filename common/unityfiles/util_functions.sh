@@ -112,15 +112,12 @@ mount_partitions() {
   $SYSTEM_ROOT && { ui_print "- Device using system_root_image"; ROOT=/system_root; }
   if [ -L /system/vendor ]; then
     # Seperate /vendor partition
-    VEN=/vendor
     is_mounted /vendor || mount -o rw /vendor 2>/dev/null
     if ! is_mounted /vendor; then
       VENDORBLOCK=`find_block vendor$SLOT`
       mount -t ext4 -o rw $VENDORBLOCK /vendor
     fi
     is_mounted /vendor || abort "! Cannot mount /vendor"
-  else
-    VEN=/system/vendor
   fi
 }
 
@@ -393,6 +390,7 @@ cp_ch() {
 }
 
 patch_script() {
+  [ -L /system/vendor ] && local VEN=/vendor
   sed -i -e "s|<ROOT>|\"$ROOT\"|" -e "s|<SYS>|$ROOT/system|" -e "s|<VEN>|$ROOT$VEN|" -e "s|<SHEBANG>|$SHEBANG|" -e "s|<MAGISK>|$MAGISK|" -e "s|<LIBDIR>|$LIBDIR|" -e "s|<SYSOVERRIDE>|$SYSOVERRIDE|" -e "s|<MODID>|$MODID|" -e "s|<INFO>|$(echo $INFO | sed "s|$MOUNTPATH|$MAGISKTMP/img|")|" $1
   if $MAGISK; then sed -i -e "s|\$MOUNTPATH|$MAGISKTMP/img|g" -e "s|\$UNITY|$MAGISKTMP/img|g" $1; else sed -i -e "s|\$MOUNTPATH||g" -e "s|\$UNITY||g" $1; fi
 }
@@ -438,7 +436,7 @@ prop_process() {
 
 set_vars() {
   SYS=/system; INITD=false; ROOTTYPE="MagiskSU"; SHEBANG="#!/system/bin/sh"
-  if [ -L /system/vendor ]; then VEN=/vendor; else VEN=/system/vendor; fi
+  if [ -L /system/vendor ] && (! $MAGISK || $SYSOVERRIDE); then VEN=/vendor; else VEN=/system/vendor; fi
   if $DYNAMICOREO && [ $API -ge 26 ]; then LIBPATCH="\/vendor"; LIBDIR=$VEN; else LIBPATCH="\/system"; LIBDIR=/system; fi  
   if $BOOTMODE; then MOD_VER="$MAGISKTMP/img/$MODID/module.prop"; else MOD_VER="$MODPATH/module.prop"; fi
   UNITY="$MODPATH"; INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop
