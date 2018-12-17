@@ -803,11 +803,14 @@ fi
 # Mount partitions and detect version/architecture
 mount_partitions
 api_level_arch_detect
-set_vars
 
 # Check for min & max api version
-[ -z $MINAPI ] || { [ $API -lt $MINAPI ] && require_new_api 'minimum'; }
+[ -z $MINAPI ] && MINAPI=21
+[ $API -lt $MINAPI ] && require_new_api 'minimum'
 [ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && require_new_api 'maximum'; }
+
+# Set variables
+set_vars
 
 if $MAGISK; then
   if $BOOTMODE; then
