@@ -7,7 +7,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support for boot scripts if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
-### v2.0 x.xx.201x
+### v2.0 12.18.2019
 * Added back backwards compatibility to magisk 15.3 like before
 * Fix script install paths
 * Made sepolicy more dynamic - supports quoted or unquoted statements now
