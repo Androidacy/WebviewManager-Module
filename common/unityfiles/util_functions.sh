@@ -440,6 +440,7 @@ set_vars() {
   if $DYNAMICOREO && [ $API -ge 26 ]; then LIBPATCH="\/vendor"; LIBDIR=$VEN; else LIBPATCH="\/system"; LIBDIR=/system; fi  
   if $BOOTMODE; then MOD_VER="$MAGISKTMP/img/$MODID/module.prop"; else MOD_VER="$MODPATH/module.prop"; fi
   if $MAGISK && $BOOTMODE; then ORIGDIR="$MAGISKTMP/mirror"; else ORIGDIR=""; fi
+  if $BOOTMODE && [ -L /system/vendor ]; ORIGVEN=$ORIGDIR/vendor; else ORIGVEN=$ORIGDIR/system/vendor; fi
   UNITY="$MODPATH"; INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop; RD=$INSTALLER/common/unityfiles/boot/ramdisk
   if ! $MAGISK || $SYSOVERRIDE; then
     if [ -d /system/addon.d ]; then INFO=/system/addon.d/$MODID-files; else INFO=/system/etc/$MODID-files; fi
