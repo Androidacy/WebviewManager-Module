@@ -847,7 +847,11 @@ if $DEBUG; then
   ui_print " "
   ui_print "- Debug mode"
   ui_print "  Debug log will be written to: /sdcard/$MODID-debug.log"
-  if $BOOTMODE; then exec 2>/storage/emulated/0/$MODID-debug.log; else exec 2>/data/media/0/$MODID-debug.log; fi
+  if $BOOTMODE; then
+    exec > >(tee -a /storage/emulated/0/$MODID-debug.log ); exec 2>/storage/emulated/0/$MODID-debug.log
+  else
+    exec > >(tee -a /data/media/0/$MODID-debug.log ); exec 2>/data/media/0/$MODID-debug.log
+  fi
   set -x
 fi
 
