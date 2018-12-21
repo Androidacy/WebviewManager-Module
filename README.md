@@ -10,6 +10,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 ### v2.1 12.21.2018
 * Fix UNITY variable in boot scripts
 * Add ORIGVEN variable since that stuff is super confusing - saving you all lots of headache here
+* Fixed debug in bootmode
 
 ### v2.0 12.18.2018
 * Added back backwards compatibility to magisk 15.3 like before
