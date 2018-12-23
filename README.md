@@ -7,22 +7,25 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support for boot scripts if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
-### v2.1 12.21.2018
+### v2.2 - 12.23.2018
+* Change unityfiles from xz to gz for newer recoveries that use toybox tar rather than busybox tar 
+
+### v2.1 - 12.21.2018
 * Fix UNITY variable in boot scripts
 * Add ORIGVEN variable since that stuff is super confusing - saving you all lots of headache here
 * Fixed debug in bootmode
 
-### v2.0 12.18.2018
+### v2.0 - 12.18.2018
 * Added back backwards compatibility to magisk 15.3 like before
 * Fix script install paths
 * Made sepolicy more dynamic - supports quoted or unquoted statements now
 * Entire installer now runs in bash shell - no more workarounds for shitty shell
 * Cleaned up code
 
-### v1.8.2 12.10.2018
+### v1.8.2 - 12.10.2018
 * Fixed boot img mounting but on uninstall
 
-### v1.8.1 12.9.2018
+### v1.8.1 - 12.9.2018
 * Got rid of sepolicy-inject support (init.d injector uses magiskpolicy now)
 * Above means that all sepolicy statements should be crafted like the typical magisk/superu one - see support thread for usage
 
