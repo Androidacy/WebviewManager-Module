@@ -435,14 +435,13 @@ prop_process() {
 }
 
 set_vars() {
-  SYS=/system; INITD=false; ROOTTYPE="MagiskSU"; SHEBANG="#!/system/bin/sh"
-  if [ -L /system/vendor ] && (! $MAGISK || $SYSOVERRIDE); then VEN=/vendor; else VEN=/system/vendor; fi
+  if $BOOTMODE; then MOD_VER="$MAGISKTMP/img/$MODID/module.prop"; $MAGISK && ORIGDIR="$MAGISKTMP/mirror"; else MOD_VER="$MODPATH/module.prop"; ORIGDIR=""; fi
+  SYS=/system; VEN=/system/vendor; ORIGVEN=$ORIGDIR/system/vendor; INITD=false; RD=$INSTALLER/common/unityfiles/boot/ramdisk
+  ROOTTYPE="MagiskSU"; SHEBANG="#!/system/bin/sh"; UNITY="$MODPATH"; INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop
   if $DYNAMICOREO && [ $API -ge 26 ]; then LIBPATCH="\/vendor"; LIBDIR=$VEN; else LIBPATCH="\/system"; LIBDIR=/system; fi  
-  if $BOOTMODE; then MOD_VER="$MAGISKTMP/img/$MODID/module.prop"; else MOD_VER="$MODPATH/module.prop"; fi
-  if $MAGISK && $BOOTMODE; then ORIGDIR="$MAGISKTMP/mirror"; else ORIGDIR=""; fi
-  if $BOOTMODE && [ -L /system/vendor ]; then ORIGVEN=$ORIGDIR/vendor; else ORIGVEN=$ORIGDIR/system/vendor; fi
-  UNITY="$MODPATH"; INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop; RD=$INSTALLER/common/unityfiles/boot/ramdisk
   if ! $MAGISK || $SYSOVERRIDE; then
+    UNITY=""
+    [ -L /system/vendor ] && { VEN=/vendor; $BOOTMODE && ORIGVEN=$ORIGDIR/vendor; }
     if [ -d /system/addon.d ]; then INFO=/system/addon.d/$MODID-files; else INFO=/system/etc/$MODID-files; fi
     if ! $MAGISK; then
       # Determine system boot script type
