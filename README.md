@@ -9,6 +9,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 ## Change Log
 ### v2.3 - x.xx.201x
 * Bug fixes with variables - fix install path issues
+* Add capability to add custom binaries and such to installer - add to common/tools folder - see OP for usage
 
 ### v2.2 - 12.23.2018
 * Change unityfiles from xz to gz for newer recoveries that use toybox tar rather than busybox tar 
