@@ -432,6 +432,7 @@ set_vars() {
     [ -L /system/vendor ] && { VEN=/vendor; $BOOTMODE && ORIGVEN=$ORIGDIR/vendor; }
     if [ -d /system/addon.d ]; then INFO=/system/addon.d/$MODID-files; else INFO=/system/etc/$MODID-files; fi
     if ! $MAGISK; then
+      PROP=$MODPATH/$MODID-props.sh; MOD_VER="/system/etc/$MODID-module.prop"
       # Determine system boot script type
       supersuimg_mount
       ROOTTYPE="other root or rootless"; MODPATH=/system/etc/init.d
@@ -449,7 +450,6 @@ set_vars() {
           ROOTTYPE="LineageOS SU"
         fi
       fi
-      PROP=$MODPATH/$MODID-props.sh; MOD_VER="/system/etc/$MODID-module.prop"
     fi
   fi
 }
@@ -463,8 +463,8 @@ initd_message() {
 }
 
 uninstall_files() {
-  local TMP FILE=$INFO
-  if [ "$1" == "$INFORD" ]; then
+  local TMP FILE=$1
+  if [ "$FILE" == "$INFORD" ]; then
     TMP="~"
   else
     $BOOTMODE && [ -f $MAGISKTMP/img/$MODID/$MODID-files ] && FILE=$MAGISKTMP/img/$MODID/$MODID-files
@@ -603,7 +603,7 @@ unity_install() {
     if [ -d /system/addon.d ]; then
       ui_print "   Installing addon.d backup script..."
       sed -i "s/<MODID>/$MODID/" $INSTALLER/common/unityfiles/addon.sh
-      cp_ch -np $INSTALLER/common/unityfiles/addon.sh /system/addon.d/$MODID.sh 0755
+      cp_ch -np 0755 $INSTALLER/common/unityfiles/addon.sh /system/addon.d/$MODID.sh
     else
       ui_print "   ! Addon.d not detected. Backup script not installed..."
     fi
