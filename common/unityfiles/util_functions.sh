@@ -559,7 +559,9 @@ unity_install() {
   
   # Addons
   if [ "$(ls -A $INSTALLER/addon 2>/dev/null)" ]; then
+    ui_print "- Running Addons -"
     for i in $INSTALLER/addon/*/main.sh; do
+      [ "$i" == "$INSTALLER/addon/External-Tools/main.sh" ] && continue
       bash $i
     done
   fi
@@ -834,7 +836,7 @@ for FILE in $INSTALLER/common/*.sh $INSTALLER/common/*.prop; do
 done
 
 # Import user tools
-[ -d "$INSTALLER/common/tools" ] && { chmod -R 0755 $INSTALLER/common/tools; mv -n $INSTALLER/common/tools $INSTALLER/common/unityfiles/tools; }
+[ -f "$INSTALLER/addon/External-Tools/main.sh" ] && bash $INSTALLER/addon/External-Tools/main.sh
 
 # Unpack ramdisk
 $RAMDISK && unpack_ramdisk
