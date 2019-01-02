@@ -836,6 +836,7 @@ for FILE in $INSTALLER/common/*.sh $INSTALLER/common/*.prop; do
 done
 
 # Import user tools
+[ -f "$INSTALLER/addon.tar.gz" ] && tar -xf $INSTALLER/addon.tar.xz -C $INSTALLER 2>/dev/null
 [ -f "$INSTALLER/addon/External-Tools/main.sh" ] && bash $INSTALLER/addon/External-Tools/main.sh
 
 # Unpack ramdisk
