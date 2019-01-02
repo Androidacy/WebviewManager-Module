@@ -557,6 +557,13 @@ unity_install() {
   # Run user install script
   [ -f "$INSTALLER/common/install.sh" ] && . $INSTALLER/common/install.sh
   
+  # Addons
+  if [ "$(ls -A $INSTALLER/addon 2>/dev/null)" ]; then
+    for i in $INSTALLER/addon/*/main.sh; do
+      bash $i
+    done
+  fi
+  
   # Sepolicy
   if $SEPOLICY; then
     [ "$MODPATH" == "/system/etc/init.d" ] && unpack_ramdisk -s
