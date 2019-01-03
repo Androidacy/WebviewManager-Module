@@ -90,7 +90,7 @@ mount_partitions() {
     mount -t ext4 -o rw $SYSTEMBLOCK /system
   fi
   [ -f /system/build.prop ] || is_mounted /system || abort "! Cannot mount /system"
-  cat /proc/mounts | grep -E '/dev/root|/system_root' >/dev/null && SYSTEM_ROOT=true || SYSTEM_ROOT=false
+  grep -qE '/dev/root|/system_root' /proc/mounts && SYSTEM_ROOT=true || SYSTEM_ROOT=false
   if [ -f /system/init ]; then
     SYSTEM_ROOT=true
     mkdir /system_root 2>/dev/null
@@ -179,7 +179,7 @@ sign_chromeos() {
 }
 
 is_mounted() {
-  cat /proc/mounts | grep -q " `readlink -f $1` " 2>/dev/null
+  grep -q " `readlink -f $1` " /proc/mounts 2>/dev/null
   return $?
 }
 
