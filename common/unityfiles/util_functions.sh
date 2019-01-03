@@ -559,6 +559,7 @@ unity_install() {
   
   # Addons
   if [ "$(ls -A $INSTALLER/addon 2>/dev/null)" ]; then
+    ui_print " "
     ui_print "- Running Addons -"
     for i in $INSTALLER/addon/*/main.sh; do
       [ "$i" == "$INSTALLER/addon/External-Tools/main.sh" ] && continue
