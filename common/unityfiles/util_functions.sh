@@ -464,6 +464,7 @@ initd_message() {
 
 uninstall_files() {
   local TMP FILE=$1
+  [ -z $FILE ] && FILE=$INFO
   if [ "$FILE" == "$INFORD" ]; then
     TMP="~"
   else
