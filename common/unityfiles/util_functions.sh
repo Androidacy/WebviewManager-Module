@@ -562,7 +562,7 @@ unity_install() {
     ui_print "- Running Addons -"
     for i in $INSTALLER/addon/*/main.sh; do
       [ "$i" == "$INSTALLER/addon/External-Tools/main.sh" ] && continue
-      bash $i
+      . $i
     done
   fi
   
@@ -837,7 +837,7 @@ done
 
 # Import user tools
 [ -f "$INSTALLER/addon.tar.gz" ] && tar -xf $INSTALLER/addon.tar.xz -C $INSTALLER 2>/dev/null
-[ -f "$INSTALLER/addon/External-Tools/main.sh" ] && bash $INSTALLER/addon/External-Tools/main.sh
+[ -f "$INSTALLER/addon/External-Tools/main.sh" ] && . $INSTALLER/addon/External-Tools/main.sh
 
 # Unpack ramdisk
 $RAMDISK && unpack_ramdisk
