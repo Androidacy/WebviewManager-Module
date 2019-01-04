@@ -84,12 +84,12 @@ mount_partitions() {
   fi
   [ -z $SLOT ] || ui_print "- Current boot slot: $SLOT"
   ui_print "- Mounting /system, /vendor"
-  [ -f /system/build.prop ] || is_mounted_unity /system || mount -o rw /system 2>/dev/null
-  if ! is_mounted_unity /system && ! [ -f /system/build.prop ]; then
+  [ -f /system/build.prop ] || is_mounted /system || mount -o rw /system 2>/dev/null
+  if ! is_mounted /system && ! [ -f /system/build.prop ]; then
     SYSTEMBLOCK=`find_block system$SLOT`
     mount -t ext4 -o rw $SYSTEMBLOCK /system
   fi
-  [ -f /system/build.prop ] || is_mounted_unity /system || abort "! Cannot mount /system"
+  [ -f /system/build.prop ] || is_mounted /system || abort "! Cannot mount /system"
   grep -qE '/dev/root|/system_root' /proc/mounts && SYSTEM_ROOT=true || SYSTEM_ROOT=false
   if [ -f /system/init ]; then
     SYSTEM_ROOT=true
@@ -100,12 +100,12 @@ mount_partitions() {
   $SYSTEM_ROOT && { ui_print "- Device using system_root_image"; ROOT=/system_root; }
   if [ -L /system/vendor ]; then
     # Seperate /vendor partition
-    is_mounted_unity /vendor || mount -o rw /vendor 2>/dev/null
-    if ! is_mounted_unity /vendor; then
+    is_mounted /vendor || mount -o rw /vendor 2>/dev/null
+    if ! is_mounted /vendor; then
       VENDORBLOCK=`find_block vendor$SLOT`
       mount -t ext4 -o rw $VENDORBLOCK /vendor
     fi
-    is_mounted_unity /vendor || abort "! Cannot mount /vendor"
+    is_mounted /vendor || abort "! Cannot mount /vendor"
   fi
 }
 
@@ -178,7 +178,7 @@ sign_chromeos() {
   mv new-boot.img.signed new-boot.img
 }
 
-is_mounted_unity() {
+is_mounted() {
   grep -q " `readlink -f $1` " /proc/mounts 2>/dev/null
   return $?
 }
@@ -260,12 +260,12 @@ mktouch() {
 supersuimg_mount() {
   supersuimg=$(ls /cache/su.img /data/su.img 2>/dev/null)
   if [ "$supersuimg" ]; then
-    if ! is_mounted_unity /su; then
+    if ! is_mounted /su; then
       ui_print "    Mounting /su..."
       [ -d /su ] || mkdir /su 2>/dev/null
       mount -t ext4 -o rw,noatime $supersuimg /su 2>/dev/null
       for i in 0 1 2 3 4 5 6 7; do
-        is_mounted_unity /su && break
+        is_mounted /su && break
         local loop=/dev/block/loop$i
         mknod $loop b 7 $i
         losetup $loop $supersuimg
@@ -771,7 +771,7 @@ print_modname
 
 # Mount data and cache
 ui_print "- Mounting /data, /cache"
-is_mounted_unity /data || mount /data || is_mounted_unity /cache || mount /cache || { ui_print "! Unable to mount partitions"; exit 1; }
+is_mounted /data || mount /data || is_mounted /cache || mount /cache || { ui_print "! Unable to mount partitions"; exit 1; }
 
 # Determine magisk path if applicable
 if [ -f /data/adb/magisk/util_functions.sh ]; then
@@ -795,6 +795,7 @@ else
     sed -i "s/-o ro/-o rw/g" $INSTALLER/common/unityfiles/util_functions_mag.sh
   fi
   . $INSTALLER/common/unityfiles/util_functions_mag.sh
+  . $INSTALLER/common/unityfiles/util_functions2.sh
   [ ! -z $MAGISK_VER_CODE -a $MAGISK_VER_CODE -ge $MINMAGISK ] || require_new_magisk
   if [ $MAGISK_VER_CODE -ge 18000 ]; then MAGISKTMP=/sbin/.magisk; else MAGISKTMP=/sbin/.core; fi
 fi
