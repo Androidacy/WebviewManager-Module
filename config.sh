@@ -57,7 +57,7 @@ unity_custom() {
   :
 }
 
-# Things that ONLY run during an upgrade (occurs before anything, uninstall or install) - you probably won't need this
+# Things that ONLY run during an upgrade (occurs after unity_custom) - you probably won't need this
 # Note that the normal upgrade process is just an uninstall followed by an install
 unity_upgrade() {
   :
