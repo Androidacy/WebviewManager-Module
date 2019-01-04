@@ -84,12 +84,12 @@ mount_partitions() {
   fi
   [ -z $SLOT ] || ui_print "- Current boot slot: $SLOT"
   ui_print "- Mounting /system, /vendor"
-  [ -f /system/build.prop ] || is_mounted /system || mount -o rw /system 2>/dev/null
-  if ! is_mounted /system && ! [ -f /system/build.prop ]; then
+  [ -f /system/build.prop ] || is_mounted_unity /system || mount -o rw /system 2>/dev/null
+  if ! is_mounted_unity /system && ! [ -f /system/build.prop ]; then
     SYSTEMBLOCK=`find_block system$SLOT`
     mount -t ext4 -o rw $SYSTEMBLOCK /system
   fi
-  [ -f /system/build.prop ] || is_mounted /system || abort "! Cannot mount /system"
+  [ -f /system/build.prop ] || is_mounted_unity /system || abort "! Cannot mount /system"
   grep -qE '/dev/root|/system_root' /proc/mounts && SYSTEM_ROOT=true || SYSTEM_ROOT=false
   if [ -f /system/init ]; then
     SYSTEM_ROOT=true
@@ -100,12 +100,12 @@ mount_partitions() {
   $SYSTEM_ROOT && { ui_print "- Device using system_root_image"; ROOT=/system_root; }
   if [ -L /system/vendor ]; then
     # Seperate /vendor partition
-    is_mounted /vendor || mount -o rw /vendor 2>/dev/null
-    if ! is_mounted /vendor; then
+    is_mounted_unity /vendor || mount -o rw /vendor 2>/dev/null
+    if ! is_mounted_unity /vendor; then
       VENDORBLOCK=`find_block vendor$SLOT`
       mount -t ext4 -o rw $VENDORBLOCK /vendor
     fi
-    is_mounted /vendor || abort "! Cannot mount /vendor"
+    is_mounted_unity /vendor || abort "! Cannot mount /vendor"
   fi
 }
 
@@ -178,7 +178,7 @@ sign_chromeos() {
   mv new-boot.img.signed new-boot.img
 }
 
-is_mounted() {
+is_mounted_unity() {
   grep -q " `readlink -f $1` " /proc/mounts 2>/dev/null
   return $?
 }
@@ -260,12 +260,12 @@ mktouch() {
 supersuimg_mount() {
   supersuimg=$(ls /cache/su.img /data/su.img 2>/dev/null)
   if [ "$supersuimg" ]; then
-    if ! is_mounted /su; then
+    if ! is_mounted_unity /su; then
       ui_print "    Mounting /su..."
       [ -d /su ] || mkdir /su 2>/dev/null
       mount -t ext4 -o rw,noatime $supersuimg /su 2>/dev/null
       for i in 0 1 2 3 4 5 6 7; do
-        is_mounted /su && break
+        is_mounted_unity /su && break
         local loop=/dev/block/loop$i
         mknod $loop b 7 $i
         losetup $loop $supersuimg
@@ -771,7 +771,7 @@ print_modname
 
 # Mount data and cache
 ui_print "- Mounting /data, /cache"
-is_mounted /data || mount /data || is_mounted /cache || mount /cache || { ui_print "! Unable to mount partitions"; exit 1; }
+is_mounted_unity /data || mount /data || is_mounted_unity /cache || mount /cache || { ui_print "! Unable to mount partitions"; exit 1; }
 
 # Determine magisk path if applicable
 if [ -f /data/adb/magisk/util_functions.sh ]; then
@@ -876,6 +876,7 @@ elif $MAGISK && ! $SYSOVERRIDE && [ -f "/system/addon.d/$MODID-files" -o -f "/sy
   mount -o rw,remount /system
   [ -L /system/vendor ] && mount -o rw,remount /vendor
   if [ -d /system/addon.d ]; then INFO=/system/addon.d/$MODID-files; else INFO=/system/etc/$MODID-files; fi
+  unity_upgrade
   unity_uninstall
   INFO="$MODPATH/$MODID-files"
   unity_install
@@ -884,7 +885,7 @@ elif [ -f "$MOD_VER" ]; then
     ui_print " "
     ui_print "  ! Mod present in system but not in ramdisk!"
     ui_print "  ! Running upgrade..."
-    RAMDISK=false; unity_uninstall
+    RAMDISK=false; unity_upgrade; unity_uninstall
     RAMDISK=true; unity_install
   elif [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $INSTALLER/module.prop) ]; then
     ui_print " "
@@ -893,6 +894,7 @@ elif [ -f "$MOD_VER" ]; then
   else
     ui_print " "
     ui_print "  ! Older version detected! Upgrading..."
+    unity_upgrade
     unity_uninstall
     unity_install
   fi

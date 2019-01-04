@@ -10,6 +10,8 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 ### v2.3 - x.xx.201x
 * Bug fixes with variables - fix install path issues
 * Add addons feature
+* Add unity_upgrade function in config.sh - only for specific/unlikely situation in which something must run during an upgrade - such as backing up app data
+* Temporary fix for `cat: write error` (magisk bug) - use is_mounted_unity instead of is_mounted
 
 ### v2.2 - 12.23.2018
 * Change unityfiles from xz to gz for newer recoveries that use toybox tar rather than busybox tar 
