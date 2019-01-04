@@ -52,10 +52,17 @@ MINAPI=21
 #RAMDISK=true
 #DEBUG=true
 
-# Custom Variables for Install AND Uninstall - Keep everything within this function
+# Custom Variables for Install AND Uninstall - Keep everything within this function - runs before uninstall/install
 unity_custom() {
   :
 }
+
+# Things that ONLY run during an upgrade (occurs before anything, uninstall or install) - you probably won't need this
+# Note that the normal upgrade process is just an uninstall followed by an install
+unity_upgrade() {
+  :
+}
+
 
 # Custom Functions for Install AND Uninstall - You can put them here
 
