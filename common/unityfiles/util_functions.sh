@@ -311,8 +311,15 @@ cp_ch() {
 
 patch_script() {
   [ -L /system/vendor ] && local VEN=/vendor
-  sed -i -e "s|<ROOT>|\"$ROOT\"|" -e "s|<SYS>|$ROOT/system|" -e "s|<VEN>|$ROOT$VEN|" -e "s|<SHEBANG>|$SHEBANG|" -e "s|<MAGISK>|$MAGISK|" -e "s|<LIBDIR>|$LIBDIR|" -e "s|<SYSOVERRIDE>|$SYSOVERRIDE|" -e "s|<MODID>|$MODID|" $1
-  if $MAGISK; then sed -i -e "s|\$MOUNTPATH|$MAGISKTMP/img|g" -e "s|\$UNITY|$MAGISKTMP/img/$MODID|g" -e "s|<INFO>|$(echo $INFO | sed "s|$MOUNTPATH|$MAGISKTMP/img|")|" $1; else sed -i -e "s|\$MOUNTPATH||g" -e "s|\$UNITY||g" -e "s|<INFO>|$INFO|" $1; fi
+  sed -i "2i $i=$ROOT/system" $1; sed -i "2i $i=$ROOT$VEN" $1
+  for i in "ROOT" "SHEBANG" "MAGISK" "LIBDIR" "SYSOVERRIDE" "MODID"; do
+    sed -i "2i $i=$(eval echo \$$i)" $1
+  done
+  if $MAGISK; then 
+    sed -i -e "s|\$MOUNTPATH|$MAGISKTMP/img|g" -e "s|\$UNITY|$MAGISKTMP/img/$MODID|g" -e "2i INFO=$(echo $INFO | sed "s|$MOUNTPATH|$MAGISKTMP/img|")" $1
+  else
+    sed -i -e "s|\$MOUNTPATH||g" -e "s|\$UNITY||g" -e "2i INFO=$INFO" $1
+  fi
 }
 
 install_script() {
