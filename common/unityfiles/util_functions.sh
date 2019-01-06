@@ -556,7 +556,7 @@ unity_uninstall() {
       . $i
     done
     ui_print " "
-    ui_print "- Installing (cont) -"
+    ui_print "- Uninstalling (cont) -"
   fi
 
   # Remove files
