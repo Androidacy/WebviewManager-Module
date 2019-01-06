@@ -486,7 +486,7 @@ unity_install() {
     # Install rom backup script
     if [ -d /system/addon.d ]; then
       ui_print "   Installing addon.d backup script..."
-      sed -i "s/<MODID>/$MODID/" $INSTALLER/common/unityfiles/addon.sh
+      sed -i "2i MODID=$MODID" $INSTALLER/common/unityfiles/addon.sh
       cp_ch -np 0755 $INSTALLER/common/unityfiles/addon.sh /system/addon.d/$MODID.sh
     else
       ui_print "   ! Addon.d not detected. Backup script not installed..."
@@ -679,10 +679,10 @@ else
   recovery_actions
 fi
 
-# Insert modid and mustom user script into mod script
+# Insert modid and custom user script into mod script
 for i in "post-fs-data.sh" "service.sh"; do
   cp -f $INSTALLER/common/unityfiles/modid.sh $INSTALLER/common/unityfiles/$i
-  sed -i -e "s/<MODID>/$MODID/" -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/$i" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/$i
+  sed -i -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/$i" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/$i
   mv -f $INSTALLER/common/unityfiles/$i $INSTALLER/common/$i
 done
 
