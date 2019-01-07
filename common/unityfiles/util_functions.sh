@@ -432,7 +432,7 @@ unity_install() {
   if [ -d "$INSTALLER/addon/Aroma-Installer" ]; then
     ui_print " "
     ui_print "- Running Aroma Installer Addon -"
-    . $INSTALLER/addon/Aroma-Installer/aroma.sh
+    . $INSTALLER/addon/Aroma-Installer/install.sh
     ui_print " "
     ui_print "- Installing (cont) -"
   fi
@@ -449,6 +449,7 @@ unity_install() {
     ui_print " "
     ui_print "- Running Addons -"
     for i in $INSTALLER/addon/*/install.sh; do
+      [ "$i" == "$INSTALLER/addon/Aroma-Installer/install.sh" ] && continue
       ui_print "  Running $(echo $i | sed -r "s|$INSTALLER/addon/(.*)/install.sh|\1|")..."
       . $i
     done
