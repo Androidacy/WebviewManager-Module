@@ -259,7 +259,7 @@ cleanup() {
   ui_print "    *    Unity by ahrion & zackptg5 @ XDA     *"
   ui_print "    *******************************************"
   ui_print " "
-  exit 0
+  [ -d "$INSTALLER/addon/Aroma-Installer" ] || exit 0
 }
 
 device_check() {
@@ -427,6 +427,15 @@ uninstall_files() {
 unity_install() {
   ui_print " "
   ui_print "- Installing"
+  
+  # Run Aroma Installer Addon if present
+  if [ -d "$INSTALLER/addon/Aroma-Installer" ]; then
+    ui_print " "
+    ui_print "- Running Aroma Installer Addon -"
+    . $INSTALLER/addon/Aroma-Installer/aroma.sh
+    ui_print " "
+    ui_print "- Installing (cont) -"
+  fi
 
   # Make info file
   rm -f $INFO
