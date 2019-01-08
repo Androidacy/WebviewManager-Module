@@ -1,6 +1,8 @@
 # Unity (Un)Installer Template
 Unity Installer allows 1 zip to work for multiple devices and root solutions. [More details in support thread](https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612).
 
+## [Addons Repository](https://github.com/Zackptg5/Unity-Addons)
+
 ## Compatibility
 * Android Lollipop+
 * Selinux enforcing
