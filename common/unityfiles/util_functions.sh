@@ -259,7 +259,8 @@ cleanup() {
   ui_print "    *    Unity by ahrion & zackptg5 @ XDA     *"
   ui_print "    *******************************************"
   ui_print " "
-  [ -d "$INSTALLER/addon/Aroma-Installer" ] || exit 0
+  [ -d "$INSTALLER/addon/Aroma-Installer" ] || { rm -rf $TMPDIR; exit 0; }
+  rm -rf $TMPDIR
 }
 
 device_check() {
