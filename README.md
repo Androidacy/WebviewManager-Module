@@ -7,6 +7,13 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support for boot scripts if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
+### v3.0 - 1.7.2019
+* Bug fixes with variables - fix install path issues
+* Other bug fixes (mainly for system installs)
+* Create addons feature - move all non-essentials to addons (like ramdisk)
+* Add unity_upgrade function in config.sh - only for specific/unlikely situation in which something must run during an upgrade - such as backing up app data
+* Temporary fix/workaround for `cat: write error` (magisk bug)
+
 ### v2.2 - 12.23.2018
 * Change unityfiles from xz to gz for newer recoveries that use toybox tar rather than busybox tar 
 
