@@ -15,6 +15,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * Create addons feature - move all non-essentials to addons (like ramdisk)
 * Add unity_upgrade function in config.sh - only for specific/unlikely situation in which something must run during an upgrade - such as backing up app data
 * Temporary fix/workaround for `cat: write error` (magisk bug)
+* Renamed $ZIP to $ZIPFILE so zip binary will function properly
 
 ### v2.2 - 12.23.2018
 * Change unityfiles from xz to gz for newer recoveries that use toybox tar rather than busybox tar 
