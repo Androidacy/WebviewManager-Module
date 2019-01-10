@@ -27,8 +27,7 @@ setup_flashable() {
     export PATH=$TMPDIR/bin:$PATH
   fi
   # Bootmode detection with proper busybox binaries
-  ps | grep zygote | grep -qv grep && BOOTMODE=true || BOOTMODE=false
-  $BOOTMODE || ps -A | grep zygote | grep -qv grep && BOOTMODE=true
+   ps -A | grep zygote | grep -qv grep && BOOTMODE=true || BOOTMODE=false
   # Get Outfd
   $BOOTMODE && return
   if [ -z $OUTFD ] || readlink /proc/$$/fd/$OUTFD | grep -q /tmp; then

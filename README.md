@@ -9,7 +9,7 @@ Unity Installer allows 1 zip to work for multiple devices and root solutions. [M
 * All root solutions (requires init.d support for boot scripts if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
 
 ## Change Log
-### v3.1 - 1.xx.2019
+### v3.1 - 1.10.2019
 * Actually enforce minapi of 21
 * Bring util_functions more in line with magisk util_functions
 * Change debug paths - follow /sdcard symlink in bootmode and, same directory zip was in for twrp
