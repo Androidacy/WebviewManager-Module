@@ -262,7 +262,7 @@ device_check() {
 
 cp_ch() {
   #UBAK: false for no backup file creation. REST: false for no file restore on uninstall
-  local ARGS="$(echo $1 | sed 's/r//')" OPT=`getopt -o inr -- "$@"` BAK BAKFILE EXT PERM=false UBAK=true REST=true FOL=false
+  local OPT=`getopt -o inr -- "$@"` BAK BAKFILE EXT UBAK=true REST=true FOL=false OFILES="$2" FILE="$3" PERM=$4 SAME=false
   eval set -- "$OPT"
   while true; do
     case "$1" in
@@ -278,35 +278,33 @@ cp_ch() {
     $INSTALLER/*|$MOUNTPATH/*|$MAGISKTMP/img/*|$MAGISKBIN/*) BAK=false; BAKFILE=$INFO; EXT=".bak";;
     *) BAK=true; BAKFILE=$INFO; EXT=".bak";;
   esac
-  PERM=$3; [ -z $PERM ] && PERM=0644
-  if $FOL; then
-    for FILE in $(find $1 -type f 2>/dev/null | sed "s|$INSTALLER||" 2>/dev/null); do
-      cp_ch $ARGS "$INSTALLER$FILE" "$2$FILE"
-    done
-  elif $BAK; then
-    if $UBAK && $REST; then
-      [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ] && echo "$2" >> $BAKFILE
-      [ -f "$2" -a ! -f "$2$EXT" ] && { cp -af $2 $2$EXT; echo "$2$EXT" >> $BAKFILE; }
-    elif ! $UBAK && $REST; then
-      [ ! "$(grep "$2$" $BAKFILE 2>/dev/null)" ] && echo "$2" >> $BAKFILE
-    elif ! $UBAK && ! $REST; then
-      [ ! "$(grep "$2NORESTORE$" $BAKFILE 2>/dev/null)" ] && echo "$2NORESTORE" >> $BAKFILE
+  [ -z $PERM ] && PERM=0644
+  $FOL && { OFILES=$(find $1 -type f 2>/dev/null); [ "$(echo $1 | sed 's|.*/||')" == "$(echo $2 | sed 's|.*/||')" ] && SAME=true; }
+  for OFILE in $OFILES; do
+    if $FOL; then $SAME && FILE=$(echo $OFILE | sed "s|$1|$2|") || FILE=$(echo $OFILE | sed "s|$1|$2$(basename $1)|"); fi
+    if $BAK; then
+      if $UBAK && $REST; then
+        [ ! "$(grep "$FILE$" $BAKFILE 2>/dev/null)" ] && echo "$FILE" >> $BAKFILE
+        [ -f "$FILE" -a ! -f "$FILE$EXT" ] && { cp -af $FILE $FILE$EXT; echo "$FILE$EXT" >> $BAKFILE; }
+      elif ! $UBAK && $REST; then
+        [ ! "$(grep "$FILE$" $BAKFILE 2>/dev/null)" ] && echo "$FILE" >> $BAKFILE
+      elif ! $UBAK && ! $REST; then
+        [ ! "$(grep "$FILE\NORESTORE$" $BAKFILE 2>/dev/null)" ] && echo "$FILE\NORESTORE" >> $BAKFILE
+      fi
     fi
-  fi
-  mkdir -p "$(dirname $2)"
-  cp -af "$1" "$2" 2>/dev/null
-  chmod $PERM "$2"
-  case $2 in
-    */vendor/*.apk) chcon u:object_r:vendor_app_file:s0 $2;;
-    */vendor/etc/*) chcon u:object_r:vendor_configs_file:s0 $2;;
-    */vendor/*) chcon u:object_r:vendor_file:s0 $2;;
-    */system/*) chcon u:object_r:system_file:s0 $2;;
-  esac
+    install -D -m $PERM "$OFILE" "$FILE"
+    case $FILE in
+      */vendor/*.apk) chcon u:object_r:vendor_app_file:s0 $FILE;;
+      */vendor/etc/*) chcon u:object_r:vendor_configs_file:s0 $FILE;;
+      */vendor/*) chcon u:object_r:vendor_file:s0 $FILE;;
+      */system/*) chcon u:object_r:system_file:s0 $FILE;;
+    esac
+  done
 }
 
 patch_script() {
   [ -L /system/vendor ] && local VEN=/vendor
-  sed -i -e "1i $SHEBANG" -e "3i SYS=$ROOT/system" -e "3i VEN=$ROOT$VEN" $1
+  sed -i -e "1i $SHEBANG" -e "2i SYS=$ROOT/system" -e "2i VEN=$ROOT$VEN" $1
   for i in "ROOT" "MAGISK" "LIBDIR" "SYSOVERRIDE" "MODID"; do
     sed -i "3i $i=$(eval echo \$$i)" $1
   done
@@ -512,16 +510,17 @@ unity_install() {
 
   # Install files
   ui_print "   Installing files for $ARCH SDK $API device..."
-  rm -f $INSTALLER/system/placeholder
   $IS64BIT || rm -rf $INSTALLER/system/lib64 $INSTALLER/system/vendor/lib64
-  $DYNAMICAPP && [ -d "/system/priv-app" ] && mv -f $INSTALLER/system/app $INSTALLER/system/priv-app
+  $DYNAMICAPP && [ -d "/system/priv-app" ] && [ -d "$INSTALLER/system/app" ] && mv -f $INSTALLER/system/app $INSTALLER/system/priv-app
   if $DYNAMICOREO && [ $API -ge 26 ]; then
-    for FILE in $(find $INSTALLER/system/lib*/* -maxdepth 0 -type d 2>/dev/null | sed -e "s|$INSTALLER/system/lib.*/modules||" -e "s|$INSTALLER/system||"); do
+    for FILE in $(find $INSTALLER/system/lib*/* -maxdepth 0 -type d 2>/dev/null | sed -e "s|$INSTALLER/system/lib.*/modules||" -e "s|$INSTALLER/system/||"); do
+      mkdir -p $(dirname $INSTALLER/system/vendor/$FILE)
       mv -f $INSTALLER/system/$FILE $INSTALLER/system/vendor/$FILE
     done
   fi
-  cp_ch -r $INSTALLER/system $UNITY/system
-  
+  rm -f $INSTALLER/system/placeholder
+  cp_ch -r $INSTALLER/system $UNITY
+
   # Add blank line to end of all prop/script files if not already present
   for FILE in $MODPATH/*.sh $MODPATH/*.prop; do
     [ -f $FILE ] && { [ "$(tail -1 $FILE)" ] && echo "" >> $FILE; }
@@ -595,7 +594,7 @@ for i in version name author; do
   CHARS=$((${#NEW}-$(echo "$NEW" | tr -cd "©®™" | wc -m)))
   SPACES=""
   if [ $CHARS -le 41 ]; then
-    for i in $(seq $(((41-$CHARS) / 2))); do
+    for j in $(seq $(((41-$CHARS) / 2))); do
       SPACES="${SPACES} "
     done
   fi
