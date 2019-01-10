@@ -29,9 +29,9 @@ unzip -o "$ZIPFILE" 'common/unityfiles/tools.tar.gz' 'common/unityfiles/util_fun
 [ -f "$INSTALLER/common/unityfiles/tools.tar.gz" ] || { ui_print "! Unable to extract zip file !"; exit 1; }
 
 # Load Util_Functions, Add In-House Binaries to PATH, Start Bash Shell
-ARCH32=`getprop ro.product.cpu.abi | cut -c-3`
-[ -z $ARCH32 ] && ARCH32=`getprop ro.product.cpu.abi2 | cut -c-3`
-[ -z $ARCH32 ] && ARCH32=arm
+export ARCH32=`getprop ro.product.cpu.abi | cut -c-3`
+[ -z $ARCH32 ] && export ARCH32=`getprop ro.product.cpu.abi2 | cut -c-3`
+[ -z $ARCH32 ] && export ARCH32=arm
 (tar -xf $INSTALLER/common/unityfiles/tools.tar.gz -C $INSTALLER/common/unityfiles) || { ui_print "! Unable to extract unity tools !"; exit 1; }
 chmod -R 755 $INSTALLER/common/unityfiles/tools/$ARCH32
 echo $PATH | grep -q "$INSTALLER/common/unityfiles/tools/$ARCH32" || export PATH=$INSTALLER/common/unityfiles/tools/$ARCH32:$PATH
