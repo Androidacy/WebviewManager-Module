@@ -281,7 +281,7 @@ cp_ch() {
   [ -z $PERM ] && PERM=0644
   $FOL && { OFILES=$(find $1 -type f 2>/dev/null); [ "$(echo $1 | sed 's|.*/||')" == "$(echo $2 | sed 's|.*/||')" ] && SAME=true; }
   for OFILE in $OFILES; do
-    if $FOL; then $SAME && FILE=$(echo $OFILE | sed "s|$1|$2|") || FILE=$(echo $OFILE | sed "s|$1|$2$(basename $1)|"); fi
+    if $FOL; then $SAME && FILE=$(echo $OFILE | sed "s|$1|$2|") || FILE=$(echo $OFILE | sed "s|$1|$2/$(basename $1)|"); fi
     if $BAK; then
       if $UBAK && $REST; then
         [ ! "$(grep "$FILE$" $BAKFILE 2>/dev/null)" ] && echo "$FILE" >> $BAKFILE
