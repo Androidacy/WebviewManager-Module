@@ -4,17 +4,6 @@
 # by topjohnwu
 #
 ##########################################################################################
-##########################################################################################
-#
-# Instructions:
-#
-# 1. Place your files into system folder (delete the placeholder file)
-# 2. Fill in your module's info into module.prop
-# 3. Configure the settings in this file (config.sh)
-# 4. If you need boot scripts, add them into common/post-fs-data.sh or common/service.sh
-# 5. Add your additional or modified system properties into common/system.prop
-#
-##########################################################################################
 
 ##########################################################################################
 # Defines
@@ -35,14 +24,14 @@ POSTFSDATA=false
 # Set to true if you need late_start service script
 LATESTARTSERVICE=false
 
-# Unity Variables
-# Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maxium android version for your mod (note that unity's minapi is 21 (lollipop) due to bash and magisk binaries)
+### Unity Variables
+# Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maxium android version for your mod (note that unity's minapi is 21 (lollipop) due to bash)
 # Uncomment SEPOLICY if you have sepolicy patches in common/sepolicy.sh. Unity will take care of the rest
-# Uncomment DYNAMICOREO if you want libs installed to vendor for oreo and newer and system for anything older
+# Uncomment DYNAMICOREO if you want libs installed to vendor for oreo+ and system for anything older
 # Uncomment DYNAMICAPP if you want anything in $INSTALLER/system/app to be installed to the optimal app directory (/system/priv-app if it exists, /system/app otherwise)
-# Uncomment SYSOVERRIDE if you want the mod to always be installed to system (even on magisk)
-# Uncomment DEBUG if you want full debug logs (saved to SDCARD)
-MINAPI=21
+# Uncomment SYSOVERRIDE if you want the mod to always be installed to system (even on magisk) - note that this can still be set to true by the user by adding 'sysover' to the zipname
+# Uncomment DEBUG if you want full debug logs (saved to /sdcard in magisk manager and the zip directory in twrp) - note that this can still be set to true by the user by adding 'debug' to the zipname
+#MINAPI=21
 #MAXAPI=25
 #SEPOLICY=true
 #SYSOVERRIDE=true
@@ -65,10 +54,8 @@ unity_upgrade() {
 # Custom Functions for Install AND Uninstall - You can put them here
 
 ##########################################################################################
-# Installation Message
+# Installation Message - Don't change this
 ##########################################################################################
-
-# Set what you want to show when installing your mod
 
 print_modname() {
   ui_print " "
@@ -118,12 +105,12 @@ set_permissions() {
   # Some templates if you have no idea what to do:
   # Note that all files/folders have the $UNITY prefix - keep this prefix on all of your files/folders
   # Also note the lack of '/' between variables - preceding slashes are already included in the variables
-  # Use $SYS for system and $VEN for vendor (Do not use $SYS$VEN, the $VEN is set to proper vendor path already - could be /vendor, /system/vendor, etc.)
+  # Use $VEN for vendor (Do not use /system$VEN, the $VEN is set to proper vendor path already - could be /vendor, /system/vendor, etc.)
 
   # set_perm_recursive  <dirname>                <owner> <group> <dirpermission> <filepermission> <contexts> (default: u:object_r:system_file:s0)
-  # set_perm_recursive $UNITY$SYS/lib 0 0 0755 0644
+  # set_perm_recursive $UNITY/system/lib 0 0 0755 0644
   # set_perm_recursive $UNITY$VEN/lib/soundfx 0 0 0755 0644
 
   # set_perm  <filename>                         <owner> <group> <permission> <contexts> (default: u:object_r:system_file:s0)
-  # set_perm $UNITY$SYS/lib/libart.so 0 0 0644
+  # set_perm $UNITY/system/lib/libart.so 0 0 0644
 }
