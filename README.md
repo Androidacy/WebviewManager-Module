@@ -1,5 +1,5 @@
 # Unity (Un)Installer Template
-Unity Installer allows 1 zip to work for multiple devices and root solutions. [More details in the wiki](hhttps://github.com/Zackptg5/Unity/wiki)
+Unity Installer allows 1 zip to work for multiple devices and root solutions. [More details in the wiki](https://github.com/Zackptg5/Unity/wiki)
 
 ## [Addons Repository](https://github.com/Zackptg5/Unity-Addons)
 
