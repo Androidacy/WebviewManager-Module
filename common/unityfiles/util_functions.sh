@@ -252,11 +252,11 @@ cleanup() {
 }
 
 device_check() {
-  if [ "$(grep_prop ro.product.device)" == "$1" ] || [ "$(grep_prop ro.build.product)" == "$1" ]; then
-    return 0
-  else
-    return 1
-  fi
+  local PROP$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  for i in "ro.product.device" "ro.build.product"; do
+    [ "$(sed -n "s/^$i=//p" /system/build.prop 2>/dev/null | head -n 1 | tr '[:upper:]' '[:lower:]')" == "$PROP" -o "$(sed -n "s/^$i=//p" $VEN/build.prop 2>/dev/null | head -n 1 | tr '[:upper:]' '[:lower:]')" == "$PROP" ] && return 0
+  done
+  return 1
 }
 
 cp_ch() {
