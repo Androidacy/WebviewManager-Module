@@ -27,7 +27,7 @@ setup_flashable() {
     export PATH=$TMPDIR/bin:$PATH
   fi
   # Bootmode detection with proper busybox binaries
-   ps -A | grep zygote | grep -qv grep && BOOTMODE=true || BOOTMODE=false
+  ps -A | grep zygote | grep -qv grep && BOOTMODE=true || BOOTMODE=false
   # Get Outfd
   $BOOTMODE && return
   if [ -z $OUTFD ] || readlink /proc/$$/fd/$OUTFD | grep -q /tmp; then
@@ -209,29 +209,6 @@ supersuimg_mount() {
   fi
 }
 
-require_new_magisk() {
-  ui_print "*******************************"
-  ui_print " Please install Magisk $(echo $MINMAGISK | sed -r "s/(.{2})(.{1}).*/v\1.\2+\!/") "
-  ui_print "*******************************"
-  abort
-}
-
-require_new_api() {
-  ui_print "***********************************"
-  ui_print "!   Your system API of $API isn't"
-  if [ "$1" == "minimum" ]; then
-    ui_print "! higher than the $1 API of $MINAPI"
-    ui_print "! Please upgrade to a newer version"
-    ui_print "!  of android with at least API $MINAPI"
-  else
-    ui_print "!   lower than the $1 API of $MAXAPI"
-    ui_print "! Please downgrade to an older version"
-    ui_print "!    of android with at most API $MAXAPI"
-  fi
-  ui_print "***********************************"
-  abort
-}
-
 cleanup() {
   [ -d "$RD" ] && repack_ramdisk
   if $MAGISK; then
@@ -354,6 +331,7 @@ prop_process() {
 }
 
 set_vars() {
+  local ROOTTYPE="MagiskSu"
   if $BOOTMODE; then
     MOD_VER="$MAGISKTMP/img/$MODID/module.prop"
     $MAGISK && ORIGDIR="$MAGISKTMP/mirror"
@@ -363,7 +341,7 @@ set_vars() {
   fi
   SYS=/system; VEN=/system/vendor; ORIGVEN=$ORIGDIR/system/vendor; INITD=false
   RD=$INSTALLER/common/unityfiles/boot/ramdisk; INFORD="$RD/$MODID-files"
-  ROOTTYPE="MagiskSU"; SHEBANG="#!/system/bin/sh"; UNITY="$MODPATH"; INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop
+  SHEBANG="#!/system/bin/sh"; UNITY="$MODPATH"; INFO="$MODPATH/$MODID-files"; PROP=$MODPATH/system.prop
   if $DYNAMICOREO && [ $API -ge 26 ]; then LIBPATCH="\/vendor"; LIBDIR=$VEN; else LIBPATCH="\/system"; LIBDIR=/system; fi  
   if ! $MAGISK || $SYSOVERRIDE; then
     UNITY=""
@@ -372,19 +350,21 @@ set_vars() {
     if ! $MAGISK; then
       # Determine system boot script type
       supersuimg_mount
-      PROP=$MODPATH/$MODID-props.sh; MOD_VER="/system/etc/$MODID-module.prop"; MODPATH=/system/etc/init.d; ROOTTYPE="other root or rootless"
+      PROP=$MODPATH/$MODID-props.sh; MOD_VER="/system/etc/$MODID-module.prop"; MODPATH=/system/etc/init.d; ROOTTYPE="Rootless/other root"
       if [ "$supersuimg" ] || [ -d /su ]; then
-        SHEBANG="#!/su/bin/sush"; ROOTTYPE="systemless SuperSU"; MODPATH=/su/su.d
+        SHEBANG="#!/su/bin/sush"; ROOTTYPE="Systemless SuperSU"; MODPATH=/su/su.d
       elif [ -e "$(find /data /cache -name supersu_is_here | head -n1)" ]; then
-        SHEBANG="#!/su/bin/sush"; ROOTTYPE="systemless SuperSU"
+        SHEBANG="#!/su/bin/sush"; ROOTTYPE="Systemless SuperSU"
         MODPATH=$(dirname `find /data /cache -name supersu_is_here | head -n1` 2>/dev/null)/su.d
       elif [ -d /system/su ] || [ -f /system/xbin/daemonsu ] || [ -f /system/xbin/sugote ] || [ -f /system/xbin/su ]; then
-        MODPATH=/system/su.d; ROOTTYPE="system SuperSU"
+        MODPATH=/system/su.d; ROOTTYPE="System SuperSU"
       elif [ -f /system/xbin/su ]; then
-        [ "$(grep "SuperSU" /system/xbin/su)" ] && { MODPATH=/system/su.d; ROOTTYPE="system SuperSU"; } || ROOTTYPE="LineageOS SU"
+        [ "$(grep "SuperSU" /system/xbin/su)" ] && { MODPATH=/system/su.d; ROOTTYPE="System SuperSU"; } || ROOTTYPE="LineageOS SU"
       fi
     fi
   fi
+  ui_print " "
+  ui_print "  $ROOTTYPE detected!"
 }
 
 uninstall_files() {
@@ -448,9 +428,13 @@ unity_install() {
     ui_print "- Installing (cont) -"
   fi
   
+  # Remove comments from files
+  for i in $INSTALLER/common/sepolicy.sh $INSTALLER/common/system.prop $INSTALLER/common/service.sh $INSTALLER/common/post-fs-data.sh
+    [ -f $i ] && sed -i "/^#/d" $i
+  done
+  
   # Sepolicy
-  if $SEPOLICY; then
-    LATESTARTSERVICE=true
+  if [ -s $INSTALLER/common/sepolicy.sh ]; then
     [ "$MODPATH" == "/system/etc/init.d" -o "$MODPATH" == "$MOUNTPATH/$MODID" ] && echo -n "magiskpolicy --live" >> $INSTALLER/common/service.sh || echo -n "supolicy --live" >> $INSTALLER/common/service.sh
     sed -i -e '/^#.*/d' -e '/^$/d' $INSTALLER/common/sepolicy.sh
     while read LINE; do
@@ -463,8 +447,8 @@ unity_install() {
     done < $INSTALLER/common/sepolicy.sh
   fi
 
+  ui_print "   Installing scripts and files for $ARCH SDK $API device..."
   # Install scripts
-  ui_print "   Installing scripts for $ROOTTYPE..."
   if $MAGISK; then
     # Auto mount
     $AUTOMOUNT && ! $SYSOVERRIDE && mktouch $MODPATH/auto_mount
@@ -497,21 +481,20 @@ unity_install() {
   done
 
   # Prop files
-  $PROPFILE && { prop_process $INSTALLER/common/system.prop; $MAGISK || echo $PROP >> $INFO; }
+  [ -s $INSTALLER/common/system.prop ] && { prop_process $INSTALLER/common/system.prop; $MAGISK || echo $PROP >> $INFO; }
 
   # Module info
   cp_ch -n $INSTALLER/module.prop $MOD_VER
 
   #Install post-fs-data mode scripts
-  $POSTFSDATA && install_script -p $INSTALLER/common/post-fs-data.sh
+  [ -s $INSTALLER/common/post-fs-data.sh ] && install_script -p $INSTALLER/common/post-fs-data.sh
 
   # Service mode scripts
-  $LATESTARTSERVICE && install_script -l $INSTALLER/common/service.sh
+  [ -s $INSTALLER/common/service.sh ] && install_script -l $INSTALLER/common/service.sh
 
   # Install files
-  ui_print "   Installing files for $ARCH SDK $API device..."
   $IS64BIT || rm -rf $INSTALLER/system/lib64 $INSTALLER/system/vendor/lib64
-  $DYNAMICAPP && [ -d "/system/priv-app" ] && [ -d "$INSTALLER/system/app" ] && mv -f $INSTALLER/system/app $INSTALLER/system/priv-app
+  [ -d "/system/priv-app" ] || mv -f $INSTALLER/system/priv-app $INSTALLER/system/app 
   if $DYNAMICOREO && [ $API -ge 26 ]; then
     for FILE in $(find $INSTALLER/system/lib*/* -maxdepth 0 -type d 2>/dev/null | sed -e "s|$INSTALLER/system/lib.*/modules||" -e "s|$INSTALLER/system/||"); do
       mkdir -p $(dirname $INSTALLER/system/vendor/$FILE)
@@ -527,7 +510,7 @@ unity_install() {
   done
 
   # Remove info file if not needed
-  [ ! -s $INFO ] && rm -f $INFO
+  [ -s $INFO ] || rm -f $INFO
 
   # Set permissions
   ui_print " "
@@ -638,7 +621,8 @@ else
   . $INSTALLER/common/unityfiles/util_functions_mag.sh
   # Temporary workaround for cat: write error
   . $INSTALLER/common/unityfiles/util_functions2.sh
-  [ -z $MAGISK_VER_CODE ] || [ $MAGISK_VER_CODE -ge $MINMAGISK ] || require_new_magisk
+  [ -z $MAGISK_VER_CODE ] || [ $MAGISK_VER_CODE -ge $MINMAGISK ] || { ui_print "! Your install magisk of $(echo $MAGISK_VER_CODE | sed -r "s/(.{2})(.{1}).*/v\1.\2+\!/") is less than";
+  ui_print "  the minimum magisk version of $(echo $MINMAGISK | sed -r "s/(.{2})(.{1}).*/v\1.\2+\!/")!"; abort "Please install Magisk $(echo $MINMAGISK | sed -r "s/(.{2})(.{1}).*/v\1.\2+\!/")!"; }
   [ $MAGISK_VER_CODE -ge 18000 ] && MAGISKTMP=/sbin/.magisk || MAGISKTMP=/sbin/.core
 fi
 
@@ -648,8 +632,8 @@ api_level_arch_detect
 
 # Check for min & max api version
 [ -z $MINAPI ] && MINAPI=21 || { [ $MINAPI -lt 21 ] && MINAPI=21; }
-[ $API -lt $MINAPI ] && require_new_api 'minimum'
-[ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && require_new_api 'maximum'; }
+[ $API -lt $MINAPI ] && { ui_print "! Your system API of $API is less than"; ui_print "  the minimum api of $MINAPI!"; abort "Aborting!"; }
+[ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && { ui_print "! Your system API of $API is greater than"; ui_print "  the maximum api of $MINAPI!"; abort "Aborting!"; }; }
 
 # Set variables
 set_vars

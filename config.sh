@@ -15,43 +15,31 @@
 # Most mods would like it to be enabled
 AUTOMOUNT=true
 
-# Set to true if you need to load system.prop
-PROPFILE=false
-
-# Set to true if you need post-fs-data script
-POSTFSDATA=false
-
-# Set to true if you need late_start service script
-LATESTARTSERVICE=false
-
 ### Unity Variables
 # Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maxium android version for your mod (note that unity's minapi is 21 (lollipop) due to bash)
-# Uncomment SEPOLICY if you have sepolicy patches in common/sepolicy.sh. Unity will take care of the rest
 # Uncomment DYNAMICOREO if you want libs installed to vendor for oreo+ and system for anything older
-# Uncomment DYNAMICAPP if you want anything in $INSTALLER/system/app to be installed to the optimal app directory (/system/priv-app if it exists, /system/app otherwise)
 # Uncomment SYSOVERRIDE if you want the mod to always be installed to system (even on magisk) - note that this can still be set to true by the user by adding 'sysover' to the zipname
 # Uncomment DEBUG if you want full debug logs (saved to /sdcard in magisk manager and the zip directory in twrp) - note that this can still be set to true by the user by adding 'debug' to the zipname
 #MINAPI=21
 #MAXAPI=25
-#SEPOLICY=true
-#SYSOVERRIDE=true
 #DYNAMICOREO=true
-#DYNAMICAPP=true
+#SYSOVERRIDE=true
 #DEBUG=true
+
+# Things that ONLY run during an upgrade (occurs after unity_custom) - you probably won't need this
+# A use for this would be to back up app data before it's wiped if your module includes an app
+# NOTE: the normal upgrade process is just an uninstall followed by an install
+unity_upgrade() {
+  :
+}
 
 # Custom Variables for Install AND Uninstall - Keep everything within this function - runs before uninstall/install
 unity_custom() {
   :
 }
 
-# Things that ONLY run during an upgrade (occurs after unity_custom) - you probably won't need this
-# Note that the normal upgrade process is just an uninstall followed by an install
-unity_upgrade() {
-  :
-}
-
-
 # Custom Functions for Install AND Uninstall - You can put them here
+
 
 ##########################################################################################
 # Installation Message - Don't change this
