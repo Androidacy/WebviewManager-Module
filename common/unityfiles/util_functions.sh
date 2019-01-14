@@ -281,7 +281,7 @@ cp_ch() {
 
 patch_script() {
   [ -L /system/vendor ] && local VEN=/vendor
-  sed -i -e "1i $SHEBANG" -e "2i SYS=$ROOT/system" -e "2i VEN=$ROOT$VEN" $1
+  sed -i -e "1i $SHEBANG" -e '2i MODPATH=${0%/*}' -e "2i SYS=$ROOT/system" -e "2i VEN=$ROOT$VEN" $1
   for i in "ROOT" "MAGISK" "LIBDIR" "SYSOVERRIDE" "MODID"; do
     sed -i "3i $i=$(eval echo \$$i)" $1
   done
@@ -448,33 +448,6 @@ unity_install() {
   fi
 
   ui_print "   Installing scripts and files for $ARCH SDK $API device..."
-  # Install scripts
-  if $MAGISK; then
-    # Auto mount
-    $AUTOMOUNT && ! $SYSOVERRIDE && mktouch $MODPATH/auto_mount
-    # Update info for magisk manager
-    $BOOTMODE && { mktouch $MAGISKTMP/img/$MODID/update; cp_ch -n $INSTALLER/module.prop $MODPATH/module.prop; }
-  elif [ "$MODPATH" == "/system/etc/init.d" ]; then
-    ui_print " "
-    ui_print "   ! This root method has no boot script support !"
-    ui_print "   ! You will need to add init.d support !"
-    ui_print " "
-  fi
-  if $MAGISK && $SYSOVERRIDE; then
-    cp -f $INSTALLER/common/unityfiles/modidsysover.sh $INSTALLER/common/unityfiles/$MODID-sysover.sh
-    sed -i -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/uninstall.sh" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/$MODID-sysover.sh
-    install_script -p $INSTALLER/common/unityfiles/$MODID-sysover.sh
-  elif ! $MAGISK || $SYSOVERRIDE; then
-    # Install rom backup script
-    if [ -d /system/addon.d ]; then
-      ui_print "   Installing addon.d backup script..."
-      sed -i "2i MODID=$MODID" $INSTALLER/common/unityfiles/addon.sh
-      cp_ch -n $INSTALLER/common/unityfiles/addon.sh /system/addon.d/$MODID.sh 0755
-    else
-      ui_print "   ! Addon.d not detected. Backup script not installed..."
-    fi
-  fi
-
   # Handle replace folders
   for TARGET in $REPLACE; do
     if $MAGISK; then mktouch $MODPATH$TARGET/.replace; else rm -rf $TARGET; fi
@@ -503,6 +476,33 @@ unity_install() {
   fi
   rm -f $INSTALLER/system/placeholder
   cp_ch -r $INSTALLER/system $UNITY
+  
+  # Install scripts
+  if $MAGISK; then
+    # Auto mount
+    [ -d $MODPATH/system ] && ! $SYSOVERRIDE && mktouch $MODPATH/auto_mount
+    # Update info for magisk manager
+    $BOOTMODE && { mktouch $MAGISKTMP/img/$MODID/update; cp_ch -n $INSTALLER/module.prop $MODPATH/module.prop; }
+  elif [ "$MODPATH" == "/system/etc/init.d" ]; then
+    ui_print " "
+    ui_print "   ! This root method has no boot script support !"
+    ui_print "   ! You will need to add init.d support !"
+    ui_print " "
+  fi
+  if $MAGISK && $SYSOVERRIDE; then
+    cp -f $INSTALLER/common/unityfiles/modidsysover.sh $INSTALLER/common/unityfiles/$MODID-sysover.sh
+    sed -i "34r $INSTALLER/common/uninstall.sh" $INSTALLER/common/unityfiles/$MODID-sysover.sh
+    install_script -p $INSTALLER/common/unityfiles/$MODID-sysover.sh
+  elif ! $MAGISK || $SYSOVERRIDE; then
+    # Install rom backup script
+    if [ -d /system/addon.d ]; then
+      ui_print "   Installing addon.d backup script..."
+      sed -i "2i MODID=$MODID" $INSTALLER/common/unityfiles/addon.sh
+      cp_ch -n $INSTALLER/common/unityfiles/addon.sh /system/addon.d/$MODID.sh 0755
+    else
+      ui_print "   ! Addon.d not detected. Backup script not installed..."
+    fi
+  fi
 
   # Add blank line to end of all prop/script files if not already present
   for FILE in $MODPATH/*.sh $MODPATH/*.prop; do
@@ -515,6 +515,7 @@ unity_install() {
   # Set permissions
   ui_print " "
   ui_print "- Setting Permissions"
+  $MAGISK && set_perm_recursive $MODPATH 0 0 0755 0644
   set_permissions
 }
 
@@ -652,15 +653,8 @@ else
   recovery_actions
 fi
 
-# Insert modid and custom user script into mod script
-for i in "post-fs-data.sh" "service.sh"; do
-  cp -f $INSTALLER/common/unityfiles/modid.sh $INSTALLER/common/unityfiles/$i
-  sed -i -e "/# CUSTOM USER SCRIPT/ r $INSTALLER/common/$i" -e '/# CUSTOM USER SCRIPT/d' $INSTALLER/common/unityfiles/$i
-  mv -f $INSTALLER/common/unityfiles/$i $INSTALLER/common/$i
-done
-
 # Add blank line to end of all files if needbe
-for FILE in $INSTALLER/common/*.sh $INSTALLER/common/*.prop; do
+for i in $(find $INSTALLER -type f -name "*.sh" -o -name "*.prop"); do
   [ "$(tail -1 $FILE)" ] && echo "" >> $FILE
 done
 
