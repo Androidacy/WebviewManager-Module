@@ -363,8 +363,8 @@ set_vars() {
       fi
     fi
   fi
-  ui_print " "
   ui_print "- $ROOTTYPE detected"
+  ui_print " "
 }
 
 uninstall_files() {
@@ -633,8 +633,8 @@ api_level_arch_detect
 
 # Check for min & max api version
 [ -z $MINAPI ] && MINAPI=21 || { [ $MINAPI -lt 21 ] && MINAPI=21; }
-[ $API -lt $MINAPI ] && { ui_print "! Your system API of $API is less than"; ui_print "  the minimum api of $MINAPI!"; abort "! Aborting!"; }
-[ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && { ui_print "! Your system API of $API is greater than"; ui_print "  the maximum api of $MINAPI!"; abort "! Aborting!"; }; }
+[ $API -lt $MINAPI ] && { ui_print "! Your system API of $API is less than"; ui_print "!  the minimum api of $MINAPI!"; abort "! Aborting!"; }
+[ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && { ui_print "! Your system API of $API is greater than"; ui_print "!  the maximum api of $MINAPI!"; abort "! Aborting!"; }; }
 
 # Set variables
 set_vars
