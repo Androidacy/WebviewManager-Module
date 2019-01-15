@@ -364,7 +364,7 @@ set_vars() {
     fi
   fi
   ui_print " "
-  ui_print "- $ROOTTYPE detected -"
+  ui_print "- $ROOTTYPE detected"
 }
 
 uninstall_files() {
@@ -429,7 +429,7 @@ unity_install() {
   fi
   
   # Remove comments from files
-  for i in $INSTALLER/common/sepolicy.sh $INSTALLER/common/system.prop $INSTALLER/common/service.sh $INSTALLER/common/post-fs-data.sh
+  for i in $INSTALLER/common/sepolicy.sh $INSTALLER/common/system.prop $INSTALLER/common/service.sh $INSTALLER/common/post-fs-data.sh; do
     [ -f $i ] && sed -i "/^#/d" $i
   done
   
@@ -655,7 +655,7 @@ fi
 
 # Add blank line to end of all files if needbe
 for i in $(find $INSTALLER -type f -name "*.sh" -o -name "*.prop"); do
-  [ "$(tail -1 $FILE)" ] && echo "" >> $FILE
+  [ "$(tail -1 "$i")" ] && echo "" >> "$i"
 done
 
 # Import user tools and load ramdisk patching functions
