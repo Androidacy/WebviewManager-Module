@@ -1,57 +1,9 @@
 ##########################################################################################
 #
-# Magisk Module Template Config Script
-# by topjohnwu
+# Unity Config Script
+# by topjohnwu, modified by Zackptg5
 #
 ##########################################################################################
-
-##########################################################################################
-# Defines
-##########################################################################################
-
-# NOTE: This part has to be adjusted to fit your own needs
-
-# Set to true if you need to enable Magic Mount
-# Most mods would like it to be enabled
-AUTOMOUNT=true
-
-# Set to true if you need to load system.prop
-PROPFILE=false
-
-# Set to true if you need post-fs-data script
-POSTFSDATA=false
-
-# Set to true if you need late_start service script
-LATESTARTSERVICE=false
-
-### Unity Variables
-# Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maxium android version for your mod (note that unity's minapi is 21 (lollipop) due to bash)
-# Uncomment SEPOLICY if you have sepolicy patches in common/sepolicy.sh. Unity will take care of the rest
-# Uncomment DYNAMICOREO if you want libs installed to vendor for oreo+ and system for anything older
-# Uncomment DYNAMICAPP if you want anything in $INSTALLER/system/app to be installed to the optimal app directory (/system/priv-app if it exists, /system/app otherwise)
-# Uncomment SYSOVERRIDE if you want the mod to always be installed to system (even on magisk) - note that this can still be set to true by the user by adding 'sysover' to the zipname
-# Uncomment DEBUG if you want full debug logs (saved to /sdcard in magisk manager and the zip directory in twrp) - note that this can still be set to true by the user by adding 'debug' to the zipname
-#MINAPI=21
-#MAXAPI=25
-#SEPOLICY=true
-#SYSOVERRIDE=true
-#DYNAMICOREO=true
-#DYNAMICAPP=true
-#DEBUG=true
-
-# Custom Variables for Install AND Uninstall - Keep everything within this function - runs before uninstall/install
-unity_custom() {
-  :
-}
-
-# Things that ONLY run during an upgrade (occurs after unity_custom) - you probably won't need this
-# Note that the normal upgrade process is just an uninstall followed by an install
-unity_upgrade() {
-  :
-}
-
-
-# Custom Functions for Install AND Uninstall - You can put them here
 
 ##########################################################################################
 # Installation Message - Don't change this
@@ -67,6 +19,35 @@ print_modname() {
   ui_print "    *******************************************"
   ui_print " "
 }
+
+##########################################################################################
+# Defines
+##########################################################################################
+
+# Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maxium android version for your mod (note that unity's minapi is 21 (lollipop) due to bash)
+# Uncomment DYNAMICOREO if you want libs installed to vendor for oreo+ and system for anything older
+# Uncomment SYSOVERRIDE if you want the mod to always be installed to system (even on magisk) - note that this can still be set to true by the user by adding 'sysover' to the zipname
+# Uncomment DEBUG if you want full debug logs (saved to /sdcard in magisk manager and the zip directory in twrp) - note that this can still be set to true by the user by adding 'debug' to the zipname
+#MINAPI=21
+#MAXAPI=25
+#DYNAMICOREO=true
+#SYSOVERRIDE=true
+#DEBUG=true
+
+# Things that ONLY run during an upgrade (occurs after unity_custom) - you probably won't need this
+# A use for this would be to back up app data before it's wiped if your module includes an app
+# NOTE: the normal upgrade process is just an uninstall followed by an install
+unity_upgrade() {
+  : # Remove this if adding to this function
+}
+
+# Custom Variables for Install AND Uninstall - Keep everything within this function - runs before uninstall/install
+unity_custom() {
+  : # Remove this if adding to this function
+}
+
+# Custom Functions for Install AND Uninstall - You can put them here
+
 
 ##########################################################################################
 # Replace list
@@ -91,26 +72,26 @@ REPLACE="
 "
 
 ##########################################################################################
-# Permissions
+# Custom Permissions
 ##########################################################################################
 
-# NOTE: This part has to be adjusted to fit your own needs
-
 set_permissions() {
-  # DEFAULT PERMISSIONS, DON'T REMOVE THEM
-  $MAGISK && set_perm_recursive $MODPATH 0 0 0755 0644
+  : # Remove this if adding to this function
 
-  # CUSTOM PERMISSIONS
-
-  # Some templates if you have no idea what to do:
   # Note that all files/folders have the $UNITY prefix - keep this prefix on all of your files/folders
   # Also note the lack of '/' between variables - preceding slashes are already included in the variables
   # Use $VEN for vendor (Do not use /system$VEN, the $VEN is set to proper vendor path already - could be /vendor, /system/vendor, etc.)
 
+  # Some examples:
+  
+  # For directories (includes files in them):
   # set_perm_recursive  <dirname>                <owner> <group> <dirpermission> <filepermission> <contexts> (default: u:object_r:system_file:s0)
+  
   # set_perm_recursive $UNITY/system/lib 0 0 0755 0644
   # set_perm_recursive $UNITY$VEN/lib/soundfx 0 0 0755 0644
 
+  # For files (not in directories taken care of above)
   # set_perm  <filename>                         <owner> <group> <permission> <contexts> (default: u:object_r:system_file:s0)
+  
   # set_perm $UNITY/system/lib/libart.so 0 0 0644
 }
