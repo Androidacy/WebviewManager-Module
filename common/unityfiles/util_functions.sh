@@ -673,7 +673,7 @@ if $DEBUG; then
     exec > >(tee -a /sdcard/$MODID-debug.log ); exec 2>/sdcard/$MODID-debug.log
   else
     ui_print "  Debug log will be written to: $(dirname "$ZIPFILE")/$MODID-debug.log"  
-    exec > >(tee -a $(dirname "$ZIPFILE")/$MODID-debug.log ); exec 2>$(dirname "$ZIPFILE")/$MODID-debug.log
+    exec > >(tee -a "$(dirname "$ZIPFILE")"/$MODID-debug.log ); exec 2>"$(dirname "$ZIPFILE")"/$MODID-debug.log
   fi
   set -x
 fi
