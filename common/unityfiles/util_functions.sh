@@ -582,7 +582,7 @@ for i in version name author; do
       SPACES="${SPACES} "
     done
   fi
-  if [ $(((41-$CHARS) % 2)) -eq 1 ]; then sed -i "s/<$i>/$SPACES$NEW${SPACES} /" $INSTALLER/config.sh; else sed -i "s/<$i>/$SPACES$NEW$SPACES/" $INSTALLER/config.sh; fi
+  if [ $(((41-$CHARS) % 2)) -eq 1 ]; then sed -i "s|<$i>|$SPACES$NEW${SPACES} |" $INSTALLER/config.sh; else sed -i "s|<$i>|$SPACES$NEW$SPACES|" $INSTALLER/config.sh; fi
 done
 )
 . $INSTALLER/config.sh
