@@ -6,74 +6,66 @@
 ##########################################################################################
 
 ##########################################################################################
-# Installation Message - Don't change this
+# Unity Logic - Don't change/move this section
 ##########################################################################################
 
-print_modname() {
-  ui_print " "
-  ui_print "    *******************************************"
-  ui_print "    *<name>*"
-  ui_print "    *******************************************"
-  ui_print "    *<version>*"
-  ui_print "    *<author>*"
-  ui_print "    *******************************************"
-  ui_print " "
-}
+if [ -z $UF ]; then
+  UF=$TMPDIR/META-INF/com/google/android/unityfiles
+  unzip -oq "$ZIPFILE" 'META-INF/com/google/android/unityfiles/util_functions.sh' -d $TMPDIR >&2
+  [ -f "$UF/util_functions.sh" ] || { ui_print "! Unable to extract zip file !"; exit 1; }
+  . $UF/util_functions.sh
+fi
+
+comp_check
 
 ##########################################################################################
-# Defines
+# Config Flags
 ##########################################################################################
 
-# Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maxium android version for your mod (note that unity's minapi is 17) due to bash)
-# Uncomment DYNAMICOREO if you want libs installed to vendor for oreo+ and system for anything older
-# Uncomment SYSOVERRIDE if you want the mod to always be installed to system (even on magisk) - note that this can still be set to true by the user by adding 'sysover' to the zipname
+# Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maximum android version for your mod
+# Uncomment DYNLIB if you want libs installed to vendor for oreo+ and system for anything older
+# Uncomment SYSOVER if you want the mod to always be installed to system (even on magisk) - note that this can still be set to true by the user by adding 'sysover' to the zipname
 # Uncomment DEBUG if you want full debug logs (saved to /sdcard in magisk manager and the zip directory in twrp) - note that this can still be set to true by the user by adding 'debug' to the zipname
 #MINAPI=21
 #MAXAPI=25
-#DYNAMICOREO=true
-#SYSOVERRIDE=true
+#DYNLIB=true
+#SYSOVER=true
 #DEBUG=true
 
-# Things that ONLY run during an upgrade (occurs after unity_custom) - you probably won't need this
-# A use for this would be to back up app data before it's wiped if your module includes an app
-# NOTE: the normal upgrade process is just an uninstall followed by an install
-unity_upgrade() {
-  : # Remove this if adding to this function
-}
-
-# Custom Variables for Install AND Uninstall - Keep everything within this function - runs before uninstall/install
-unity_custom() {
-  : # Remove this if adding to this function
-}
-
-# Custom Functions for Install AND Uninstall - You can put them here
-
+# Uncomment if you do *NOT* want Magisk to mount any files for you. Most modules would NOT want to set this flag to true
+# This is obviously irrelevant for system installs
+#SKIPMOUNT=true
 
 ##########################################################################################
 # Replace list
 ##########################################################################################
 
 # List all directories you want to directly replace in the system
-# By default Magisk will merge your files with the original system
-# Directories listed here however, will be directly mounted to the correspond directory in the system
+# Check the documentations for more info why you would need this
 
-# You don't need to remove the example below, these values will be overwritten by your own list
+# Construct your list in the following format
 # This is an example
-REPLACE="
+REPLACE_EXAMPLE="
 /system/app/Youtube
 /system/priv-app/SystemUI
 /system/priv-app/Settings
 /system/framework
 "
 
-# Construct your own list here, it will overwrite the example
-# !DO NOT! remove this if you don't need to replace anything, leave it empty as it is now
+# Construct your own list here
 REPLACE="
 "
 
 ##########################################################################################
-# Custom Permissions
+# Custom Logic
 ##########################################################################################
+
+# Set what you want to display when installing your module
+
+print_modname() {
+  center_and_print # Replace this line if using custom print stuff
+  unity_main # Don't change this line
+}
 
 set_permissions() {
   : # Remove this if adding to this function
@@ -95,3 +87,10 @@ set_permissions() {
   
   # set_perm $UNITY/system/lib/libart.so 0 0 0644
 }
+
+# Custom Variables for Install AND Uninstall - Keep everything within this function - runs before uninstall/install
+unity_custom() {
+  : # Remove this if adding to this function
+}
+
+# Custom Functions for Install AND Uninstall - You can put them here
