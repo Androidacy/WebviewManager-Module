@@ -33,7 +33,7 @@ comp_check
 #DEBUG=true
 
 # Uncomment if you do *NOT* want Magisk to mount any files for you. Most modules would NOT want to set this flag to true
-# This is obviously irrelevant for system installs
+# This is obviously irrelevant for system installs. This will be set to true automatically if your module has no files in system
 #SKIPMOUNT=true
 
 ##########################################################################################

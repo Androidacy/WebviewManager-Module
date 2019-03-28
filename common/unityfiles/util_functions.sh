@@ -593,7 +593,7 @@ unity_install() {
     # Auto mount
     if [ -d $MODPATH/system ] && ! $SYSOVER; then
       if imageless_magisk; then
-        $SKIPMOUNT && touch $MODPATH/skip_mount
+        if $SKIPMOUNT || [ ! -d $MODPATH/system ]; then touch $MODPATH/skip_mount; fi
       else
         $SKIPMOUNT || touch $MODPATH/auto_mount
       fi
