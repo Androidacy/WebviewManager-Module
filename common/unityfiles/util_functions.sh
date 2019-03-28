@@ -675,6 +675,7 @@ comp_check() {
     MAGISK=false
   else
     MAGISK=true
+    [ $MAGISK_VER_CODE -lt 18000 ] && require_new_magisk
     $SYSOVER && $BOOTMODE && { ui_print "   ! Magisk manager isn't supported!"; abort "   ! Install in recovery !"; }
   fi
 }
