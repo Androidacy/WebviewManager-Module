@@ -41,8 +41,8 @@ if [ -f /data/adb/magisk/util_functions.sh ]; then
 elif [ -f /data/magisk/util_functions.sh ]; then
   require_new_magisk
 else
-  UF=$TMPDIR/META-INF/com/google/android/unityfiles
-  unzip -oq "$ZIPFILE" 'META-INF/com/google/android/unityfiles/util_functions.sh' -d $TMPDIR >&2
+  UF=$TMPDIR/common/unityfiles
+  unzip -oq "$ZIPFILE" 'common/unityfiles/util_functions.sh' -d $TMPDIR >&2
   [ -f "$UF/util_functions.sh" ] || { ui_print "! Unable to extract zip file !"; exit 1; }
   . $UF/util_functions.sh
 fi
