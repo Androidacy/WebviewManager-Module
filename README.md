@@ -18,6 +18,7 @@
     <a href="https://github.com/Zackptg5/Unity">
       Source Code
     </a>
+    <span> | </span>
     <a href="https://github.com/Zackptg5/Unity-Addons">
       Addons Repository
     </a>
