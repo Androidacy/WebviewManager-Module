@@ -10,7 +10,8 @@
 </div>
 
 <div align="center">
-  <strong>Unity Installer allows 1 zip to work for multiple devices and root solutions. [More details in the wiki](https://github.com/Zackptg5/Unity/wiki)</strong>
+  <strong>Unity Installer allows 1 zip to work for multiple devices and root solutions. More details in the 
+    <a href="https://github.com/Zackptg5/Unity/wiki">wiki</a>.
 </div>
 
 <div align="center">
@@ -34,5 +35,5 @@
 </div>
 
 ## Compatibility
-* Magisk 18+
-* All other root solutions/rootless (requires init.d support for boot scripts if not using magisk or supersu. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
+- Magisk 18.0 +
+- All other root or rootless solutions (init.d support for boot scripts is required if not using Magisk or SuperSU. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
