@@ -299,7 +299,7 @@ set_vars() {
       elif [ -e "$(find /data /cache -name supersu_is_here | head -n1)" ]; then
         SHEBANG="#!/su/bin/sush"; ROOTTYPE="Systemless SuperSU"
         NVBASE=$(dirname `find /data /cache -name supersu_is_here | head -n1` 2>/dev/null)/su.d
-      elif [ -d /system/su ] || [ -f /system/xbin/daemonsu ] || [ -f /system/xbin/sugote ] || [ -f /system/xbin/su ]; then
+      elif [ -d /system/su ] || [ -f /system/xbin/daemonsu ] || [ -f /system/xbin/sugote ]; then
         NVBASE=/system/su.d; ROOTTYPE="System SuperSU"
       elif [ -f /system/xbin/su ]; then
         [ "$(grep "SuperSU" /system/xbin/su)" ] && { NVBASE=/system/su.d; ROOTTYPE="System SuperSU"; } || ROOTTYPE="LineageOS SU"
