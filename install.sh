@@ -42,15 +42,10 @@ LATESTARTSERVICE=false
 
 # Construct your list in the following format
 # This is an example
-REPLACE_EXAMPLE="
-/system/app/Youtube
-/system/priv-app/SystemUI
-/system/priv-app/Settings
-/system/framework
-"
+
 
 # Construct your own list here
-REPLACE="
+REPLACE="/system/webview
 "
 
 ##########################################################################################
@@ -123,8 +118,11 @@ REPLACE="
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "     Magisk Module Template    "
+  ui_print "     Bromite Systemless Webview    "
   ui_print "*******************************"
+  ui_print " By innonetlife "
+  ui_print "*******************************"
+  ui_print "Thanks to @topjohnwu for Magisk and the installer template"
 }
 
 # Copy/extract your module files into $MODPATH in on_install.
@@ -150,5 +148,5 @@ set_permissions() {
   # set_perm  $MODPATH/system/bin/dex2oat         0     2000    0755      u:object_r:dex2oat_exec:s0
   # set_perm  $MODPATH/system/lib/libart.so       0     0       0644
 }
-
-# You can add more functions to assist your custom script code
+ui_print " Applying fc workaround...."
+pm install $MODPATH/system/app/webview/webview.apk

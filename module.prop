@@ -1,6 +1,6 @@
-id=template
-name=Template Module
-version=v1
-versionCode=1
-author=topjohnwu
-description=A short description
+id=bromitewebview
+name=Bromite Systemless Webview
+version=v1.2
+versionCode=0012
+author=Innonetlife
+description=Install Bromite System Webview systemlessly. Block ads and fingerprinting. All credit goes to original devs of Bromite
