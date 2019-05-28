@@ -27,10 +27,6 @@
     <a href="https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612">
       XDA
     </a>
-<!--     <span> | </span>
-    <a href="">
-      Discord
-    </a> -->
   </h3>
 </div>
 
