@@ -1,5 +1,6 @@
 <h2>Bromite Systemless Webview</h2>
 
+
 This module allows you to install Bromite systemlessly. With Bromite, you can block ads and trackers and resist fingerprinting
 
 I didn't develop the app itself; all credit goes to the devs at bromite.org
@@ -12,9 +13,33 @@ Any issues with Bromite itself should be filed with the Bromite team [here](http
 
 Issues with the module are filed [here](https://github.com/alexa-v2/magisk-module-installer/issues)
 
+**NEW:** Our telegram support group is at https://t.me/inlmagisk
+
 Credit to @topjohnwu for magisk and the magisk installer template.
 
+**Please note** your ROM must support using "com.android.webview" as the webview and not have a pinned signature for the app.
+
+To see if it does:
+
+From a terminal such as termux:
+
+- cp /system/framework/framework-res.apk ~
+
+- aapt d xmltree framework-res.apk res/xml/config_webview_packages.xml
+
+The output should contain. "com.android.webview" and not contain a "C:" with a bunch of characters under that.
+
 <h3>Changelog:</h3>
+
+**v1.5**
+
+-Fix script
+
+**v1.4**
+
+-Add support for more CPU arch
+
+-Update bromite to v75
 
 **v1.3**
 

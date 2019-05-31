@@ -28,7 +28,7 @@ SKIPMOUNT=false
 PROPFILE=false
 
 # Set to true if you need post-fs-data script
-POSTFSDATA=false
+POSTFSDATA=true
 
 # Set to true if you need late_start service script
 LATESTARTSERVICE=false
@@ -45,7 +45,10 @@ LATESTARTSERVICE=false
 
 
 # Construct your own list here
-REPLACE="/system/webview
+REPLACE="/system/app/webview
+/system/app/webviewstub
+/system/app/chrome
+/system/app/Chrome
 "
 
 ##########################################################################################
@@ -131,7 +134,14 @@ on_install() {
   # The following is the default implementation: extract $ZIPFILE/system to $MODPATH
   # Extend/change the logic to whatever you want
   ui_print "- Extracting module files"
-  unzip -o "$ZIPFILE" 'system/*' -d $MODPATH >&2
+  unzip -o "$ZIPFILE" 'system/*' -d $MODPATH >&2.
+  for arch in arm x86; do
+    if echo $ARCH | grep -q $arch; then
+      ui_print "- $arch system detected using $arch (32/64bit) version"
+      cp -af "$TMPDIR/$arch/system" $MODPATH
+      break
+    fi
+  done  
 }
 
 # Only some special files require specific permissions
@@ -149,4 +159,4 @@ set_permissions() {
   # set_perm  $MODPATH/system/lib/libart.so       0     0       0644
 }
 ui_print " Applying fc workaround...."
-pm install $MODPATH/system/app/webview/webview.apk
+# pm install $MODPATH/system/app/webview/webview.apk
