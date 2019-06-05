@@ -28,10 +28,10 @@ SKIPMOUNT=false
 PROPFILE=false
 
 # Set to true if you need post-fs-data script
-POSTFSDATA=true
+POSTFSDATA=false
 
 # Set to true if you need late_start service script
-LATESTARTSERVICE=false
+LATESTARTSERVICE=true 
 
 ##########################################################################################
 # Replace list
@@ -42,12 +42,17 @@ LATESTARTSERVICE=false
 
 # Construct your list in the following format
 # This is an example
-
+REPLACE_EXAMPLE="
+/system/app/webview
+/system/priv-app/SystemUI
+/system/priv-app/Settings
+/system/framework
+"
 
 # Construct your own list here
-REPLACE="/system/app/webview
+REPLACE="
+/system/app/webview
 /system/app/webviewstub
-/system/app/chrome
 /system/app/Chrome
 "
 
@@ -121,27 +126,29 @@ REPLACE="/system/app/webview
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "     Bromite Systemless Webview    "
+  ui_print "  Bromite Systemless Webview  "
   ui_print "*******************************"
-  ui_print " By innonetlife "
-  ui_print "*******************************"
-  ui_print "Thanks to @topjohnwu for Magisk and the installer template"
 }
 
 # Copy/extract your module files into $MODPATH in on_install.
 
 on_install() {
-  # The following is the default implementation: extract $ZIPFILE/system to $MODPATH
-  # Extend/change the logic to whatever you want
+  # Unzip and copy corresponding libs/apk and binary for detach function
   ui_print "- Extracting module files"
-  unzip -o "$ZIPFILE" 'system/*' -d $MODPATH >&2.
+  unzip -o "$ZIPFILE" -d $TMPDIR >&2
   for arch in arm x86; do
     if echo $ARCH | grep -q $arch; then
       ui_print "- $arch system detected using $arch (32/64bit) version"
       cp -af "$TMPDIR/$arch/system" $MODPATH
       break
     fi
-  done  
+  done
+  cp -af "$TMPDIR/noarch/webview.apk" "$MODPATH/system/app/webview/webview.apk"
+#  cp -af "$TMPDIR/detach/sqlite" "$MODPATH/"
+  # Oreo+ specific: remove previous YT traces
+  if [ -e /data/system/package_cache ]; then
+    rm -f /data/system/package_cache/1/webview* /data/dalvik-cache/arm64/system@app@webview@webview.apk@classes.*dex
+  fi
 }
 
 # Only some special files require specific permissions
@@ -152,11 +159,14 @@ set_permissions() {
   # The following is the default rule, DO NOT remove
   set_perm_recursive $MODPATH 0 0 0755 0644
 
+  # Sqlite binary for detach function
+#  set_perm $MODPATH/sqlite 0  2000 0755
+
   # Here are some examples:
   # set_perm_recursive  $MODPATH/system/lib       0     0       0755      0644
   # set_perm  $MODPATH/system/bin/app_process32   0     2000    0755      u:object_r:zygote_exec:s0
   # set_perm  $MODPATH/system/bin/dex2oat         0     2000    0755      u:object_r:dex2oat_exec:s0
   # set_perm  $MODPATH/system/lib/libart.so       0     0       0644
 }
-ui_print " Applying fc workaround...."
-# pm install $MODPATH/system/app/webview/webview.apk
+
+# You can add more functions to assist your custom script code

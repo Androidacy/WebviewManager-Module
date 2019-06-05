@@ -27,32 +27,40 @@ From a terminal such as termux:
 
 - aapt d xmltree framework-res.apk res/xml/config_webview_packages.xml
 
-The output should contain. "com.android.webview" and not contain a "C:" with a bunch of characters under that.
+The output should contain. "com.android.webview" and not contain a "E:" with a bunch of characters under that.
 
 <h3>Changelog:</h3>
 
+**v2.1**
+
+- Fix boot script
+
+**v2.0**
+
+- Unbreak the module
+
 **v1.5**
 
--Fix script
+- Fix script
 
 **v1.4**
 
--Add support for more CPU arch
+- Add support for more CPU arch
 
--Update bromite to v75
+- Update bromite to v75
 
 **v1.3**
 
--Misc bugfixes
+- Misc bugfixes
 
 **v1.2**
 
--Updated libs
+- Updated libs
 
 **v1.1**
 
--Fix WebView crash
+- Fix WebView crash
 
 **v1.0**
 
--Initial release
+- Initial release

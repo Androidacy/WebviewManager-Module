@@ -84,10 +84,6 @@ print_modname
 ui_print "******************************"
 ui_print "Powered by Magisk (@topjohnwu)"
 ui_print "******************************"
-ui_print " Bromite Systemless Webview "
-ui_print "******************************"
-ui_print " Module by Innonetlife"
-ui_print " Original app by bromite.org"
 
 ##########################################################################################
 # Install
@@ -141,12 +137,8 @@ done
 
 ui_print "- Setting permissions"
 set_permissions
-ui_print " !!!ATTENTION!!!"
-ui_print " If WebView crashes when you attempt to use it, 
-navigate to /system/apps/WebView 
-and install the .apk there over the installed WebView.
-It's reported as solving the issue"
-#########################################################################################
+
+##########################################################################################
 # Finalizing
 ##########################################################################################
 
@@ -157,4 +149,3 @@ rm -rf $TMPDIR $MOUNTPATH
 
 ui_print "- Done"
 exit 0
-
