@@ -1,3 +1,4 @@
+# This is harder than it looks
 ##########################################################################################
 #
 # Magisk Module Installer Script
@@ -42,18 +43,20 @@ LATESTARTSERVICE=true
 
 # Construct your list in the following format
 # This is an example
-REPLACE_EXAMPLE="
-/system/app/webview
-/system/priv-app/SystemUI
-/system/priv-app/Settings
-/system/framework
-"
+#REPLACE_EXAMPLE="
+#/system/app/webview
+#/system/priv-app/SystemUI
+#/system/priv-app/Settings
+#/system/framework
+#"
 
-# Construct your own list here
+# You won't believe how many names Google's webview goes by
 REPLACE="
-/system/app/webview
 /system/app/webviewstub
+/system/app/WebViewStub
 /system/app/Chrome
+/system/app/WebViewGoogle
+/system/app/webview
 "
 
 ##########################################################################################
@@ -128,27 +131,39 @@ print_modname() {
   ui_print "*******************************"
   ui_print "  Bromite Systemless Webview  "
   ui_print "*******************************"
+  ui_print "ONLY FLASH VIA MANAGER, NEVER TWRP OR IT WILL FAIL"
 }
 
-# Copy/extract your module files into $MODPATH in on_install.
-
+# Copy/extract your module files into $MODPATH in on_instaLL
 on_install() {
-  # Unzip and copy corresponding libs/apk and binary for detach function
+  # Download, Unzip and copy corresponding libs/apk
   ui_print "- Extracting module files"
-  unzip -o "$ZIPFILE" -d $TMPDIR >&2
-  for arch in arm x86; do
-    if echo $ARCH | grep -q $arch; then
-      ui_print "- $arch system detected using $arch (32/64bit) version"
-      cp -af "$TMPDIR/$arch/system" $MODPATH
-      break
-    fi
-  done
-  cp -af "$TMPDIR/noarch/webview.apk" "$MODPATH/system/app/webview/webview.apk"
-#  cp -af "$TMPDIR/detach/sqlite" "$MODPATH/"
-  # Oreo+ specific: remove previous YT traces
+#  unzip -o "$ZIPFILE" "curl/*" -d $TMPDIR
+  chmod +x $TMPDIR/curl-$ARCH32
+  unzip -o "$ZIPFILE" "system/*" -d $MODPATH >&2
+  # This for some reason breaks the script if removed
+  ui_print "- $ARCH SDK $API system detected"
+  ui_print "- Downloading extra files please be patient..."
+  if [ "$ARCH" = "arm64" ]
+    then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/arm64-v8a/webview.apk
+  elif [ "$ARCH" = "arm" ]
+    then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/armeabi-v7a/webview.apk
+  elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]
+    then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/x86_64/webview.apk
+  fi
+
   if [ -e /data/system/package_cache ]; then
     rm -f /data/system/package_cache/1/webview* /data/dalvik-cache/arm64/system@app@webview@webview.apk@classes.*dex
   fi
+  #  ui_print "- Extracting downloaded files..."
+  test -d $MODPATH/system/app/webview || mkdir -p $MODPATH/system/app/webview && cp -rf $TMPDIR/webview.apk $MODPATH/system/app/webview
+  cp -af "$TMPDIR/webview.apk" $MODPATH/system/app/webview
+# Only for debugging 
+#  ls -a $MODDIR/system/app/webview
+#  ui_print "$MODPATH $TMPDIR $ARCH"
+#  ls $TMPDIR
+#  ui_print $ARCH
+  remove_old
 }
 
 # Only some special files require specific permissions
@@ -159,9 +174,6 @@ set_permissions() {
   # The following is the default rule, DO NOT remove
   set_perm_recursive $MODPATH 0 0 0755 0644
 
-  # Sqlite binary for detach function
-#  set_perm $MODPATH/sqlite 0  2000 0755
-
   # Here are some examples:
   # set_perm_recursive  $MODPATH/system/lib       0     0       0755      0644
   # set_perm  $MODPATH/system/bin/app_process32   0     2000    0755      u:object_r:zygote_exec:s0
@@ -170,3 +182,11 @@ set_permissions() {
 }
 
 # You can add more functions to assist your custom script code
+remove_old() {
+	ui_print "- Removing old webviews..."
+	ui_print "!!!!!YOU MAY NOT BE ABLE TO USE ANY WEBVIEW UNTIL REBOOT!!!!!"
+  rm -rf /data/app/com.android.webview-*
+  rm -rf /data/app/com.google.android.webview-*
+  rm -rf /data/data/com.android.webview
+  rm -rf /data/data/com.google.android.webview
+}
