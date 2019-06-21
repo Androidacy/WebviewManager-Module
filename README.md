@@ -61,6 +61,10 @@ The output should contain. "com.android.webview" and not contain a "E:" with a b
 
 <h2>Changelog:</h2>
 
+<h4>3.2</h4>
+
+- Add uninstall script to fixed issues with no webview on uninstall
+
 <h4>v3.1</h4>
 
 - Bugfixes, probably added more bugs

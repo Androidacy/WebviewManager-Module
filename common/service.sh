@@ -8,8 +8,7 @@ MODDIR=${0%/*}
 # wait until boot completed
 until [ `getprop sys.boot_completed`. = 1. ]; do sleep 1; done
 # Remove old webview traces
-# Bromite WebView needs to be installed as user app
-# pm list packages -f | grep -q /data.*com.android.webview || \
+# Bromite WebView needs to be installed as user app to prevent crashes
 pm install -r $MODDIR/system/app/*/*.apk
 	
 # This script will be executed in late_start service mode
