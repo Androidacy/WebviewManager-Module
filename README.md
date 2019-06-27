@@ -13,7 +13,7 @@ A webview is like a minimal browser, but for non-browsers that display web conte
 
 <h3>Credits</h3>
 
-Bromite itself is created by the devs at bromite.org
+Bromite itself is created by abe copyright of the devs at bromite.org (of which I'm currently unassociated with)
 
 Thanks to @alexiacortez (me) for the module
 
@@ -27,7 +27,9 @@ This module probably won't be updated with each Bromite update but I will try to
 
 <h3> Donations </h3>
 
-Donation to the app creators is found at bromite.org. Donation to me is [here](https://paypal.me/innonetlife)
+Donation to the app creators is found at [here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LC7Q6A3UAQPY8). 
+
+Donation to me is [here](https://paypal.me/innonetlife)
 
 <h3> Support </h3>
 
@@ -60,6 +62,10 @@ From termux, under a non root ($) shell:
 The output should contain. "com.android.webview" and not contain a "E:" with a bunch of characters under that.
 
 <h2>Changelog:</h2>
+
+<h4>3.3</h4>
+
+- Further fix webview recognition on reboot
 
 <h4>3.2</h4>
 

@@ -52,10 +52,7 @@ LATESTARTSERVICE=true
 
 # You won't believe how many names Google's webview goes by
 REPLACE="
-/system/app/webviewstub
-/system/app/WebViewStub
 /system/app/Chrome
-/system/app/WebViewGoogle
 /system/app/webview
 "
 
@@ -142,7 +139,7 @@ on_install() {
   chmod +x $TMPDIR/curl-$ARCH32
   unzip -o "$ZIPFILE" "system/*" -d $MODPATH >&2
   # This for some reason breaks the script if removed
-  ui_print "- $ARCH SDK $API system detected"
+  ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
   ui_print "- Downloading extra files please be patient..."
   if [ "$ARCH" = "arm64" ]
     then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/arm64-v8a/webview.apk
@@ -151,13 +148,10 @@ on_install() {
   elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]
     then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/x86_64/webview.apk
   fi
-
-  if [ -e /data/system/package_cache ]; then
-    rm -f /data/system/package_cache/1/webview* /data/dalvik-cache/arm64/system@app@webview@webview.apk@classes.*dex
-  fi
+  
   #  ui_print "- Extracting downloaded files..."
   test -d $MODPATH/system/app/webview || mkdir -p $MODPATH/system/app/webview && cp -rf $TMPDIR/webview.apk $MODPATH/system/app/webview
-  cp -af "$TMPDIR/webview.apk" $MODPATH/system/app/webview
+#  cp -af "$TMPDIR/webview.apk" $MODPATH/system/app/webview
 # Only for debugging 
 #  ls -a $MODDIR/system/app/webview
 #  ui_print "$MODPATH $TMPDIR $ARCH"
@@ -183,10 +177,16 @@ set_permissions() {
 
 # You can add more functions to assist your custom script code
 remove_old() {
-	ui_print "- Removing old webviews..."
-	ui_print "!!!!!YOU MAY NOT BE ABLE TO USE ANY WEBVIEW UNTIL REBOOT!!!!!"
-  rm -rf /data/app/com.android.webview-*
-  rm -rf /data/app/com.google.android.webview-*
-  rm -rf /data/data/com.android.webview
-  rm -rf /data/data/com.google.android.webview
+	ui_print "- Removing old webview traces and clearing cache..."
+	ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT !!!!!!!!!!!!!!!!!"
+	ui_print "Reboot immediately after flashing or you may experience some issues! "
+	ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT !!!!!!!!!!!!!!!!!"
+	ui_print" Also, if you had any other webview such as Google webview, it'll need reinstalled"
+  rm -rf /data/resource-cache/*
+  rm -rf /data/dalvik-cache/*
+  rm -rf /cache/dalvik-cache/*
+  rm -rf /data/*/*webview*
+  rm -rf /data/system/package_cache/*
+  rm -rf /data/system/packages.list
+  rm -rf /data/resource-cache/*
 }
