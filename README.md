@@ -1,19 +1,21 @@
-<h1>Bromite Systemless Webview</h1>
-<br>
+# Bromite Systemless Webview
 	
 	FOR ANY PROBLEMS WITH INSTALLATION SHOULD BE REPORTED WITH LOGS AT OUR TELEGRAM GROUP BELOW
 	
-This module allows you to install Bromite webview systemlessly. With Bromite, you can block ads and trackers and resist fingerprinting. The numbers after the dash in the version is the bromite version used
+This module allows you to install [Bromite SystemWebView](https://www.bromite.org/system_web_view) systemless-ly.
+Most useful features of Bromite are that you can block ads, trackers and resist fingerprinting; see the full features list at https://github.com/bromite/bromite/blob/master/README.md#features
 
-<h3>What is a webview?</h3>
+The numbers after the dash in the version are the Bromite version used.
 
-A webview is like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, like Outlook or GoDaddy apps or even some banking apps
+## What is a WebView?
 
-**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE WEBVIEW**. I can't fix that and any issues on it will be closed and ignored
+A WebView is like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, like Outlook or GoDaddy apps or even some banking apps.
 
-<h3>Credits</h3>
+**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE WEBVIEW**. I can't fix that and any issues on it will be closed and ignored.
 
-Bromite itself is created by abe copyright of the devs at bromite.org (of which I'm currently unassociated with)
+## Credits
+
+Bromite itself is created by and copyright of the developers of the [Bromite project](https://github.com/bromite/bromite) (of which I'm currently unassociated with).
 
 Thanks to @alexiacortez (me) for the module
 
@@ -21,21 +23,21 @@ Thanks to @neekless for parts of the installer script
 
 And double thanks to Innonetlife for funding us and providing server usage
 
-<h3> ETAs</h3>
+## ETAs
 
-This module probably won't be updated with each Bromite update but I will try to keep it updated at least with major versions
+This module probably will not be updated with each Bromite release but I will try to keep it updated at least with major versions.
 
-<h3> Donations </h3>
+## Donations
 
-Donation to the app creators is found at [here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LC7Q6A3UAQPY8). 
+Donations for Bromite: https://www.bromite.org/#donate 
 
-Donation to me is [here](https://paypal.me/innonetlife)
+Donations for me: [here](https://paypal.me/innonetlife)
 
-<h3> Support </h3>
+## Support
 
-Any issues with Bromite itself should be filed with the Bromite team [here](https://github.com/bromite/bromite/issues)
+Any issues with Bromite itself should be filed in the [Bromite issue tracker](https://github.com/bromite/bromite/issues).
 
-Issues with the module are filed [here](https://github.com/alexa-v2/magisk-module-installer/issues)
+Issues with the module should be filed [here](https://github.com/alexa-v2/magisk-module-installer/issues).
 
 **NEW:** Our XDA thread is [here](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
 
@@ -43,13 +45,13 @@ Issues with the module are filed [here](https://github.com/alexa-v2/magisk-modul
 
 Credit to @topjohnwu for magisk and the magisk installer template.
 
-<h3>Compatibility</h3>
+## Compatibility
 
 - Android 5 or higher
 - Magisk v18.2+
 - **ONLY FLASH THROUGH MAGISK MANAGER AS IT REQUIRES AN INTERNET CONNECTION**
 
-**Please note** your ROM must support using "com.android.webview" as the webview and not have a pinned signature for the app.
+**Please note** your ROM must support using `com.android.webview` as the WebView and not have a pinned signature for the app.
 
 To see if it does:
 
@@ -59,9 +61,13 @@ From termux, under a non root ($) shell:
 
 - aapt d xmltree framework-res.apk res/xml/config_webview_packages.xml
 
-The output should contain. "com.android.webview" and not contain a "E:" with a bunch of characters under that.
+The output should contain. `com.android.webview` and not contain a "E:" with a bunch of characters under that.
 
-<h2>Changelog:</h2>
+## Other resources
+
+* [Bromite SystemWebView wiki page](https://github.com/bromite/bromite/wiki/Installing-SystemWebView)
+
+# Changelog
 
 <h4>3.3</h4>
 
