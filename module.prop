@@ -1,10 +1,10 @@
 id=bromitewebview
 name=Bromite Systemless Webview
-version=v3.3-75.0.3770.86
-versionCode=3025
+version=v3.4.2-75.0.3770.86
+versionCode=3028
 author=Innonetlife
-description=Install Bromite System Webview systemlessly. 
+description=Install Bromite System Webview systemless-ly. 
 You can block ads and fingerprinting, and protect your privacy with it. 
- All credit goes to original devs of Bromite for the app. 
+ All credit goes to original developers of Bromite for the app. 
  See the README for support (tap the module in Downloads in Manager)
 

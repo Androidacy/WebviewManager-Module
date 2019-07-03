@@ -69,6 +69,10 @@ The output should contain. `com.android.webview` and not contain a "E:" with a b
 
 # Changelog
 
+<h4>3.4</h4>
+
+- 'reverted'
+
 <h4>3.3</h4>
 
 - Further fix webview recognition on reboot
