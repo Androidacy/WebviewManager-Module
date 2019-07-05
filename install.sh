@@ -1,19 +1,6 @@
 # This is harder than it looks
-##########################################################################################
-#
-# Magisk Module Installer Script
-#
-##########################################################################################
-##########################################################################################
-#
-# Instructions:
-#
-# 1. Place your files into system folder (delete the placeholder file)
-# 2. Fill in your module's info into module.prop
-# 3. Configure and implement callbacks in this file
-# 4. If you need boot scripts, add them into common/post-fs-data.sh or common/service.sh
-# 5. Add your additional or modified system properties into common/system.prop
-#
+######################################################################
+# BROMITE WEBVIEW SYSTEMLESS INSTALLER
 ##########################################################################################
 
 ##########################################################################################
@@ -53,6 +40,7 @@ LATESTARTSERVICE=true
 # You won't believe how many names Google's webview goes by
 REPLACE="
 /system/app/Chrome
+/system/product/app/Chrome
 /system/app/webview
 "
 
@@ -128,14 +116,13 @@ print_modname() {
   ui_print "*******************************"
   ui_print "  Bromite Systemless Webview  "
   ui_print "*******************************"
-  ui_print "ONLY FLASH VIA MANAGER, NEVER TWRP OR IT WILL FAIL"
 }
 
 # Copy/extract your module files into $MODPATH in on_instaLL
 on_install() {
+	 $BOOTMODE || abort "! This is for magisk manager only becauseit needs an internetconnection!"
   # Download, Unzip and copy corresponding libs/apk
   ui_print "- Extracting module files"
-#  unzip -o "$ZIPFILE" "curl/*" -d $TMPDIR
   chmod +x $TMPDIR/curl-$ARCH32
   unzip -o "$ZIPFILE" "system/*" -d $MODPATH >&2
   # This for some reason breaks the script if removed
@@ -148,11 +135,9 @@ on_install() {
   elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]
     then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/x86_64/webview.apk
   fi
-  
   #  ui_print "- Extracting downloaded files..."
   test -d $MODPATH/system/app/webview || mkdir -p $MODPATH/system/app/webview && cp -rf $TMPDIR/webview.apk $MODPATH/system/app/webview
-#  cp -af "$TMPDIR/webview.apk" $MODPATH/system/app/webview
-# Only for debugging 
+  # Only for debugging 
 #  ls -a $MODDIR/system/app/webview
 #  ui_print "$MODPATH $TMPDIR $ARCH"
 #  ls $TMPDIR
@@ -178,15 +163,17 @@ set_permissions() {
 # You can add more functions to assist your custom script code
 remove_old() {
 	ui_print "- Removing old webview traces and clearing cache..."
-	ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT !!!!!!!!!!!!!!!!!"
+	ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 	ui_print "Reboot immediately after flashing or you may experience some issues! "
-	ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT !!!!!!!!!!!!!!!!!"
-	ui_print" Also, if you had any other webview such as Google webview, it'll need reinstalled"
+	ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
+	ui_print "Also, if you had any other webview such as Google webview, it'll need reinstalled"
+	ui_print "Chrome will be a preferred webview if installed, so therefore I'd recommend you disable it"
+	ui_print "Next boot may take significantly longer, we have to clear Dalvik cache here"
   rm -rf /data/resource-cache/*
   rm -rf /data/dalvik-cache/*
   rm -rf /cache/dalvik-cache/*
   rm -rf /data/*/*webview*
   rm -rf /data/system/package_cache/*
-  rm -rf /data/system/packages.list
-  rm -rf /data/resource-cache/*
+  # For now, this next line is going to be removed until I can figure out how to make it less aggressive
+#  rm -rf /data/*/*chrome*
 }

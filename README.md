@@ -3,7 +3,7 @@
 	FOR ANY PROBLEMS WITH INSTALLATION SHOULD BE REPORTED WITH LOGS AT OUR TELEGRAM GROUP BELOW
 	
 This module allows you to install [Bromite SystemWebView](https://www.bromite.org/system_web_view) systemless-ly.
-Most useful features of Bromite are that you can block ads, trackers and resist fingerprinting; see the full features list at https://github.com/bromite/bromite/blob/master/README.md#features
+Most useful features of Bromite are that you can block ads, trackers and resist fingerprinting; see the full features list [here](https://github.com/bromite/bromite/blob/master/README.md#features)
 
 The numbers after the dash in the version are the Bromite version used.
 
@@ -69,9 +69,23 @@ The output should contain. `com.android.webview` and not contain a "E:" with a b
 
 # Changelog
 
+<h4>3.5.1</h4>
+
+- Hotfix for multiple modules. All because of a comment in the code BTW
+
+- Hotfix for Chrome removal, wasn't received well
+
+<h4>3.5</h4>
+
+- Attempt to fix support on Pixels and Pixel ROMs
+
+- `reverted`
+
+- Script cleanup
+
 <h4>3.4</h4>
 
-- 'reverted'
+- `reverted`
 
 <h4>3.3</h4>
 
