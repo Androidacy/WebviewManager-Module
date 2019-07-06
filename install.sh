@@ -39,8 +39,6 @@ LATESTARTSERVICE=true
 
 # You won't believe how many names Google's webview goes by
 REPLACE="
-/system/app/Chrome
-/system/product/app/Chrome
 /system/app/webview
 "
 
@@ -120,29 +118,25 @@ print_modname() {
 
 # Copy/extract your module files into $MODPATH in on_instaLL
 on_install() {
-	 $BOOTMODE || abort "! This is for magisk manager only becauseit needs an internetconnection!"
-  # Download, Unzip and copy corresponding libs/apk
+	$BOOTMODE || abort "! This is for magisk manager only becauseit needs an internetconnection!"
+  # Download corresponding libs/apk
   ui_print "- Extracting module files"
-  chmod +x $TMPDIR/curl-$ARCH32
+  chmod +x $TMPDIR/curl-$ARCH
   unzip -o "$ZIPFILE" "system/*" -d $MODPATH >&2
   # This for some reason breaks the script if removed
   ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
   ui_print "- Downloading extra files please be patient..."
   if [ "$ARCH" = "arm64" ]
-    then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/arm64-v8a/webview.apk
+    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/arm64-v8a/webview.apk
   elif [ "$ARCH" = "arm" ]
-    then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/armeabi-v7a/webview.apk
+    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/armeabi-v7a/webview.apk
   elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]
-    then $TMPDIR/curl-$ARCH32 -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/x86_64/webview.apk
+    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/x86_64/webview.apk
   fi
   #  ui_print "- Extracting downloaded files..."
   test -d $MODPATH/system/app/webview || mkdir -p $MODPATH/system/app/webview && cp -rf $TMPDIR/webview.apk $MODPATH/system/app/webview
-  # Only for debugging 
-#  ls -a $MODDIR/system/app/webview
-#  ui_print "$MODPATH $TMPDIR $ARCH"
-#  ls $TMPDIR
-#  ui_print $ARCH
   remove_old
+  replace_webview
 }
 
 # Only some special files require specific permissions
@@ -167,13 +161,28 @@ remove_old() {
 	ui_print "Reboot immediately after flashing or you may experience some issues! "
 	ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 	ui_print "Also, if you had any other webview such as Google webview, it'll need reinstalled"
-	ui_print "Chrome will be a preferred webview if installed, so therefore I'd recommend you disable it"
+	ui_print "Chrome will be a preferred webview if installed, so you should disable it"
 	ui_print "Next boot may take significantly longer, we have to clear Dalvik cache here"
-  rm -rf /data/resource-cache/*
-  rm -rf /data/dalvik-cache/*
-  rm -rf /cache/dalvik-cache/*
-  rm -rf /data/*/*webview*
-  rm -rf /data/system/package_cache/*
-  # For now, this next line is going to be removed until I can figure out how to make it less aggressive
+    rm -rf /data/resource-cache/*
+    rm -rf /data/dalvik-cache/*
+    rm -rf /cache/dalvik-cache/*
+    rm -rf /data/*/com.android.webview*
+    rm -rf /data/system/package_cache/*
+# For now, this next line is going to be removed until I can figure out how to make it less aggressive
 #  rm -rf /data/*/*chrome*
 }
+replace_webview() {
+	if [ "$(ls -d /system/product/app/Chrome 2>/dev/null)" ]
+    then mkdir -p $MODPATH/system/product/app/Chrome && touch /system/product/app/Chrome/.replace
+    fi
+    if [ "$(ls -d /system/app/Chrome 2>/dev/null)" ]
+    then mkdir -p $MODPATH/system/app/Chrome && touch /system/app/Chrome/.replace
+    fi
+	if [ "$(ls -d /system/product/app/chrome 2>/dev/null)" ]
+    then mkdir -p $MODPATH/system/product/app/chrome && touch /system/product/app/chrome/.replace
+    fi
+    if [ "$(ls -d /system/app/chrome 2>/dev/null)" ]
+    then mkdir -p $MODPATH/system/app/chrome && touch /system/app/chrome/.replace
+    fi
+}
+	

@@ -69,6 +69,18 @@ The output should contain. `com.android.webview` and not contain a "E:" with a b
 
 # Changelog
 
+<h4>3.6.1</h4>
+
+- Improve install logic
+
+- Improve replace logic
+
+- Fix boot script (hopefully)
+
+- First steps towards Pixel/stock compatibility
+
+- Re-add 64 bit curl binary
+
 <h4>3.5.1</h4>
 
 - Hotfix for multiple modules. All because of a comment in the code BTW
