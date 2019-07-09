@@ -69,6 +69,12 @@ The output should contain. `com.android.webview` and not contain a "E:" with a b
 
 # Changelog
 
+<h4>3.6.2</h4>
+
+- Updated bromite to 75.0.3770.132
+
+- Fixed boot script (I say that a lot...) 
+
 <h4>3.6.1</h4>
 
 - Improve install logic
