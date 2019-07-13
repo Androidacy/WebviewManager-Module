@@ -126,12 +126,16 @@ on_install() {
   # This for some reason breaks the script if removed
   ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
   ui_print "- Downloading extra files please be patient..."
+
+  BROMITE_VERSION=75.0.3770.139
+  URL=https://github.com/bromite/bromite/releases/download/$BROMITE_VERSION/${ARCH}_SystemWebView.apk
+
   if [ "$ARCH" = "arm64" ]
-    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/arm64-v8a/webview.apk
+    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk $URL
   elif [ "$ARCH" = "arm" ]
-    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/armeabi-v7a/webview.apk
+    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk $URL
   elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]
-    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk https://raw.githubusercontent.com/alexa-v2/bromite-systemless-files/master/x86_64/webview.apk
+    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk $URL
   fi
   #  ui_print "- Extracting downloaded files..."
   test -d $MODPATH/system/app/webview || mkdir -p $MODPATH/system/app/webview && cp -rf $TMPDIR/webview.apk $MODPATH/system/app/webview
@@ -185,4 +189,3 @@ replace_webview() {
     then mkdir -p $MODPATH/system/app/chrome && touch /system/app/chrome/.replace
     fi
 }
-	
