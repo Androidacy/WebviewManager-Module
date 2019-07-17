@@ -69,6 +69,14 @@ The output should contain. `com.android.webview` and not contain a "E:" with a b
 
 # Changelog
 
+<h4>3.7.2</h4>
+
+- Download APK from official sources
+
+- Update replace logic
+
+- Update install logic
+
 <h4>3.6.2</h4>
 
 - Updated bromite to 75.0.3770.132
