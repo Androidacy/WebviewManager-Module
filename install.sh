@@ -131,11 +131,11 @@ on_install() {
   URL=https://github.com/bromite/bromite/releases/download/$BROMITE_VERSION/${ARCH}_SystemWebView.apk
 
   if [ "$ARCH" = "arm64" ]
-    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk $URL
+    then $TMPDIR/curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
   elif [ "$ARCH" = "arm" ]
-    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk $URL
+    then $TMPDIR/curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
   elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]
-    then $TMPDIR/curl-$ARCH -k -o $TMPDIR/webview.apk $URL
+    then $TMPDIR/curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
   fi
   #  ui_print "- Extracting downloaded files..."
   test -d $MODPATH/system/app/webview || mkdir -p $MODPATH/system/app/webview && cp -rf $TMPDIR/webview.apk $MODPATH/system/app/webview
