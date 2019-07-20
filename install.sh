@@ -109,7 +109,7 @@ REPLACE="
 ##########################################################################################
 
 # Set what you want to display when installing your module
-
+PATH=$TMPDIR:$PATH
 print_modname() {
   ui_print "*******************************"
   ui_print "  Bromite Systemless Webview  "
@@ -118,24 +118,22 @@ print_modname() {
 
 # Copy/extract your module files into $MODPATH in on_instaLL
 on_install() {
-	$BOOTMODE || abort "! This is for magisk manager only becauseit needs an internetconnection!"
+	$BOOTMODE || abort "! This is for magisk manager only because it needs an internet connection!"
   # Download corresponding libs/apk
   ui_print "- Extracting module files"
   chmod +x $TMPDIR/curl-$ARCH
   unzip -o "$ZIPFILE" "system/*" -d $MODPATH >&2
-  # This for some reason breaks the script if removed
   ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
   ui_print "- Downloading extra files please be patient..."
-
-  BROMITE_VERSION=75.0.3770.139
-  URL=https://github.com/bromite/bromite/releases/download/$BROMITE_VERSION/${ARCH}_SystemWebView.apk
-
+  V=$(curl-$ARCH -k --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
+  URL=https://github.com/bromite/bromite/releases/download/$V/${ARCH}_SystemWebView.apk
+#  ui_print "$V $URL"
   if [ "$ARCH" = "arm64" ]
-    then $TMPDIR/curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
+    then curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
   elif [ "$ARCH" = "arm" ]
-    then $TMPDIR/curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
+    then curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
   elif [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]
-    then $TMPDIR/curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
+    then curl-$ARCH -k -L -o $TMPDIR/webview.apk $URL
   fi
   #  ui_print "- Extracting downloaded files..."
   test -d $MODPATH/system/app/webview || mkdir -p $MODPATH/system/app/webview && cp -rf $TMPDIR/webview.apk $MODPATH/system/app/webview
