@@ -718,10 +718,10 @@ unity_main() {
     ui_print "- Debug mode"
     if $BOOTMODE; then
       ui_print "  Debug log will be written to: /storage/emulated/0/$MODID-debug.log"
-      exec 2>/storage/emulated/$MODID-debug.log
+      exec 2>/storage/emulated/0/$MODID-debug.log
     else
-      ui_print "  Debug log will be written to: /data/media/$MODID-debug.log"
-      exec 2>/data/media/$MODID-debug.log
+      ui_print "  Debug log will be written to: /data/media/0/$MODID-debug.log"
+      exec 2>/data/media/0/$MODID-debug.log
     fi
     set -x
   fi
