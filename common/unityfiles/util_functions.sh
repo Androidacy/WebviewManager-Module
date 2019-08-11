@@ -144,9 +144,6 @@ debug_log() {
 }
 
 cleanup() {
-  if [ -d "$TMPDIR/addon/AnyKernel3/split_img" ]; then
-    $OG_AK && { flash_boot; flash_dtbo; } || write_boot
-  fi
   if $MAGISK; then
     imageless_magisk || unmount_magisk_img
     ui_print " "
@@ -295,7 +292,7 @@ set_vars() {
   else
     ORIGVEN=$ORIGDIR/vendor
   fi
-  SYS=/system; VEN=/system/vendor; RD=$TMPDIR/addon/AnyKernel3/ramdisk; INFORD="$RD/$MODID-files"; SHEBANG="#!/system/bin/sh"
+  SYS=/system; VEN=/system/vendor; SHEBANG="#!/system/bin/sh"
   [ $API -lt 26 ] && DYNLIB=false
   $DYNLIB && { LIBPATCH="\/vendor"; LIBDIR=$VEN; } || { LIBPATCH="\/system"; LIBDIR=/system; }
   if ! $MAGISK || $SYSOVER; then
@@ -373,7 +370,7 @@ run_addons() {
 }
 
 cp_ch() {
-  local OPT=`getopt -o inr -- "$@"` BAK=true UBAK=true REST=true BAKFILE=$INFO FOL=false
+  local OPT=`getopt -o inr -- "$@"` BAK=true UBAK=true REST=true FOL=false
   eval set -- "$OPT"
   while true; do
     case "$1" in
@@ -387,7 +384,6 @@ cp_ch() {
   $FOL && OFILES=$(find $SRC -type f 2>/dev/null)
   [ -z $3 ] && PERM=0644 || PERM=$3
   case "$DEST" in
-    $RD/*) [ "$RD" != "/system" ] && BAKFILE=$INFORD;;
     $TMPDIR/*|/data/adb/*|$MODULEROOT/*|/sbin/.magisk/img/*) BAK=false;;
   esac
   for OFILE in ${OFILES}; do
@@ -402,12 +398,12 @@ cp_ch() {
     fi
     if $BAK; then
       if $UBAK && $REST; then
-        [ ! "$(grep "$FILE$" $BAKFILE 2>/dev/null)" ] && echo "$FILE" >> $BAKFILE
-        [ -f "$FILE" -a ! -f "$FILE~" ] && { cp -af $FILE $FILE~; echo "$FILE~" >> $BAKFILE; }
+        [ ! "$(grep "$FILE$" $INFO 2>/dev/null)" ] && echo "$FILE" >> $INFO
+        [ -f "$FILE" -a ! -f "$FILE~" ] && { cp -af $FILE $FILE~; echo "$FILE~" >> $INFO; }
       elif ! $UBAK && $REST; then
-        [ ! "$(grep "$FILE$" $BAKFILE 2>/dev/null)" ] && echo "$FILE" >> $BAKFILE
+        [ ! "$(grep "$FILE$" $INFO 2>/dev/null)" ] && echo "$FILE" >> $INFO
       elif ! $UBAK && ! $REST; then
-        [ ! "$(grep "$FILE\NORESTORE$" $BAKFILE 2>/dev/null)" ] && echo "$FILE\NORESTORE" >> $BAKFILE
+        [ ! "$(grep "$FILE\NORESTORE$" $INFO 2>/dev/null)" ] && echo "$FILE\NORESTORE" >> $INFO
       fi
     fi
     install -D -m $PERM "$OFILE" "$FILE"
@@ -423,7 +419,7 @@ cp_ch() {
 patch_script() {
   [ -L /system/vendor ] && local VEN=/vendor
   sed -i -e "1i $SHEBANG" -e "1i SYS=$ROOT/system" -e "1i VEN=$ROOT$VEN" $1
-  for i in "ROOT" "MAGISK" "LIBDIR" "SYSOVER" "DIRSEPOL" "MODID" "MOUNTEDROOT" "NVBASE"; do
+  for i in "ROOT" "MAGISK" "LIBDIR" "SYSOVER" "MODID" "MOUNTEDROOT" "NVBASE"; do
     sed -i "4i $i=$(eval echo \$$i)" $1
   done
   if $MAGISK; then
@@ -462,33 +458,6 @@ prop_process() {
     echo "$LINE" >> $PROP
   done < $1
   $MAGISK || chmod 0700 $PROP
-}
-
-uninstall_files() {
-  local FILE
-  if [ -z "$1" ] || [ "$1" == "$INFO" ]; then
-    FILE=$INFO
-    $BOOTMODE && [ -f $MODULEROOT/$MODID/$MODID-files ] && FILE=$MODULEROOT/$MODID/$MODID-files
-    $MAGISK || [ -f $FILE ] || abort "   ! Mod not detected !"
-  else
-    FILE="$1"
-  fi
-  if [ -f $FILE ]; then
-    while read LINE; do
-      if [ "$(echo -n $LINE | tail -c 1)" == "~" ] || [ "$(echo -n $LINE | tail -c 9)" == "NORESTORE" ]; then
-        continue
-      elif [ -f "$LINE~" ]; then
-        mv -f $LINE~ $LINE
-      else
-        rm -f $LINE
-        while true; do
-          LINE=$(dirname $LINE)
-          [ "$(ls -A $LINE 2>/dev/null)" ] && break 1 || rm -rf $LINE
-        done
-      fi
-    done < $FILE
-    rm -f $FILE
-  fi
 }
 
 center_and_print() {
@@ -555,23 +524,7 @@ unity_install() {
   for i in $TMPDIR/common/sepolicy.sh $TMPDIR/common/system.prop $TMPDIR/common/service.sh $TMPDIR/common/post-fs-data.sh; do
     [ -f $i ] && sed -i -e "/^#/d" -e "/^ *$/d" $i
   done
-
-  # Sepolicy
-  $DIRSEPOL && [ ! -d $TMPDIR/addon/AnyKernel3 ] && { ui_print "   ! AK3 required but not found!"; ui_print "   ! It's required for direct sepolicy patching"; ui_print "   ! Will use boot script instead"; DIRSEPOL=false; }
-
-  if ! $DIRSEPOL && [ -s $TMPDIR/common/sepolicy.sh ]; then
-    [ "$NVBASE" == "/system/etc/init.d" -o "$MAGISK" == "true" ] && echo -n "magiskpolicy --live" >> $TMPDIR/common/service.sh || echo -n "supolicy --live" >> $TMPDIR/common/service.sh
-    sed -i -e '/^#.*/d' -e '/^$/d' $TMPDIR/common/sepolicy.sh
-    while read LINE; do
-      case $LINE in
-        \"*\") echo -n " $LINE" >> $TMPDIR/common/service.sh;;
-        \"*) echo -n " $LINE\"" >> $TMPDIR/common/service.sh;;
-        *\") echo -n " \"$LINE" >> $TMPDIR/common/service.sh;;
-        *) echo -n " \"$LINE\"" >> $TMPDIR/common/service.sh;;
-      esac
-    done < $TMPDIR/common/sepolicy.sh
-  fi
-
+  
   ui_print "   Installing scripts and files for $ARCH SDK $API device..."
 
   # Custom uninstaller
@@ -588,7 +541,19 @@ unity_install() {
   #Install post-fs-data mode scripts
   [ -s $TMPDIR/common/post-fs-data.sh ] && install_script -p $TMPDIR/common/post-fs-data.sh
 
-  # Service mode scripts
+  # Service mode scripts (and sepolicy)
+  if [ -s $TMPDIR/common/sepolicy.sh ]; then
+    [ "$NVBASE" == "/system/etc/init.d" -o "$MAGISK" == "true" ] && echo -n "magiskpolicy --live" >> $TMPDIR/common/service.sh || echo -n "supolicy --live" >> $TMPDIR/common/service.sh
+    sed -i -e '/^#.*/d' -e '/^$/d' $TMPDIR/common/sepolicy.sh
+    while read LINE; do
+      case $LINE in
+        \"*\") echo -n " $LINE" >> $TMPDIR/common/service.sh;;
+        \"*) echo -n " $LINE\"" >> $TMPDIR/common/service.sh;;
+        *\") echo -n " \"$LINE" >> $TMPDIR/common/service.sh;;
+        *) echo -n " \"$LINE\"" >> $TMPDIR/common/service.sh;;
+      esac
+    done < $TMPDIR/common/sepolicy.sh
+  fi
   [ -s $TMPDIR/common/service.sh ] && install_script -l $TMPDIR/common/service.sh
 
   # Install files
@@ -655,7 +620,25 @@ unity_uninstall() {
   run_addons -u
 
   # Remove files
-  uninstall_files
+  local FILE=$INFO
+  $BOOTMODE && [ -f $MODULEROOT/$MODID/$MODID-files ] && FILE=$MODULEROOT/$MODID/$MODID-files
+  $MAGISK || [ -f $FILE ] || abort "   ! Mod not detected !"
+  if [ -f $FILE ]; then
+    while read LINE; do
+      if [ "$(echo -n $LINE | tail -c 1)" == "~" ] || [ "$(echo -n $LINE | tail -c 9)" == "NORESTORE" ]; then
+        continue
+      elif [ -f "$LINE~" ]; then
+        mv -f $LINE~ $LINE
+      else
+        rm -f $LINE
+        while true; do
+          LINE=$(dirname $LINE)
+          [ "$(ls -A $LINE 2>/dev/null)" ] && break 1 || rm -rf $LINE
+        done
+      fi
+    done < $FILE
+    rm -f $FILE
+  fi
 
   if $MAGISK; then
     rm -rf $MODPATH
@@ -741,11 +724,7 @@ unity_main() {
     $BOOTMODE && { ui_print "  ! Magisk manager isn't supported!"; abort "   ! Flash in TWRP !"; }
     unity_upgrade -s
   elif [ -f "$MOD_VER" ]; then
-    if [ -d "$TMPDIR/addon/AnyKernel3/ramdisk" ] && ! $OG_AK && [ ! "$(grep "#$MODID-UnityIndicator" $RD/init.rc 2>/dev/null)" ]; then
-      ui_print "  ! Mod present in system but not in ramdisk!"
-      ui_print "  ! Running upgrade..."
-      unity_upgrade
-    elif [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $TMPDIR/module.prop) ]; then
+    if [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $TMPDIR/module.prop) ]; then
       ui_print "  ! Current or newer version detected!"
       unity_uninstall
     else
@@ -760,7 +739,7 @@ unity_main() {
   cleanup
 }
 
-SKIPMOUNT=false; SYSOVER=false; DEBUG=false; DYNLIB=false; SEPOLICY=false; DIRSEPOL=false
+SKIPMOUNT=false; SYSOVER=false; DEBUG=false; DYNLIB=false; SEPOLICY=false
 OIFS=$IFS; IFS=\|;
 case $(echo $(basename "$ZIPFILE") | tr '[:upper:]' '[:lower:]') in
   *debug*) DEBUG=true;;
