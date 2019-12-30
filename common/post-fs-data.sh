@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # If you are reading this you owe me $10 => https://paypal.me/innonetlife
 # Set some variables
 OL="me.phh.treble.overlay.webview"
@@ -29,7 +28,3 @@ if CT=1;
 then
 	rm -rf $MODPATH/*/overlay $MODPATH/*/*/overlay;
 fi
-=======
-# This script will be executed in post-fs-data mode
-# More info in the main Magisk thread
->>>>>>> 5bc76bf8094a5d1ee1da22ea560406f786012e9e

@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 # Bromite Systemless Webview
 	
 	ANY PROBLEMS WITH INSTALLATION SHOULD BE REPORTED WITH LOGS AT OUR TELEGRAM GROUP BELOW
 	
-**THIS REPOSITORY IS FOR TESTING. UPSTREAM IS (HERE)[https://github.com]
-
 This module allows you to install [Bromite SystemWebView](https://www.bromite.org/system_web_view) systemless-ly.
 Most useful features of Bromite are that you can block ads, trackers and resist fingerprinting; see the full features list [here](https://github.com/bromite/bromite/blob/master/README.md#features)
 
@@ -70,40 +67,3 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 
 * [Bromite SystemWebView wiki page](https://github.com/bromite/bromite/wiki/Installing-SystemWebView)
 * [Bromite website](https://bromite.org)
-=======
-<h1 align="center">Unity (Un)Installer Template</h1>
-
-<div align="center">
-  <!-- Version -->
-    <img src="https://img.shields.io/badge/Version-v5.0-blue.svg?longCache=true&style=popout-square"
-      alt="Version" />
-  <!-- Last Updated -->
-    <img src="https://img.shields.io/badge/Updated-December 30, 2019-green.svg?longCache=true&style=flat-square"
-      alt="_time_stamp_" />
-</div>
-
-<div align="center">
-  <strong>Unity Installer allows 1 zip to work for multiple devices and root solutions. More details in the 
-    <a href="https://github.com/Zackptg5/Unity/wiki">wiki</a>.
-</div>
-
-<div align="center">
-  <h3>
-    <a href="https://github.com/Zackptg5/Unity">
-      Source Code
-    </a>
-    <span> | </span>
-    <a href="https://github.com/Zackptg5/Unity-Addons">
-      Addons Repository
-    </a>
-    <span> | </span>
-    <a href="https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612">
-      XDA
-    </a>
-  </h3>
-</div>
-
-## Compatibility
-- Magisk 19.0 +
-- All other root or rootless solutions (init.d support for boot scripts is required if not using Magisk or SuperSU. Try [Init.d Injector](https://forum.xda-developers.com/android/software-hacking/mod-universal-init-d-injector-wip-t3692105))
->>>>>>> 5bc76bf8094a5d1ee1da22ea560406f786012e9e
