@@ -8,7 +8,11 @@
 ##########################################################################################
 # Unity Logic - Don't modify this
 ##########################################################################################
+<<<<<<< HEAD
 MODID=bromitewebview
+=======
+
+>>>>>>> 5bc76bf8094a5d1ee1da22ea560406f786012e9e
 SKIPUNZIP=1
 if [ -z $UF ]; then
   MAGISK=true; UF=$TMPDIR/common/unityfiles
@@ -24,10 +28,17 @@ fi
 # Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maximum android version for your mod
 # Uncomment DYNLIB if you want libs installed to vendor for oreo+ and system for anything older
 # Uncomment DEBUG if you want full debug logs (saved to /sdcard in magisk manager and the zip directory in twrp) - note that this can still be set to true by the user by adding 'debug' to the zipname
+<<<<<<< HEAD
 MINAPI=21
 #MAXAPI=25
 #DYNLIB=true
 DEBUG=true
+=======
+#MINAPI=21
+#MAXAPI=25
+#DYNLIB=true
+#DEBUG=true
+>>>>>>> 5bc76bf8094a5d1ee1da22ea560406f786012e9e
 
 ##########################################################################################
 # Replace list
@@ -47,7 +58,10 @@ REPLACE_EXAMPLE="
 
 # Construct your own list here
 REPLACE="
+<<<<<<< HEAD
 /system/app/webview
+=======
+>>>>>>> 5bc76bf8094a5d1ee1da22ea560406f786012e9e
 "
 
 ##########################################################################################
