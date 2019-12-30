@@ -1,12 +1,15 @@
 #!/sbin/sh
 
-TMPDIR=/dev/tmp
-MOUNTPATH=/dev/magisk_img
+#################
+# Initialization
+#################
 
-# Default permissions
 umask 022
 
-# Initial cleanup
+# Global vars
+TMPDIR=/dev/tmp
+PERSISTDIR=/sbin/.magisk/mirror/persist
+
 rm -rf $TMPDIR 2>/dev/null
 mkdir -p $TMPDIR
 
@@ -14,15 +17,25 @@ mkdir -p $TMPDIR
 ui_print() { echo "$1"; }
 
 require_new_magisk() {
-  ui_print "***********************************"
-  ui_print " Please install the latest Magisk! "
-  ui_print "***********************************"
+  ui_print "*******************************"
+  ui_print " Please install Magisk v19.0+! "
+  ui_print "*******************************"
   exit 1
 }
 
-imageless_magisk() {
-  [ $MAGISK_VER_CODE -gt 18100 ]
-  return $?
+print_modname() {
+  local len
+  len=`echo -n $MODNAME | wc -c`
+  len=$((len + 2))
+  local pounds=`printf "%${len}s" | tr ' ' '*'`
+  ui_print "$pounds"
+  ui_print " $MODNAME "
+  ui_print "$pounds"
+  if $MAGISK; then
+    ui_print "*******************"
+    ui_print " Powered by Magisk "
+    ui_print "*******************"
+  fi
 }
 
 ##########################################################################################
@@ -36,13 +49,13 @@ mount /data 2>/dev/null
 
 # Load utility functions
 if [ -f /data/adb/magisk/util_functions.sh ]; then
+  MAGISK=true; NVBASE=/data/adb
   . /data/adb/magisk/util_functions.sh
-  NVBASE=/data/adb
-elif [ -f /data/magisk/util_functions.sh ]; then
-  require_new_magisk
+  [ $MAGISK_VER_CODE -gt 18100 ] || require_new_magisk
 else
-  UF=$TMPDIR/common/unityfiles
-  unzip -oq "$ZIPFILE" 'common/unityfiles/util_functions.sh' -d $TMPDIR >&2
+  [ -f /data/magisk/util_functions.sh ] && require_new_magisk
+  MAGISK=false; UF=$TMPDIR/META-INF/unity
+  unzip -oqj "$ZIPFILE" 'META-INF/unity/*' -d $TMPDIR >&2
   [ -f "$UF/util_functions.sh" ] || { ui_print "! Unable to extract zip file !"; exit 1; }
   . $UF/util_functions.sh
 fi
@@ -56,107 +69,61 @@ mount_partitions
 # Detect version and architecture
 api_level_arch_detect
 
-# Setup busybox and binaries
+# Setup busybox and binaries, mount apex
 $BOOTMODE && boot_actions || recovery_actions
 
 ##########################################################################################
 # Preparation
 ##########################################################################################
 
-# Extract common files
-unzip -oj "$ZIPFILE" module.prop install.sh uninstall.sh 'common/*' -d $TMPDIR >&2
-
-[ ! -f $TMPDIR/install.sh ] && abort "! Unable to extract zip file!"
-# Load install script
-. $TMPDIR/install.sh
-
-if $MAGISK; then
-  if imageless_magisk; then
-    $BOOTMODE && MODDIRNAME=modules_update || MODDIRNAME=modules
-    MODULEROOT=$NVBASE/$MODDIRNAME
-  else
-    $BOOTMODE && IMGNAME=magisk_merge.img || IMGNAME=magisk.img
-    IMG=$NVBASE/$IMGNAME
-    request_zip_size_check "$ZIPFILE"
-    mount_magisk_img
-    MODULEROOT=$MOUNTPATH
-  fi
-else
-  MODULEROOT=$MOUNTPATH
-fi
+# Extract prop file
+unzip -o "$ZIPFILE" module.prop -d $TMPDIR >&2
+[ ! -f $TMPDIR/module.prop ] && abort "! Unable to extract zip file!"
 
 MODID=`grep_prop id $TMPDIR/module.prop`
+MODNAME=`grep_prop name $TMPDIR/module.prop`
+if $MAGISK; then
+  $BOOTMODE && MODDIRNAME=modules_update || MODDIRNAME=modules
+  MODULEROOT=$NVBASE/$MODDIRNAME
+  MOD_VER="$NVBASE/modules/$MODID/module.prop"
+else
+  MODULEROOT=$TMPDIR
+  MOD_VER="/system/etc/$MODID-module.prop"
+fi
 MODPATH=$MODULEROOT/$MODID
 
-print_modname
-
-# Anything after this point won't run
-
-ui_print "******************************"
-ui_print "Powered by Magisk (@topjohnwu)"
-ui_print "******************************"
-
-##########################################################################################
-# Install
-##########################################################################################
+# Determine mod installation status - allows flash to remove in TWRP for magisk modules
+if [ -f "$MOD_VER" ]; then
+  if [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $TMPDIR/module.prop) ]; then
+    INSTATUS=1 # Uninstall
+  else
+    INSTATUS=2 # Upgrade
+  fi
+else
+  INSTATUS=0 # Install
+fi
 
 # Create mod paths
 rm -rf $MODPATH 2>/dev/null
 mkdir -p $MODPATH
 
-on_install
-
-# Remove placeholder
-rm -f $MODPATH/system/placeholder 2>/dev/null
-
-# Custom uninstaller
-[ -f $TMPDIR/uninstall.sh ] && cp -af $TMPDIR/uninstall.sh $MODPATH/uninstall.sh
-
-# Auto Mount
-if imageless_magisk; then
-  $SKIPMOUNT && touch $MODPATH/skip_mount
-else
-  $SKIPMOUNT || touch $MODPATH/auto_mount
-fi
-
-# prop files
-$PROPFILE && cp -af $TMPDIR/system.prop $MODPATH/system.prop
-
-# Module info
-cp -af $TMPDIR/module.prop $MODPATH/module.prop
-if $BOOTMODE; then
-  # Update info for Magisk Manager
-  if imageless_magisk; then
-    mktouch $NVBASE/modules/$MODID/update
-    cp -af $TMPDIR/module.prop $NVBASE/modules/$MODID/module.prop
-  else
-    mktouch /sbin/.magisk/img/$MODID/update
-    cp -af $TMPDIR/module.prop /sbin/.magisk/img/$MODID/module.prop
-  fi
-fi
-
-# post-fs-data mode scripts
-$POSTFSDATA && cp -af $TMPDIR/post-fs-data.sh $MODPATH/post-fs-data.sh
-
-# service mode scripts
-$LATESTARTSERVICE && cp -af $TMPDIR/service.sh $MODPATH/service.sh
-
-# Handle replace folders
-for TARGET in $REPLACE; do
-  mktouch $MODPATH$TARGET/.replace
-done
-
-ui_print "- Setting permissions"
-set_permissions
-
 ##########################################################################################
-# Finalizing
+# Install
 ##########################################################################################
 
-cd /
-imageless_magisk || unmount_magisk_img
-$BOOTMODE || recovery_cleanup
-rm -rf $TMPDIR $MOUNTPATH
+print_modname
 
-ui_print "- Done"
-exit 0
+unzip -o "$ZIPFILE" customize.sh -d $MODPATH >&2
+
+if ! grep -q '^SKIPUNZIP=1$' $MODPATH/customize.sh 2>/dev/null; then
+  ui_print "- Extracting module files"
+  unzip -o "$ZIPFILE" -x 'META-INF/*' -d $MODPATH >&2
+
+  # Default permissions
+  set_perm_recursive $MODPATH 0 0 0755 0644
+fi
+
+# Load customization script
+[ -f $MODPATH/customize.sh ] && . $MODPATH/customize.sh
+
+# Nothing after this matters
