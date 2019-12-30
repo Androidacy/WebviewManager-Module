@@ -6,15 +6,17 @@
 ##########################################################################################
 
 ##########################################################################################
-# Unity Logic - Don't modify this
+# Unity Logic - Don't change/move this section
 ##########################################################################################
 
 if [ -z $UF ]; then
-  MAGISK=true; UF=$TMPDIR/META-INF/unity
-  unzip -oq "$ZIPFILE" 'META-INF/unity/*' -d $TMPDIR >&2
+  UF=$TMPDIR/common/unityfiles
+  unzip -oq "$ZIPFILE" 'common/unityfiles/util_functions.sh' -d $TMPDIR >&2
   [ -f "$UF/util_functions.sh" ] || { ui_print "! Unable to extract zip file !"; exit 1; }
   . $UF/util_functions.sh
 fi
+
+comp_check
 
 ##########################################################################################
 # Config Flags
@@ -22,22 +24,19 @@ fi
 
 # Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maximum android version for your mod
 # Uncomment DYNLIB if you want libs installed to vendor for oreo+ and system for anything older
-<<<<<<< HEAD:install.sh
 # Uncomment SYSOVER if you want the mod to always be installed to system (even on magisk) - note that this can still be set to true by the user by adding 'sysover' to the zipname
 # Uncomment DIRSEPOL if you want sepolicy patches applied to the boot img directly (not recommended) - THIS REQUIRES THE RAMDISK PATCHER ADDON (this addon requires minimum api of 17)
-=======
->>>>>>> 5aeb810f1e70822d9fd27479f755a1d5dca5d600:customize.sh
 # Uncomment DEBUG if you want full debug logs (saved to /sdcard in magisk manager and the zip directory in twrp) - note that this can still be set to true by the user by adding 'debug' to the zipname
 MINAPI=17
 #MAXAPI=25
 #DYNLIB=true
-<<<<<<< HEAD:install.sh
 #SYSOVER=true
 #DIRSEPOL=true
 DEBUG=true
-=======
-#DEBUG=true
->>>>>>> 5aeb810f1e70822d9fd27479f755a1d5dca5d600:customize.sh
+
+# Uncomment if you do *NOT* want Magisk to mount any files for you. Most modules would NOT want to set this flag to true
+# This is obviously irrelevant for system installs. This will be set to true automatically if your module has no files in system
+#SKIPMOUNT=true
 
 ##########################################################################################
 # Replace list
@@ -62,6 +61,13 @@ REPLACE="
 ##########################################################################################
 # Custom Logic
 ##########################################################################################
+
+# Set what you want to display when installing your module
+
+print_modname() {
+  center_and_print # Replace this line if using custom print stuff
+  unity_main # Don't change this line
+}
 
 set_permissions() {
   # Remove this if adding to this function
@@ -92,12 +98,4 @@ unity_custom() {
 
 # Custom Functions for Install AND Uninstall - You can put them here
 
-<<<<<<< HEAD:install.sh
 ui_print "$ZIPFILE $MODPATH $TMPDIR"
-=======
-##########################################################################################
-# Unity Logic - Don't touch anything after this
-##########################################################################################
-
-unity_main
->>>>>>> 5aeb810f1e70822d9fd27479f755a1d5dca5d600:customize.sh
