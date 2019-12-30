@@ -492,7 +492,7 @@ patch_script() {
   local i; for i in "MAGISK" "LIBDIR" "MODID" "NVBASE" "INFO"; do
     sed -i "4i $i=$(eval echo \$$i)" $1
   done
-  $MAGISK && sed -i -e "s|\$MODPATH|$MODPATH|g" $1 || sed -i -e "s|\$MODPATH||g" $1
+  $MAGISK && sed -i -e "s|\$MODPATH|$NVBASE/modules/$MODID|g" $1 || sed -i -e "s|\$MODPATH||g" $1
 }
 
 install_script() {
