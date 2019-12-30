@@ -1,6 +1,20 @@
 
 # Changelog
 
+<h4>4.1.0</h4>
+
+- Fixes for app installation on boot 
+
+- More dynamic in boot script should no longer mess with manual app updates 
+
+<h4>4.0.0</h4>
+
+- Fixed compatibility with stock ROMs
+
+- Migration to unity template 
+
+- Updated boot scripts 
+
 <h4>3.7.3</h4>
 
 - Always download latest Bromite WebView apk

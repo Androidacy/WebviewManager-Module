@@ -1,3 +1,4 @@
+ # If you are reading this you owe me $10 => https://paypal.me/innonetlife
 # Forces Android to rebuild package cache and re-registered old webview
 rm -rf /data/resource-cache/*
 rm -rf /data/dalvik-cache/*
