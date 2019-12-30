@@ -1,6 +1,6 @@
 # Download corresponding libs/apk
-chmod +x $TMPDIR/common/unityfiles/tools/$ARCH32/curl
-alias curl=$TMPDIR/common/unityfiles/tools/$ARCH32/curl
+chmod +x $UF/tools/$ARCH32/curl
+alias curl=$UF/tools/$ARCH32/curl
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 if [ "$BOOTMODE" = "true" ];
 then
