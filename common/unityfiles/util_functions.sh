@@ -671,7 +671,7 @@ unity_upgrade() {
   [ -f "$MODPATH/common/unity_upgrade.sh" ] && . $MODPATH/common/unity_upgrade.sh
   unity_uninstall
   mkdir -p $MODPATH
-  unzip -o "$ZIPFILE" -x 'META-INF/*' -d $MODPATH >&2
+  unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/unityfiles/*' -d $MODPATH >&2
   unity_install
 }
 
@@ -700,7 +700,7 @@ unity_main() {
 
   # Extract files - done this way so we can mount apex before chcon is called from set_perm
   ui_print "- Extracting module files"
-  unzip -oq "$ZIPFILE" -x 'META-INF/*' -d $MODPATH >&2
+  unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/unityfiles/*' -d $MODPATH >&2
 
   # Set variables
   set_vars
