@@ -559,7 +559,8 @@ unity_install() {
       "system.prop") prop_process $i; $MAGISK || echo $PROP >> $INFO;;
     esac
   done
-  
+  sed -i "s/<MODID>/$MODID" $MODPATH/uninstall.sh
+
   # Handle replace folders
   for TARGET in $REPLACE; do
     $MAGISK && mktouch $MODPATH$TARGET/.replace || rm -rf $TARGET
