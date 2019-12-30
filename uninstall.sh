@@ -1,4 +1,4 @@
-FILE=${0%/*}/<MODID>-files
+FILE=/data/adb/modules/.core/<MODID>-files
 if [ -f $FILE ]; then
   while read LINE; do
     if [ "$(echo -n $LINE | tail -c 1)" == "~" ] || [ "$(echo -n $LINE | tail -c 9)" == "NORESTORE" ]; then
