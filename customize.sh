@@ -11,8 +11,8 @@
 
 SKIPUNZIP=1
 if [ -z $UF ]; then
-  MAGISK=true; UF=$TMPDIR/META-INF/unity
-  unzip -oq "$ZIPFILE" 'META-INF/unity/*' -d $TMPDIR >&2
+  MAGISK=true; UF=$TMPDIR/common/unityfiles
+  unzip -oq "$ZIPFILE" 'common/unityfiles/*' -d $TMPDIR >&2
   [ -f "$UF/util_functions.sh" ] || { ui_print "! Unable to extract zip file !"; exit 1; }
   . $UF/util_functions.sh
 fi

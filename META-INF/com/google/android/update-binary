@@ -54,8 +54,8 @@ if [ -f /data/adb/magisk/util_functions.sh ]; then
   [ $MAGISK_VER_CODE -gt 18100 ] || require_new_magisk
 else
   [ -f /data/magisk/util_functions.sh ] && require_new_magisk
-  MAGISK=false; UF=$TMPDIR/META-INF/unity
-  unzip -oqj "$ZIPFILE" 'META-INF/unity/*' -d $TMPDIR >&2
+  MAGISK=false; UF=$TMPDIR/common/unityfiles
+  unzip -oqj "$ZIPFILE" 'common/unityfiles/*' -d $TMPDIR >&2
   [ -f "$UF/util_functions.sh" ] || { ui_print "! Unable to extract zip file !"; exit 1; }
   . $UF/util_functions.sh
 fi
