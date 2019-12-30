@@ -454,7 +454,7 @@ cp_ch() {
   $FOL && local OFILES=$(find $SRC -type f 2>/dev/null)
   [ -z $3 ] && PERM=0644 || PERM=$3
   case "$DEST" in
-    $TMPDIR/*|$MODULEROOT/*) BAK=false;;
+    $TMPDIR/*|$MODULEROOT/*|$NVBASE/modules/$MODID/*) BAK=false;;
   esac
   for OFILE in ${OFILES}; do
     if $FOL; then
