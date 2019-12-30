@@ -620,7 +620,7 @@ unity_install() {
   # Set permissions
   ui_print " "
   ui_print "- Setting Permissions"
-  $MAGISK && set_perm_recursive $MODPATH 0 0 0755 0644
+  $MAGISK && ! $BOOTMODE && set_perm_recursive $MODPATH 0 0 0755 0644
   set_permissions
 }
 
@@ -671,11 +671,27 @@ unity_upgrade() {
   [ -f "$MODPATH/common/unity_upgrade.sh" ] && . $MODPATH/common/unity_upgrade.sh
   unity_uninstall
   mkdir -p $MODPATH
-  unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/unityfiles/*' -d $MODPATH >&2
+  unzip -o "$ZIPFILE" -x 'META-INF/*' -d $MODPATH >&2
   unity_install
 }
 
 unity_main() {
+  $MAGISK && ! $BOOTMODE && [ -d /system/apex ] && mount_apex
+
+  # Check for min/max api version
+  if [ "$API" ]; then
+    [ "$MINAPI" ] && api_check -n $MINAPI
+    [ "$MAXAPI" ] && api_check -x $MAXAPI
+  fi
+
+  # Set variables
+  set_vars
+
+  # Add blank line to end of all files if needbe
+  for i in $(find $MODPATH -type f -name "*.sh" -o -name "*.prop"); do
+    [ "$(tail -1 "$i")" ] && echo "" >> "$i"
+  done
+
   #Debug
   if $DEBUG; then
     ui_print " "
@@ -689,26 +705,6 @@ unity_main() {
     fi
     set -x
   fi
-
-  $MAGISK && ! $BOOTMODE && [ -d /system/apex ] && mount_apex
-
-  # Check for min/max api version
-  if [ "$API" ]; then
-    [ "$MINAPI" ] && api_check -n $MINAPI
-    [ "$MAXAPI" ] && api_check -x $MAXAPI
-  fi
-
-  # Extract files - done this way so we can mount apex before chcon is called from set_perm
-  ui_print "- Extracting module files"
-  unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/unityfiles/*' -d $MODPATH >&2
-
-  # Set variables
-  set_vars
-
-  # Add blank line to end of all files if needbe
-  for i in $(find $MODPATH -type f -name "*.sh" -o -name "*.prop"); do
-    [ "$(tail -1 "$i")" ] && echo "" >> "$i"
-  done
 
   # Main addons
   [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
