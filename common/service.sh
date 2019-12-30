@@ -1,4 +1,3 @@
-<<<<<<< HEAD
  # If you are reading this you owe me $10 => https://paypal.me/innonetlife
 MODDIR=${0%/*}	
 # wait until boot completed
@@ -28,7 +27,3 @@ fi
 cmd overlay enable me.phh.treble.overlay.webview
 # Because Google 
 
-=======
-# This script will be executed in late_start service mode
-# More info in the main Magisk thread
->>>>>>> 5bc76bf8094a5d1ee1da22ea560406f786012e9e
