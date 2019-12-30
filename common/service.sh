@@ -2,10 +2,9 @@
 MODDIR=${0%/*}	
 # wait until boot completed
 install_bromite_user() {
-	# pm uninstall --user 0 com.android.webview
-    pm install -r -d $MODPATH/system/app/webview/webview.apk
-    touch /data/media/0/.bromiteinstalled
-    echo "DO NOT TOUCH THIS FILE" > /data/media/0/.bromiteinstalled 
+	pm install -r -d $MODPATH/system/app/webview/webview.apk
+	touch /data/media/0/.bromiteinstalled
+	echo "DO NOT TOUCH THIS FILE" > /data/media/0/.bromiteinstalled 
 }    
 until [ `getprop sys.boot_completed`. = 1. ]; do sleep 1; done
 # Bromite WebView needs to be installed as user app to prevent crashes
