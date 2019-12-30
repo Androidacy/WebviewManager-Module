@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 id=bromitewebview
 name=Bromite Systemless Webview
 version=4.2.0_alpha1
@@ -8,3 +9,12 @@ You can block ads and fingerprinting, and protect your privacy with it. Bromite 
  See the README for support (tap the module in Downloads in Magisk Manager)
  
 
+=======
+id=UnityTemplate
+name=Unity (Un)Installer Template
+version=v5.0
+versionCode=32
+author=ahrion, zackptg5
+description=
+support=https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612
+>>>>>>> 5bc76bf8094a5d1ee1da22ea560406f786012e9e
