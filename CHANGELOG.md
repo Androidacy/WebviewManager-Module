@@ -1,6 +1,22 @@
 
 # Changelog
 
+<h4>4.2.0</h4>
+
+- Fixes for overlay on custom ROMs
+
+- Uninstall script fixes
+
+- Code cleaned up and refactored
+
+- Update to latest unity
+
+- Support offline installs
+
+- Whenever upstream bromite adds support Android 10 will work
+
+- Misc. bugfixes
+
 <h4>4.1.0</h4>
 
 - Fixes for app installation on boot 
