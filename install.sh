@@ -8,7 +8,7 @@
 ##########################################################################################
 # Unity Logic - Don't modify this
 ##########################################################################################
-MODID=bromitewebview
+#MODID=bromitewebview
 SKIPUNZIP=1
 if [ -z $UF ]; then
   MAGISK=true; UF=$TMPDIR/common/unityfiles

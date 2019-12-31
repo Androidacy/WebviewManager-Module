@@ -9,8 +9,4 @@ rm -rf /data/system/package_cache/*
 # for i in /system/product/app /system/app; 
 # do
 #	pm install - r $i/.eb.iew*/.eb.ie*.apk
-# done
-while i=$(find /system/app /system/product/app -mindepth 2|grep -i webview*);
-do
-	pm install -r $i
-done
+# 
