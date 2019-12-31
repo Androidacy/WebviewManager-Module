@@ -67,6 +67,5 @@ if [ $API == "29" ]; then
 #    if [ -e /product/overlay/GoogleWebViewOverlay.apk ]; then
 #    mktouch $MODPATH/system/product/overlay/GoogleWebViewOverlay.apk
 #    elif [ -e /vendor/overlay/GoogleWebViewOverlay.apk ]; then
-$    mktouch  $MODPATH/system/vendor/overlay/GoogleWebViewOverlay.apk;
-    fi
+#   mktouch  $MODPATH/system/vendor/overlay/GoogleWebViewOverlay.apk;
   fi
