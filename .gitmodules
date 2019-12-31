@@ -1,0 +1,3 @@
+[submodule "common/addon"]
+	path = common/addon
+	url = https://github.com/Zackptg5/Unity-Addons.git
