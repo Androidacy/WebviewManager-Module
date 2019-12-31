@@ -355,6 +355,7 @@ set_vars() {
   SYS=/system; VEN=/system/vendor; SHEBANG="#!/system/bin/sh"
   [ $API -lt 26 ] && DYNLIB=false
   $DYNLIB && { LIBPATCH="\/vendor"; LIBDIR=$VEN; } || { LIBPATCH="\/system"; LIBDIR=/system; }
+  [ -z MAGISK ] && MAGISK=true
   if $MAGISK; then
     if $BOOTMODE; then
       ORIGDIR="$MAGISKTMP/mirror"
@@ -453,7 +454,7 @@ cp_ch() {
   $FOL && local OFILES=$(find $SRC -type f 2>/dev/null)
   [ -z $3 ] && PERM=0644 || PERM=$3
   case "$DEST" in
-    $TMPDIR/*|$MODULEROOT/*) BAK=false;;
+    $TMPDIR/*|$MODULEROOT/*|$NVBASE/modules/$MODID/*) BAK=false;;
   esac
   for OFILE in ${OFILES}; do
     if $FOL; then
@@ -491,7 +492,7 @@ patch_script() {
   local i; for i in "MAGISK" "LIBDIR" "MODID" "NVBASE" "INFO"; do
     sed -i "4i $i=$(eval echo \$$i)" $1
   done
-  $MAGISK && sed -i -e "s|\$MODPATH|$MODPATH|g" $1 || sed -i -e "s|\$MODPATH||g" $1
+  $MAGISK && sed -i -e "s|\$MODPATH|$NVBASE/modules/$MODID|g" $1 || sed -i -e "s|\$MODPATH||g" $1
 }
 
 install_script() {
@@ -503,7 +504,7 @@ install_script() {
   patch_script "$1"
   if $MAGISK; then
     case $(basename $1) in
-      post-fs-data.sh|service.sh) cp_ch -i $1 $MODULEROOT/$MODID/$(basename $1);;
+      post-fs-data.sh|service.sh) cp_ch -i $1 $MODPATH/$(basename $1);;
       *) cp_ch -i $1 $INPATH/$(basename $1) 0755;;
     esac
   else
@@ -551,7 +552,7 @@ unity_install() {
   ui_print "   Installing for $ARCH SDK $API device..."
 
   # Remove comments from files and place them, add blank line to end if not already present
-  for i in $MODPATH/common/system.prop $MODPATH/common/service.sh $MODPATH/common/post-fs-data.sh $MODPATH/common/service.rule; do
+  for i in $MODPATH/common/system.prop $MODPATH/common/service.sh $MODPATH/common/post-fs-data.sh $MODPATH/common/sepolicy.rule; do
     [ -f $i ] && { sed -i -e "/^#/d" -e "/^ *$/d" $i; [ "$(tail -1 $i)" ] && echo "" >> $i; } || continue
     case $(basename $i) in
       "service.sh") install_script -l $i;;
@@ -559,7 +560,7 @@ unity_install() {
       "system.prop") prop_process $i; $MAGISK || echo $PROP >> $INFO;;
     esac
   done
-  sed -i "s/<MODID>/$MODID" $MODPATH/uninstall.sh
+  sed -i "s/<MODID>/$MODID/" $MODPATH/uninstall.sh
 
   # Handle replace folders
   for TARGET in $REPLACE; do
