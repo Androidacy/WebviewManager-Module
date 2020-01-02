@@ -1,8 +1,8 @@
 
 id=bromitewebview
 name=Bromite Systemless Webview
-version=4.2.0_beta2
-versionCode=3070
+version=4.2.1
+versionCode=3071
 author=linuxandria
 description=Install Bromite System Webview systemless-ly, on any ROM! 
 You can block ads and fingerprinting, and protect your privacy with it. Bromite is created by @csagan5
