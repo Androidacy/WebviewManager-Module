@@ -15,6 +15,8 @@
 
 - Whenever upstream bromite adds support Android 10 will work
 
+- Support new module format
+
 - Misc. bugfixes
 
 <h4>4.1.0</h4>
