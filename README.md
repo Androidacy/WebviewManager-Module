@@ -20,10 +20,6 @@
       Source Code
     </a>
     <span> | </span>
-    <a href="https://github.com/Zackptg5/Unity-Addons">
-      Addons Repository
-    </a>
-    <span> | </span>
     <a href="https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612">
       XDA
     </a>
