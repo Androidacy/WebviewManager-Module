@@ -10,6 +10,7 @@ if [ "$BOOTMODE" = true ]; then
 	V=$(curl -k --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
 	URL=https://github.com/bromite/bromite/releases/download/$V/${ARCH}_SystemWebView.apk;
 	curl -k -L -o /data/media/0/bromite/webview.apk $URL
+	echo "$V" > /sdcard/bromite/VERSION.txt
 	cp_ch -i /sdcard/bromite/webview.apk $MODPATH/system/app/webview/webview.apk;
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
 elif [ "$BOOTMODE" = false ]; then
