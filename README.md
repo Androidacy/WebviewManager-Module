@@ -7,28 +7,32 @@ Most useful features of Bromite are that you can block ads, trackers and resist 
 
 The module will always download the latest version of the webview, to update it just reflash the module
 
-The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible. However, Android 10 support is majorly a WIP and not likely to work, as Google has made changes to how webview is handled.
+The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.x).
+
+However, Android 10 is currently unsupported by upstream bromite wnd chromium at the time of writing.
 
 ## What is a WebView?
 
-A WebView is like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, like Outlook or GoDaddy apps or even some banking apps. Even the Google app uses a webview
+A WebView is like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include Outlook or GoDaddy apps or even some banking apps. Even the Google app uses a webview
 
 **PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE WEBVIEW**. I can't fix that and any issues on it will be closed and ignored.
 
 ## Credits
 
+Module created by @linuxandria
+
 Bromite itself is created by and copyright of the developers of the [Bromite project](https://github.com/bromite/bromite). The upstream official repository can be found [here](https://github.com/bromite/bromitewebview)
 
-Thanks to @linuxandria (me) for the module
+Thanks to @Skittles9823 for answering some of my questions.
 
-Thanks to @neekless for parts of the installer script
+Credit to @topjohnwu for magisk and the magisk installer template.
 
-Credit to @topjohnwu for magisk and the magisk installer template (even if he now works for Apple).
+Huge thanks to @Zackptg5 for the unity template and helpingwith parts of the code
 
 ## ETAs/ Versions
 
 This module downloads the latest bromite webview APK every time it is flashed. I will otherwise update when I have time. 
-Please also note that the upstream repository may be slower to update sometimes
+At any time, the latest beta if availablexan be downloadedby zipping the master branch of the upstream repository.
 
 If you use F-Droid, you can add the bromite official F-Droid repository to keep the app updated
 
@@ -58,7 +62,7 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 
 ## Compatibility
 
-- Android 5 or higher
+- Android 5.x to 9.x (10 requires upstream chromium support)
 - Magisk v18.2+
 - **ONLY FLASH THROUGH MAGISK MANAGER AS IT REQUIRES AN INTERNET CONNECTION**
 - SELinux enforcing
@@ -67,3 +71,4 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 
 * [Bromite SystemWebView wiki page](https://github.com/bromite/bromite/wiki/Installing-SystemWebView)
 * [Bromite website](https://bromite.org)
+* [Upstream repository](https://github.com/alexa-v2/bromitewebview)
