@@ -113,7 +113,7 @@ recovery_cleanup() {
 }
 
 debug_log() {
-  $BOOTMODE && local LOG=/storage/emulated/0/$MODID-debug || local LOG=/data/media/0/$MODID-debug
+  $BOOTMODE && local LOG=/storage/emulated/0/bromite/logs/$MODID-debug || local LOG=/data/media/0/bromite/logs/$MODID-debug
   set +x
   echo -e "***---Device Info---***" > $LOG-tmp.log
   echo -e "\n---Props---\n" >> $LOG-tmp.log

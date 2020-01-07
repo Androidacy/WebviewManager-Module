@@ -1,7 +1,4 @@
 # This file will be read by resetprop
 # Example: Change dpi
 # ro.sf.lcd_density=320
-<<<<<<< HEAD
 bromite.webview=1
-=======
->>>>>>> 5bc76bf8094a5d1ee1da22ea560406f786012e9e
