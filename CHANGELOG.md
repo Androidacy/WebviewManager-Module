@@ -1,6 +1,14 @@
 
 # Changelog
 
+<h4>4.2.2</h4>
+
+- Fixed overlay not copying to the right place
+
+- Update unity
+
+- Remove some debugging code
+
 <h4>4.2.0</h4>
 
 - Fixes for overlay on custom ROMs
