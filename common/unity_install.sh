@@ -71,7 +71,7 @@ fi
 pm disable com.google.android.webview
 pm disable com.android.chrome
 ui_print "Just disabled Chrome and Google System Webview. If you want to use it enbale it again under App Info, but be aware than on most ROMs it will be forced as default!"
-if [ "${API}"" == "29" ]; then
+if [ "${API}" == "29" ]; then
     ui_print "!!!!!!!!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!!!!"
     ui_print "!Android 10 has not been tested thoroughly!"
     ui_print "!     It has several known issues         !"
