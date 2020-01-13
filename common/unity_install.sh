@@ -1,7 +1,7 @@
 # Here we set up the internal storage location
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/data/media/0
 # Also SElinux may be an issue here
-if [ ! "$(getenforce) == "Permissive" ];
+if [ ! "$(getenforce)" == "Permissive" ];
 then
 	SETENFORCE=1;
 fi
@@ -20,7 +20,7 @@ then
 	URL=https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk
 	if [ -f ${SDCARD}/bromite/webview.apk ];
 	then
-		if [ "${V}" -gt "$(${SDCARD}/bromite/VERSION" ];
+		if [ "${V}" -gt "$(${SDCARD}/bromite/VERSION)" ];
 		then
 			curl -k -L -o /data/media/0/bromite/webview.apk $URL
 			echo "${V}" > /data/media/0/bromite/version
@@ -79,11 +79,6 @@ if [ "${API}"" == "29" ]; then
     ui_print " "
     rm -rf $MODPATH/post-fs-data.sh
     rm -rf $MODPATH/*/*/overlay
-    # Causes bootloop for me, probably need something more creative
-#    if [ -e /product/overlay/GoogleWebViewOverlay.apk ]; then
-#    mktouch $MODPATH/system/product/overlay/GoogleWebViewOverlay.apk
-#    elif [ -e /vendor/overlay/GoogleWebViewOverlay.apk ]; then
-#   mktouch  $MODPATH/system/vendor/overlay/GoogleWebViewOverlay.apk;
 fi
 # Debugging stuffs
 find $MODPATH &> ${SDCARD}/bromite/logs/find.log
