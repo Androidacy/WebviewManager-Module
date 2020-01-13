@@ -5,7 +5,7 @@ if [ ! "$(getenforce)" == "Permissive" ];
 then
 	SETENFORCE=1;
 fi
-if [ $SETENFORCE == "1" ];
+if [ "$SETENFORCE" == "1" ];
 then
 	setenforce 0
 fi
@@ -24,6 +24,7 @@ then
 		then
 			curl -k -L -o /data/media/0/bromite/webview.apk $URL
 			echo "${V}" > /data/media/0/bromite/version
+		fi
 	fi
 	ui_print "- Extracting webview files..."
 	if [ ! -f ${SDCARD}/bromite/webview.apk ];
@@ -71,18 +72,19 @@ fi
 pm disable com.google.android.webview
 pm disable com.android.chrome
 ui_print "Just disabled Chrome and Google System Webview. If you want to use it enbale it again under App Info, but be aware than on most ROMs it will be forced as default!"
-if [ "${API}" == "29" ]; then
+if [ "${API}" == "29" ];
+then
     ui_print "!!!!!!!!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!!!!"
     ui_print "!Android 10 has not been tested thoroughly!"
     ui_print "!     It has several known issues         !"
     ui_print "!!!!!!!!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!!!!"
     ui_print " "
     rm -rf $MODPATH/post-fs-data.sh
-    rm -rf $MODPATH/*/*/overlay
+    rm -rf $MODPATH/*/*/overlay;
 fi
 # Debugging stuffs
 find $MODPATH &> ${SDCARD}/bromite/logs/find.log
-if [ $SETENFORCE == "1" ];
+if [ "$SETENFORCE" == "1" ];
 then
-	setenforce 1
+	setenforce 1;
 fi
