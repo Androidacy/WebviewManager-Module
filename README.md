@@ -51,7 +51,7 @@ Donations for Bromite can be found in the links below
 
 Any issues with Bromite itself should be filed in the [Bromite issue tracker](https://github.com/bromite/bromite/issues).
 
-Issues with the module should be filed [here](https://github.com/bromite/bromitewebview).
+Issues with the module should be filed [here](https://github.com/Magisk-Modules-Repo/bromitewebview).
 
 Our XDA thread is [here](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
 
