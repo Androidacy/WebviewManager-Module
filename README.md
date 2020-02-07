@@ -62,8 +62,8 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 
 ## Compatibility
 
-- Android 5.x to 9.x (10 requires upstream chromium support)
-- Magisk v18.2+
+- Android 5.x to 10.0
+- Magisk v18.2+ (No other root solution is supported, for forwards compatibility)
 - **ONLY FLASH THROUGH MAGISK MANAGER AS IT REQUIRES AN INTERNET CONNECTION**
 - SELinux enforcing
 
