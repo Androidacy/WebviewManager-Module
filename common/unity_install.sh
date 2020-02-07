@@ -20,7 +20,7 @@ then
 	URL=https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk
 	if [ -f ${SDCARD}/bromite/webview.apk ];
 	then
-		if [ "${V}" -gt "$(${SDCARD}/bromite/VERSION)" ];
+		if [ "${V}" -gt "$(cat /data/media/0/bromite/version)" ];
 		then
 			curl -k -L -o /data/media/0/bromite/webview.apk $URL
 			echo "${V}" > /data/media/0/bromite/version
@@ -58,7 +58,7 @@ rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*
 if [ -d /product/overlay ];
 then
         mkdir -p $MODPATH/system/product/overlay
-	    cp_ch -i $TMPDIR/treble-overlay-webview.apk $MODPATH/system/product/overlay;
+	cp_ch -i $TMPDIR/treble-overlay-webview.apk $MODPATH/system/product/overlay;
 elif [ -d /vendor/overlay ]
 then
 	mkdir -p $MODPATH/vendor/overlay
@@ -74,17 +74,17 @@ pm disable com.android.chrome
 ui_print "Just disabled Chrome and Google System Webview. If you want to use it enbale it again under App Info, but be aware than on most ROMs it will be forced as default!"
 if [ "${API}" == "29" ];
 then
-    ui_print "!!!!!!!!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!!!!"
-    ui_print "!Android 10 has not been tested thoroughly!"
-    ui_print "!     It has several known issues         !"
-    ui_print "!!!!!!!!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!!!!"
+    ui_print "!!!!!!!!!!!!!!!!!Important!=!!!!!!!!!!!!!!!!!!!!"
+    ui_print "!!!    Android 10 support is in alpha stage  !!!"
+    ui_print "!!!      It may have issues         	   !!!"
+    ui_print "!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!"
     ui_print " "
-    rm -rf $MODPATH/post-fs-data.sh
-    rm -rf $MODPATH/*/*/overlay;
+#    rm -rf $MODPATH/post-fs-data.sh
+#    rm -rf $MODPATH/*/*/overlay;
 fi
 # Debugging stuffs
-find $MODPATH &> ${SDCARD}/bromite/logs/find.log
-if [ "$SETENFORCE" == "1" ];
+# Moved to boot scripts
+if [ $SETENFORCE == "1" ];
 then
 	setenforce 1;
 fi
