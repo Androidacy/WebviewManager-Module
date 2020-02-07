@@ -1,5 +1,6 @@
 # Here we set up the internal storage location
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/data/media/0
+mkdir -p /data/media/0/bromite
 # Also SElinux may be an issue here
 if [ ! "$(getenforce)" == "Permissive" ];
 then
@@ -17,6 +18,7 @@ then
     mkdir -p /data/media/0/bromite/logs
 	ui_print "- Downloading extra files please be patient..."
 	V=$(curl -k --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
+	echo "${V}" > /data/media/0/bromite/version
 	URL=https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk
 	if [ -f ${SDCARD}/bromite/webview.apk ];
 	then
