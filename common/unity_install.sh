@@ -1,35 +1,38 @@
 # Here we set up the internal storage location
-$BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/data/media/0
-mkdir -p /data/media/0/bromite
+$BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
+VERSIONFILE="/sdcard/bromite/version"
+mkdir -p /sdcard/bromite
 # Also SElinux may be an issue here
-if [ ! "$(getenforce)" == "Permissive" ];
+if [ ! "$(getenforce)" = "Permissive" ];
 then
 	SETENFORCE=1;
 fi
-if [ "$SETENFORCE" == "1" ];
+if [ "$SETENFORCE" -eq "1" ];
 then
 	setenforce 0
 fi
-chmod +x $UF/tools/$ARCH32/curl
+chmod 0755 $UF/tools/$ARCH32/curl
 alias curl='$UF/tools/$ARCH32/curl'
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
+if [ ! -f /sdcard/version ];
+then
+	mktouch $VERSIONFILE
+	echo "0" > $VERSIONFILE;
+fi
 if [ "$BOOTMODE" = true ];
 then
-    mkdir -p /data/media/0/bromite/logs
+    	mkdir -p /sdcard/bromite
 	ui_print "- Downloading extra files please be patient..."
-	V=$(curl -k --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
-	echo "${V}" > /data/media/0/bromite/version
+	V=$(curl -k -L --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
+	echo "${V}" > $VERSIONFILE
 	URL=https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk
-	if [ -f ${SDCARD}/bromite/webview.apk ];
+	ui_print "URL is $URL"
+	if [ "$(cat $VERSIONFILE)" -le "{V}" ];
 	then
-		if [ "${V}" -gt "$(cat /data/media/0/bromite/version)" ];
-		then
-			curl -k -L -o /data/media/0/bromite/webview.apk $URL
-			echo "${V}" > /data/media/0/bromite/version
-		fi
+		curl -k -L -o /sdcard/bromite/webview.apk $URL
 	fi
 	ui_print "- Extracting webview files..."
-	if [ ! -f ${SDCARD}/bromite/webview.apk ];
+	if [ ! -f /sdcard/bromite/webview.apk ];
 	then
 		ui_print "Sorry! A problem occurred. No capable apk was found, the files failed to download, or both!"
 		abort;
