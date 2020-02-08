@@ -5,6 +5,8 @@ rm -rf /cache/dalvik-cache/*
 rm -rf /data/*/com.android.webview*
 rm -rf /data/system/package_cache/*
 # Reinstall old webview
+sleep 20
 for i in /system/product/app /system/app; do
 		pm install -r $i/.eb.iew*/.eb.ie*.apk
-	done
+done
+pm uninstall com.android.webview

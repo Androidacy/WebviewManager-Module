@@ -1,8 +1,6 @@
 id=bromitewebview
 name=Bromite Systemless Webview
-version=4.4.0_alpha5
-versionCode=3080
+version=4.4.0_rc1
+versionCode=3083
 author=linuxandria
-description=Install Bromite System Webview systemless-ly, on any ROM! 
-You can block ads and fingerprinting, and protect your privacy with it. Bromite is created by @csagan5.
- See the README for support (tap the module in Downloads in Magisk Manager)
+description=Install Bromite System Webview systemless-ly, on (almost) any ROM! You can block ads and fingerprinting, and protect your privacy with it. Bromite is created by @csagan5. See the README for support (tap the module in Downloads in Magisk Manager)
