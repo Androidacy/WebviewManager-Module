@@ -45,5 +45,5 @@ fi
 if [ $CT == "1" ];
 then
 	echo "Sending out overlay into the void...." >> $VERBOSELOG
-	mv $MODDIR/*/overlay $MODDIR/*/*/overlay /dev/null;
+	mv $MODDIR/{product,vendor} /dev/null;
 fi

@@ -14,7 +14,7 @@ fi
 chmod 0755 $UF/tools/$ARCH32/curl
 alias curl='$UF/tools/$ARCH32/curl'
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
-if [ ! -f /sdcard/version ];
+if [ ! -f /sdcard/bromite/version ];
 then
 	mktouch $VERSIONFILE
 	echo "0" > $VERSIONFILE;
@@ -24,17 +24,19 @@ then
     	mkdir -p /sdcard/bromite
 	ui_print "- Downloading extra files please be patient..."
 	V=$(curl -k -L --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
-	echo "${V}" > $VERSIONFILE
 	URL=https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk
 	ui_print "URL is $URL"
-	if [ "$(cat $VERSIONFILE)" -le "${V}" ];
+	if [ "$(cat $VERSIONFILE|tr -d '.')" -nq "$(echo ${V}|tr -d '.')" ];
 	then
 		curl -k -L -o /sdcard/bromite/webview.apk $URL
+		echo "${V}" > $VERSIONFILE
 	fi
 	ui_print "- Extracting webview files..."
 	if [ ! -f /sdcard/bromite/webview.apk ];
 	then
-		ui_print "Sorry! A problem occurred. No capable apk was found, the files failed to download, or both!"
+		ui_print "Sorry! A problem occurred."
+		ui_print "No capable apk was found, the files failed to download, or both!"
+		ui_print "Check your internet and try again"
 		abort;
 	fi
 	cp_ch -i ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
@@ -50,7 +52,7 @@ elif [ "$BOOTMODE" = false ]; then
 	elif [ ! -f ${SDCARD}/bromite/webview.apk ];
 	then
 		ui_print "Not booted and no apk found!"
-		ui_print "Copy the webview.apk to /sdcard/bromite/webview.apk"
+		ui_print "Copy the Bromite webview apk named webview.apk to /sdcard/bromite/webview.apk"
 		ui_print "Aborting..."
 		abort ;
 	fi
@@ -79,16 +81,15 @@ pm disable com.android.chrome
 ui_print "Just disabled Chrome and Google System Webview. If you want to use it enbale it again under App Info, but be aware than on most ROMs it will be forced as default!"
 if [ "${API}" == "29" ];
 then
-    ui_print "!!!!!!!!!!!!!!!!!Important!=!!!!!!!!!!!!!!!!!!!!"
+    ui_print "!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!"
     ui_print "!!!    Android 10 support is in alpha stage  !!!"
-    ui_print "!!!      It may have issues         	   !!!"
+    ui_print "!!!         It may have issues         	   !!!"
     ui_print "!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!"
     ui_print " "
-#    rm -rf $MODPATH/post-fs-data.sh
-#    rm -rf $MODPATH/*/*/overlay;
 fi
-# Debugging stuffs
-# Moved to boot scripts
+mkdir -p $MODPATH/apk
+cp_ch -i /sdcard/bromite/webview.apk $MODPATH/apk
+
 if [ $SETENFORCE == "1" ];
 then
 	setenforce 1;
