@@ -20,18 +20,18 @@ getprop ro.build.version.sdk >> $VERBOSELOG
 # Determines if we've already foricbly enabled our overlay
 if [ grep -i '$OL' $LIST ];
 then
-	echo "Overlay already enabled!" >> $VERBOSELOG
+	echo "Overlay already enabled" >> $VERBOSELOG
 	CT=1;
 fi
 # Try to determine if the running ROM is custom or stock. Why can't custom ROMs just say they're custom? Sheesh
 # Also Android 10 shouldn't need the webview, needs more testing
 if [ getprop | grep -i 'havoc\|resurrection\|userdebug\|test-keys\|lineage\|dev-keys' ]; 
 then
-	echo "Custom ROM detected!" >> $VERBOSELOG
+	echo "Custom ROM detected" >> $VERBOSELOG
 	CT=1;
 elif [ $API == "29" ];
 then
-	echo "Android 10 detected! >> $VERBOSELOG
+	echo "Android 10 detected" >> $VERBOSELOG
 	CT=1;
 fi
 # If we are assuming this is a stock ROM, then we need to force it to recognize our overlay
