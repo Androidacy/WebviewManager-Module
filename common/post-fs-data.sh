@@ -33,11 +33,12 @@ then
 fi
 # Try to determine if the running ROM is custom or stock. Why can't custom ROMs just say they're custom? Sheesh
 # Also Android 10 shouldn't need the webview, needs more testing
-if [ $(getprop | grep -i 'havoc\|resurrection\|userdebug\|test-keys\|lineage\|dev-keys\|eng') ]; 
-then
-	echo "Custom ROM detected\n"
+CUSTOM=$(getprop | grep -i 'havoc\|resurrection\|userdebug\|test-keys\|lineage\|dev-keys\|maintainer')
+if typeset -p custom 2> /dev/null | grep -q '^'; then
+	echo "Custom ROM is running"
 	CT=1;
-elif [ "$API" == "29" ];
+fi
+if [ "$API" == "29" ];
 then
 	echo "Android 10 detected\n"
 	CT=1;
