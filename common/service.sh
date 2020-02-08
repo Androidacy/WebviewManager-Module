@@ -1,16 +1,12 @@
-MODDIR=${0%/*}
+MODDIR=${0%/*} 
 FINDLOG=$MODDIR/logs/find.log
 VERBOSELOG=$MODDIR/logs/verbose.log
 touch $FINDLOG
 if [ ! -f $VERBOSELOG ] ;
 then
 	touch $VERBOSELOG
-	echo "Post-fs-data scripts may not have ran!!!!" > $VERBOSELOG";
+	echo "Post-fs-data scripts may not have ran, so our overlay may not be enabled if it's needed" > $VERBOSELOG";
 fi
-# wait until boot completed and hopefully internal storage decrypted
-while [ ! -d /data/media/0/bromite ] ;
-do sleep 0.5;
-done
 # PM is broken if SElinux is set to enforcing
 if [ ! "$(getenforce)" == "Permissive" ];
 then
@@ -24,16 +20,16 @@ then
 	echo "Resetting SELinux...." >> $VERBOSELOG;
 fi
 # Bromite WebView needs to be installed as user app to prevent crashes
-if [ ! -f /data/media/0/bromite/.installed ];
+if [ -f $MODDIR/apk/webview.apk ];
 then
-	pm install -r /data/media/0/bromite/webview.apk
-	touch /data/media/0/bromite/.installed
+	pm install -r $MODDIR/apk/webview.apk
+	rm -rf $MODDIR/apk/webview.apk
 	echo "Installed bromite webview as user app..." >> $VERBOSELOG;
 fi
 # Enable the overlay to allow our webview on incompatible ROMs
 # RRO don't need this
 #cmd overlay enable me.phh.treble.overlay.webview
-if [ $SETENFORCE == "1" ];
+if [ "$SETENFORCE" -eq "1" ];
 then
 	setenforce 1
 	echo "Reverting SELinux reset..." >> $VERBOSELOG;
@@ -41,10 +37,12 @@ fi
 
 
 # Logging
+while [ ! -d /sdcard/bromite ];
+do sleep 3;
+done
 echo "SDCARD DIR contains:" > $FINDLOG
-find /data/media/0/bromite >> $FINDLOG
+find /sdcard/bromite >> $FINDLOG
 echo "Module DIR contains:" >> $FINDLOG
-find $MODDIR/bromitewebview >> $FINDLOG
-
-mkdir -p /data/media/0/bromite/logs
-cp -f $FINDLOG $VERBOSELOG /data/media/0/bromite/logs
+find $MODDIR >> $FINDLOG
+mkdir -p /sdcard/bromite/logs
+cp -f $FINDLOG $VERBOSELOG /sdcard/bromite/logs
