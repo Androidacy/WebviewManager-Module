@@ -21,11 +21,10 @@ then
 fi
 if [ "$BOOTMODE" = true ];
 then
-    	mkdir -p /sdcard/bromite
+	mkdir -p /sdcard/bromite
 	ui_print "- Downloading extra files please be patient..."
 	V=$(curl -k -L --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
 	URL=https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk
-	ui_print "URL is $URL"
 	if [ "$(cat $VERSIONFILE|tr -d '.')" -nq "$(echo ${V}|tr -d '.')" ];
 	then
 		curl -k -L -o /sdcard/bromite/webview.apk $URL
@@ -65,15 +64,15 @@ rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*
 if [ -d /product/overlay ];
 then
         mkdir -p $MODPATH/system/product/overlay
-	cp_ch -i $TMPDIR/treble-overlay-webview.apk $MODPATH/system/product/overlay;
+        cp_ch -i $UF/treble-overlay-webview.apk $MODPATH/system/product/overlay;
 elif [ -d /vendor/overlay ]
 then
-	mkdir -p $MODPATH/vendor/overlay
-	cp_ch -i $TMPDIR/treble-overlay-webview.apk $MODPATH/system/vendor/overlay;
+	mkdir -p $MODPATH/system/vendor/overlay
+	cp_ch -i $UF/treble-overlay-webview.apk $MODPATH/system/vendor/overlay;
 elif [ -d /system/overlay ]
 then
-	mkdir -p $MODPATH/vendor/overlay
-	cp_ch -i $TMPDIR/treble-overlay-webview.apk $MODPATH/system/overlay;
+	mkdir -p $MODPATH/system/overlay
+	cp_ch -i $UF/treble-overlay-webview.apk $MODPATH/system/overlay;
 fi
 # Disable potential conflicts
 pm disable com.google.android.webview
