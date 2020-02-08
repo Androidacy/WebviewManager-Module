@@ -27,7 +27,7 @@ then
 	echo "${V}" > $VERSIONFILE
 	URL=https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk
 	ui_print "URL is $URL"
-	if [ "$(cat $VERSIONFILE)" -le "{V}" ];
+	if [ "$(cat $VERSIONFILE)" -le "${V}" ];
 	then
 		curl -k -L -o /sdcard/bromite/webview.apk $URL
 	fi

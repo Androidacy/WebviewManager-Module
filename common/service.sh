@@ -1,25 +1,29 @@
 MODDIR=${0%/*}
-FINDLOG=$MODDIR/find.log
+FINDLOG=$MODDIR/logs/find.log
 VERBOSELOG=$MODDIR/logs/verbose.log
 touch $FINDLOG
-touch $VERBOSELOG
+if [ ! -f $VERBOSELOG ] ;
+then
+	touch $VERBOSELOG
+	echo "Post-fs-data scripts may not have ran!!!!" > $VERBOSELOG";
+fi
 # wait until boot completed and hopefully internal storage decrypted
 while [ ! -d /data/media/0/bromite ] ;
 do sleep 0.5;
 done
 # PM is broken if SElinux is set to enforcing
-if [ ! "$(getenforce) == "Permissive" ];
+if [ ! "$(getenforce)" == "Permissive" ];
 then
 	SETENFORCE=1;
-	echo "Already permissive, not resetting SELinux..." >> $VERBOSELOG;
+else
+echo "Already permissive, not resetting SELinux..." >> $VERBOSELOG ;
 fi
-if [ $SETENFORCE == "1" ];
+if [ "$SETENFORCE" -eq "1" ];
 then
 	setenforce 0
 	echo "Resetting SELinux...." >> $VERBOSELOG;
 fi
 # Bromite WebView needs to be installed as user app to prevent crashes
-log -t BromiteBoot -p D "Starting BromiteBoot script"
 if [ ! -f /data/media/0/bromite/.installed ];
 then
 	pm install -r /data/media/0/bromite/webview.apk
@@ -43,4 +47,4 @@ echo "Module DIR contains:" >> $FINDLOG
 find $MODDIR/bromitewebview >> $FINDLOG
 
 mkdir -p /data/media/0/bromite/logs
-mv $FINDLOG $VERBOSELOG /data/media/0/bromite/logs
+cp -f $FINDLOG $VERBOSELOG /data/media/0/bromite/logs
