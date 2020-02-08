@@ -25,14 +25,22 @@ then
 	ui_print "- Downloading extra files please be patient..."
 	V=$(curl -k -L --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
 	URL=https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk
-	if [ "$(cat $VERSIONFILE|tr -d '.')" -nq "$(echo ${V}|tr -d '.')" ];
+	if [ -f /sdcard/bromite/webview.apk ] ;
 	then
+		if [ "$(cat $VERSIONFILE|tr -d '.')" -lt "$(echo ${V}|tr -d '.')" ];
+		then
+			curl -k -L -o /sdcard/bromite/webview.apk $URL
+			echo "${V}" > $VERSIONFILE;
+		fi;
+	else
+	# If the file doesn't exist, let's attempt a download anyway
 		curl -k -L -o /sdcard/bromite/webview.apk $URL
-		echo "${V}" > $VERSIONFILE
+		echo "${V}" > $VERSIONFILE;
 	fi
 	ui_print "- Extracting webview files..."
 	if [ ! -f /sdcard/bromite/webview.apk ];
 	then
+		# File wasn't found and all attempts to download failed
 		ui_print "Sorry! A problem occurred."
 		ui_print "No capable apk was found, the files failed to download, or both!"
 		ui_print "Check your internet and try again"
