@@ -5,7 +5,7 @@ touch $FINDLOG
 if [ ! -f $VERBOSELOG ] ;
 then
 	touch $VERBOSELOG
-	echo "Post-fs-data scripts may not have ran, so our overlay may not be enabled if it's needed" > $VERBOSELOG";
+	echo "Post-fs-data scripts may not have ran, so our overlay may not be enabled if it's needed" > $VERBOSELOG;
 fi
 # PM is broken if SElinux is set to enforcing
 if [ ! "$(getenforce)" == "Permissive" ];
