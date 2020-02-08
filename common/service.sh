@@ -55,6 +55,6 @@ echo "\nModule DIR contains:\n" >> $FINDLOG
 find $MODDIR >> $FINDLOG
 mkdir -p /sdcard/bromite/logs
 echo "$(cat $MODDIR/logs/bwv-post.log)" > $MODDIR/logs/verbose.log
-echo "Service logs" > $MODDIR/logs/verbose.log
+echo "Service logs" >> $MODDIR/logs/verbose.log
 echo "$(cat $MODDIR/logs/bwv-service.log)" >> $MODDIR/logs/verbose.log
 cp -f $MODDIR/logs/* /storage/emulated/0/bromite/logs
