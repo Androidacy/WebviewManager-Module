@@ -37,9 +37,6 @@ fi
 
 
 # Logging
-while [ ! -d /sdcard/bromite ];
-do sleep 3;
-done
 echo "SDCARD DIR contains:" > $FINDLOG
 find /sdcard/bromite >> $FINDLOG
 echo "Module DIR contains:" >> $FINDLOG
