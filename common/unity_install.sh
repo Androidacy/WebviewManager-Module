@@ -37,7 +37,7 @@ then
 		ui_print "Check your internet and try again"
 		abort;
 	fi
-	cp_ch -i ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
+	cp_ch -i ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apki
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
 elif [ "$BOOTMODE" = false ]; then
 	# Deal with broken recoveries
