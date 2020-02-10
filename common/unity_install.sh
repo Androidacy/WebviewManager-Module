@@ -57,7 +57,7 @@ elif [ "$BOOTMODE" = false ]; then
 fi
 ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 ui_print "Reboot immediately after flashing or you may experience some issues! "
-ui_print "Also, if you had any other webview such as Google webview, it'll need reinstalled/re-enabled"
+ui_print "Also, if you had any other webview such as Google webview, you may want to re-enable it but beware conflicts"
 ui_print "Next boot may take significantly longer, we have to clear Dalvik cache here"
 rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com.android.webview* /data/system/package_cache/*
 if [ -d /product/overlay ];
