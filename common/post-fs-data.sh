@@ -6,6 +6,7 @@ MODDIR=$(dirname "$SH")
 # Set up logging. Much info, much wow
 FINDLOG=$MODDIR/logs/find.log
 VERBOSELOG=$MODDIR/logs/bwv-post.log
+PROPSLOG='$MODDIR/logs/props.log'
 mkdir -p $MODDIR/logs
 touch $FINDLOG
 touch $VERBOSELOG
@@ -17,11 +18,10 @@ DR="$(find /system /system/product /vendor -maxdepth 1 | grep overlay)"
 API="$(getprop ro.build.version.sdk)"
 
 # Logging stuffs
-echo "Firing up logging NOW\n" 
 echo "Firing up logging NOW\n"
-echo "---------- Device info: -----------\n" 
-getprop >> $VERBOSELOG
-echo "------- End Device info ----------\n"
+echo "---------- Device info: -----------\n" >> $PROPSLPG
+getprop >> $PROPSLOG
+echo "------- End Device info ----------\n" >> $PROPSLOG
 
 # Determines if we've already foricbly enabled our overlay
 if [ grep -i '$OL' $LIST ] ;
