@@ -5,9 +5,6 @@ MODDIR=$(dirname "$SH")
 FINDLOG=$MODDIR/logs/find.log
 VERBOSELOG=$MODDIR/logs/bwv-service.log
 touch $VERBOSELOG
-# exec 3>&1 4>&2
-# trap 'exec 2>&4 1>&3' 0 1 2 3
-# exec 1>$VERBOSELOG 2>&1
 set -x 2>$MODDIR/logs/bwv-service.log
 touch $FINDLOG
 echo "Started at $(date)"

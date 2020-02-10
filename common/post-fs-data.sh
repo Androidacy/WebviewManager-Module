@@ -11,9 +11,6 @@ touch $FINDLOG
 touch $VERBOSELOG
 # Verbose logs ON
 set -x 2>$MODDIR/logs/bwv-post.log
-# exec 3>&1 4>&2
-# trap 'exec 2>&4 1>&3' 0 1 2 3
-# exec 1>$VERBOSELOG 2>&1
 OL="me.phh.treble.overlay.webview"
 LIST="/data/system/overlays.xml"
 DR="$(find /system /system/product /vendor -maxdepth 1 | grep overlay)"
@@ -48,7 +45,7 @@ fi
 # Not actually sure this is needed. Android may take care of this for us
 if  [ ! "$CT" == "1" ];
 then
-	echo "Forcing the system to register our overlay...\n" >> $VERBOSELOG
+	echo "Forcing the system to register our overlay...\n"
 	sed -i 's|</overlays>|    <item packageName="${OL}" userId="0" targetPackageName="android" baseCodePath="${DR}/treble-overlay-webview.apk" state="6" isEnabled="true" isStatic="true" priority="98" />\n</overlays>|' $LIST
 fi
 # If we are assuming this is a custom ROM, send our overlay into the void because most don't enforce Google webviews
