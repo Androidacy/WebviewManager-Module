@@ -6,7 +6,7 @@ MODDIR=$(dirname "$SH")
 # Set up logging. Much info, much wow
 FINDLOG=$MODDIR/logs/find.log
 VERBOSELOG=$MODDIR/logs/bwv-post.log
-PROPSLOG='$MODDIR/logs/props.log'
+PROPSLOG=$MODDIR/logs/props.log
 mkdir -p $MODDIR/logs
 touch $FINDLOG
 touch $VERBOSELOG
@@ -18,8 +18,9 @@ DR="$(find /system /system/product /vendor -maxdepth 1 | grep overlay)"
 API="$(getprop ro.build.version.sdk)"
 
 # Logging stuffs
+touch $PROPSLOG
 echo "Firing up logging NOW\n"
-echo "---------- Device info: -----------\n" >> $PROPSLPG
+echo "---------- Device info: -----------\n" >> $PROPSLOG
 getprop >> $PROPSLOG
 echo "------- End Device info ----------\n" >> $PROPSLOG
 
