@@ -23,8 +23,8 @@ API="$(getprop ro.build.version.sdk)"
 echo "Firing up logging NOW\n" 
 echo "Firing up logging NOW\n"
 echo "---------- Device info: -----------\n" 
-echo $(getprop)
-echo "------- End Device info: ----------\n"
+getprop >> $VERBOSELOG
+echo "------- End Device info ----------\n"
 
 # Determines if we've already foricbly enabled our overlay
 if [ grep -i '$OL' $LIST ] ;
