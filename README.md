@@ -62,9 +62,10 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 
 ## Compatibility
 
-- Android 5.x to 10.0
+- Android 5.x to 10.0 (7.x+ recommended)
 - Magisk v18.2+ (No other root solution is supported, for forwards compatibility)
-- **ONLY FLASH THROUGH MAGISK MANAGER AS IT REQUIRES AN INTERNET CONNECTION**
+- **Recommended to flash through magisk manager**
+	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the bromite webview apk for your cpu architecture in /sdcard/bromite
 - SELinux enforcing
 
 ## Other resources

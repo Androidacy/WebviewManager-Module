@@ -1,0 +1,2 @@
+# Unbreak pm install
+allow system_server untrusted_app_devpts chr_file { read write }
