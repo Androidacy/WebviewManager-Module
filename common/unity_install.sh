@@ -75,11 +75,7 @@ then
 fi
 if [ "${API}" == "29" ];
 then
-    ui_print "!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!"
-    ui_print "!!!    Android 10 support is in alpha stage  !!!"
-    ui_print "!!!         It may have issues         	   !!!"
-    ui_print "!!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!"
-    ui_print " "
+    ui_print "Android 10 detected"
 fi
 mkdir -p $MODPATH/apk
 cp_ch -i /sdcard/bromite/webview.apk $MODPATH/apk
