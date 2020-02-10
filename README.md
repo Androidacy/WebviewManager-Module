@@ -9,7 +9,6 @@ The module will always download the latest version of the webview, to update it 
 
 The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.x).
 
-However, Android 10 is currently unsupported by upstream bromite wnd chromium at the time of writing.
 
 ## What is a WebView?
 
