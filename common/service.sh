@@ -29,7 +29,7 @@ fi
 while [ ! "$(getprop sys.boot_completed)" == "1" ];
 do sleep 0.5;
 done
-sleep 60
+sleep 45
 echo "SDCARD DIR contains:\n" >> $FINDLOG
 find /storage/emulated/0/bromite >> $FINDLOG
 echo "\nModule DIR contains:\n" >> $FINDLOG
