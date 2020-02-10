@@ -10,9 +10,10 @@ mkdir -p $MODDIR/logs
 touch $FINDLOG
 touch $VERBOSELOG
 # Verbose logs ON
-exec 3>&1 4>&2
-trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>$VERBOSELOG 2>&1
+set -x 2>$MODDIR/logs/bwv-post.log
+# exec 3>&1 4>&2
+# trap 'exec 2>&4 1>&3' 0 1 2 3
+# exec 1>$VERBOSELOG 2>&1
 OL="me.phh.treble.overlay.webview"
 LIST="/data/system/overlays.xml"
 DR="$(find /system /system/product /vendor -maxdepth 1 | grep overlay)"

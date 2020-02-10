@@ -1,16 +1,7 @@
 # Here we set up the internal storage location
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
-VERSIONFILE="/sdcard/bromite/version"
+VERSIONFILE='/sdcard/bromite/version'
 mkdir -p /sdcard/bromite
-# Also SElinux may be an issue here
-if [ ! "$(getenforce)" = "Permissive" ];
-then
-	SETENFORCE=1;
-fi
-if [ "$SETENFORCE" -eq "1" ];
-then
-	setenforce 0
-fi
 chmod 0755 $UF/tools/$ARCH32/curl
 alias curl='$UF/tools/$ARCH32/curl'
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
@@ -82,10 +73,6 @@ then
 	mkdir -p $MODPATH/system/overlay
 	cp_ch -i $UF/treble-overlay-webview.apk $MODPATH/system/overlay;
 fi
-# Disable potential conflicts
-pm disable com.google.android.webview
-pm disable com.android.chrome
-ui_print "Just disabled Chrome and Google System Webview. If you want to use it enbale it again under App Info, but be aware than on most ROMs it will be forced as default!"
 if [ "${API}" == "29" ];
 then
     ui_print "!!!!!!!!!!!!!!!!!Important!!!!!!!!!!!!!!!!!!!!!"
@@ -97,7 +84,3 @@ fi
 mkdir -p $MODPATH/apk
 cp_ch -i /sdcard/bromite/webview.apk $MODPATH/apk
 
-if [ $SETENFORCE == "1" ];
-then
-	setenforce 1;
-fi

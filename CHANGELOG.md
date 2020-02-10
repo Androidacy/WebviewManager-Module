@@ -1,6 +1,26 @@
 
 # Changelog
 
+<h4>4.4.1</h4>
+
+- Introduce better logging
+
+- Start using sepolicy.rule instead of going permissive
+
+- Move sepolicy dependent commands to boot scripts
+
+- Fix said boot scripts - for real this time
+
+- Full android 10 support
+
+- Prevent overlay install on custom ROMs
+
+- This will be the last release using Unity. 5.0 will use MMT-ex, meaning ONLY magisk will be supported
+
+<h4>4.3.0</h4>
+
+- Misc fixes
+
 <h4>4.2.2</h4>
 
 - Fixed overlay not copying to the right place
