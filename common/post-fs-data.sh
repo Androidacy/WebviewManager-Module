@@ -46,8 +46,8 @@ fi
 # Not actually sure this is needed. Android may take care of this for us
 if  [ ! "$CT" == "1" ];
 then
-	echo "Forcing the system to register our overlay...\n"
-	sed -i 's|</overlays>|    <item packageName="${OL}" userId="0" targetPackageName="android" baseCodePath="${DR}/treble-overlay-webview.apk" state="6" isEnabled="true" isStatic="true" priority="98" />\n</overlays>|' $LIST
+ echo "Forcing the system to register our overlay...\n"
+ sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/treble-overlay-webview.apk\" state=\"6\" isEnabled=\"true\" isStatic=\"true\" priority=\"98\" />\n</overlays>|" $LIST
 fi
 # If we are assuming this is a custom ROM, send our overlay into the void because most don't enforce Google webviews
 if [ "$CT" == "1" ];
