@@ -79,4 +79,4 @@ then
 fi
 mkdir -p $MODPATH/apk
 cp_ch -i /sdcard/bromite/webview.apk $MODPATH/apk
-
+rm $MODPATH/system/app/placeholder
