@@ -9,8 +9,6 @@ The module will always download the latest version of the webview, to update it 
 
 The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.x).
 
-However, Android 10 is currently unsupported by upstream bromite wnd chromium at the time of writing.
-
 ## What is a WebView?
 
 A WebView is like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include Outlook or GoDaddy apps or even some banking apps. Even the Google app uses a webview
@@ -65,7 +63,7 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 - Android 5.x to 10.0 (7.x+ recommended)
 - Magisk v18.2+ (No other root solution is supported, for forwards compatibility)
 - **Recommended to flash through magisk manager**
-	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the bromite webview apk for your cpu architecture in /sdcard/bromite
+	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the bromite webview.apk for your cpu architecture in /sdcard/bromite
 - SELinux enforcing
 
 ## Other resources
