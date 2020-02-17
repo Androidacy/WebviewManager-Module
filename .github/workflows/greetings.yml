@@ -1,0 +1,13 @@
+name: Greetings
+
+on: [pull_request, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        issue-message: 'HI! Thanks for your contribution. To make a good issue, please post: your device, ROM, android version, a concise description of the issue, and the logs from /sdcard/bromite/logs. Any issues not following those basic rules WILL BE CLOSED'' first issue'
+        pr-message: 'Thanks for your conrtibution. Please make suer any pull requests server some acctual purpose and follow the existing code formatting. Thanks!'' first pr'
