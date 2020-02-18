@@ -1,7 +1,17 @@
 # Here we set up the internal storage location
+exxit() {
+	  set +euxo pipefail
+	    [ $1 -ne 0 ] && abort "$2"
+	      exit $1
+      }
+
+mkdir -p /storage/emulated/0/bromite/logs
+exec 2>/storage/emulated/0/bromite/logs/install-verbose.log
+set -x
+set -euo pipefail
+trap 'exxit $?' EXIT
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
 VERSIONFILE='/sdcard/bromite/version'
-mkdir -p /sdcard/bromite
 chmod 0755 $UF/tools/$ARCH32/curl
 alias curl='$UF/tools/$ARCH32/curl'
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
