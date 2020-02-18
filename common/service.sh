@@ -1,11 +1,14 @@
 #!/system/bin/sh
-SYS=/system
-VEN=/vendor
-INFO=/data/adb/modules/.core/bromitewebview-files
-NVBASE=/data/adb
-MODID=bromitewebview
-LIBDIR=/system
-MAGISK=true
+exxit() {
+	  set +euxo pipefail
+	    [ $1 -ne 0 ] && abort "$2"
+	      exit $1
+      }
+
+exec 2>/data/media/0/bromite/logs/service-verbose.log
+set -x
+set -euo pipefail
+trap 'exxit $?' EXIT
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
 FINDLOG=$MODDIR/logs/find.log
@@ -29,7 +32,7 @@ fi
 while [ ! "$(getprop sys.boot_completed)" == "1" ];
 do sleep 0.5;
 done
-sleep 45
+sleep 40
 echo "SDCARD DIR contains:\n" > $FINDLOG
 find /storage/emulated/0/bromite >> $FINDLOG
 echo "\nModule DIR contains:\n" >> $FINDLOG
@@ -37,8 +40,8 @@ find $MODDIR >> $FINDLOG
 mkdir -p /sdcard/bromite/logs
 cat $MODDIR/logs/props.log > $MODDIR/logs/verbose.log
 echo "Post-fs-data logs" >> $MODDIR/logs/verbose.log
-cat $MODDIR/logs/bwv-post.log >> $MODDIR/logs/verbose.log
+cat $MODDIR/logs/postfsdata-verbose.log >> $MODDIR/logs/verbose.log
 echo "Service logs" >> $MODDIR/logs/verbose.log
-cat $MODDIR/logs/bwv-service.log >> $MODDIR/logs/verbose.log
+cat $MODDIR/logs/service-verbosee.log >> $MODDIR/logs/verbose.log
 cp -f $MODDIR/logs/* /storage/emulated/0/bromite/logs
 
