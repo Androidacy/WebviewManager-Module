@@ -3,4 +3,4 @@
 # NOTE: the normal upgrade process is just an uninstall followed by an install
 # If you are reading this you owe me $10 => https://paypal.me/innonetlife 
 
-
+rm -rf /data/media/0/bromite/logs/*
