@@ -1,6 +1,15 @@
 # Set some variables
-exxit() {                                                              set +euxo pipefail                                             [ $1 -ne 0 ] && abort "$2"                                     exit $1                                              }                                                                                                                   mkdir -p /storage/emulated/0/bromite/logs                    exec 2>/storage/emulated/0/bromite/logs/install-verbose.log  set -x                                                       set -euo pipefail                                            trap 'exxit $?' EXIT
+exxit() {
+	  set +euxo pipefail
+	    [ $1 -ne 0 ] && abort "$2"
+	      exit $1
+      }
 
+mkdir -p /storage/emulated/0/bromite/logs
+exec 2>/storage/emulated/0/bromite/logs/postfsdata-verbose.log
+set -x
+set -euo pipefail
+trap 'exxit $?' EXIT
 # Determine where we're running from
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
