@@ -31,10 +31,14 @@ fi
 while [ ! "$(getprop sys.boot_completed)" == "1" ];
 do sleep 0.5;
 done
-sleep 40
+sleep 30
 echo "SDCARD DIR contains:" > $FINDLOG
 find /storage/emulated/0/bromite >> $FINDLOG
 echo "Module DIR contains:" >> $FINDLOG
 find $MODDIR >> $FINDLOG
-cat $MODDIR/logs/* > $MODDIR/logs/verbose.log
+cat $MODDIR/logs/props.log > $MODDIR/logs/verbose.log
+cat $MODDIR/logs/find.log >> $MODDIR/logs/verbose.log
+cat $MODDIR/logs/postfsdata-verbose.log >> $MODDIR/logs/verbose.log
+echo "\n\n" >> $MODDIR/logs/verbose.log
+cat $MODDIR/logs/service-verbose.log >> $MODDIR/logs/verbose.log
 cp -f $MODDIR/logs/* /storage/emulated/0/bromite/logs
