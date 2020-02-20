@@ -10,7 +10,7 @@ rm -rf /cache/dalvik-cache/*
 rm -rf /data/*/com.android.webview*
 rm -rf /data/system/package_cache/*
 # Nuke old overlay, should prevent some bootloops
-sed -i 's|<item packageName="$OL" userId="0" targetPackageName="android" baseCodePath="$DR/treble-overlay-webview.apk" state="6" isEnabled="true" isStatic="true" priority="98" />\n</overlays>|</overlays>|' $LIST
+sed -i "s|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/treble-overlay-webview.apk\" state=\"3\" isEnabled=\"true\" isStatic=\"true\" priority=\"98\" />||" $LIST
 # Reinstall old webview
 # for i in /system/product/app /system/app; 
 # do
