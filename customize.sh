@@ -61,16 +61,16 @@ set_permissions() {
   # Use $VEN for vendor (Do not use /system$VEN, the $VEN is set to proper vendor path already - could be /vendor, /system/vendor, etc.)
 
   # Some examples:
-  
+
   # For directories (includes files in them):
   # set_perm_recursive  <dirname>                <owner> <group> <dirpermission> <filepermission> <contexts> (default: u:object_r:system_file:s0)
-  
+
   # set_perm_recursive $UNITY/system/lib 0 0 0755 0644
   # set_perm_recursive $UNITY$VEN/lib/soundfx 0 0 0755 0644
 
   # For files (not in directories taken care of above)
   # set_perm  <filename>                         <owner> <group> <permission> <contexts> (default: u:object_r:system_file:s0)
-  
+
   # set_perm $UNITY/system/lib/libart.so 0 0 0644
 }
 

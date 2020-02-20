@@ -1,7 +1,6 @@
 # Here we set up the internal storage location
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
 VERSIONFILE='/sdcard/bromite/version'
-mkdir -p /sdcard/bromite
 chmod 0755 $UF/tools/$ARCH32/curl
 alias curl='$UF/tools/$ARCH32/curl'
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
@@ -79,4 +78,4 @@ then
 fi
 mkdir -p $MODPATH/apk
 cp_ch -i /sdcard/bromite/webview.apk $MODPATH/apk
-
+rm $MODPATH/system/app/placeholder

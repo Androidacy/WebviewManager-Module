@@ -1,6 +1,20 @@
 
 # Changelog
 
+<h4>4.4.3</h4>
+
+- Hopefully last release 4.x series
+
+- Misc bugfixes
+
+  - Fixes for API < 28
+
+  - Boot script updates
+  
+- Reworked logging (thanks @JohnFawkes)
+
+- Updated sepolicy
+
 <h4>4.4.1</h4>
 
 - Introduce better logging
@@ -49,17 +63,17 @@
 
 <h4>4.1.0</h4>
 
-- Fixes for app installation on boot 
+- Fixes for app installation on boot
 
-- More dynamic in boot script should no longer mess with manual app updates 
+- More dynamic in boot script should no longer mess with manual app updates
 
 <h4>4.0.0</h4>
 
 - Fixed compatibility with stock ROMs
 
-- Migration to unity template 
+- Migration to unity template
 
-- Updated boot scripts 
+- Updated boot scripts
 
 <h4>3.7.3</h4>
 
@@ -77,7 +91,7 @@
 
 - Updated bromite to 75.0.3770.132
 
-- Fixed boot script (I say that a lot...) 
+- Fixed boot script (I say that a lot...)
 
 <h4>3.6.1</h4>
 
@@ -127,7 +141,7 @@
 
 - Fix installer script
 
-- Fix boot script 
+- Fix boot script
 
 <h4>v2.1.1</h4>
 
