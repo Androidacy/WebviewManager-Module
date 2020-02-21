@@ -49,12 +49,18 @@ then
 	echo "Android 10 detected"
 	CT=1;
 fi
+if [ "$API" <= "27" ];
+then
+	MODE=3;
+else
+	mode=6;
+fi
 # If we are assuming this is a stock ROM, then we need to force it to recognize our overlay
 # Not actually sure this is needed. Android may take care of this for us
 if  [ ! "$CT" == "1" ];
 then
  echo "Forcing the system to register our overlay..."
- sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/treble-overlay-webview.apk\" state=\"3\" isEnabled=\"true\" isStatic=\"true\" priority=\"98\" /></overlays>|" $LIST
+ sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${MODE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"98\" /></overlays>|" $LIST
 fi
 # If we are assuming this is a custom ROM, send our overlay into the void because most don't enforce Google webviews
 if [ "$CT" == "1" ];
