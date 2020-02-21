@@ -1,8 +1,8 @@
 # Here we set up the internal storage location
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
 VERSIONFILE='/sdcard/bromite/version'
-chmod 0755 $UF/tools/$ARCH32/curl
-alias curl='$UF/tools/$ARCH32/curl'
+chmod 0755 $TMPDIR/curl-$ARCH32
+alias curl='$TMPDIR/tools/curl-$ARCH32'
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 if [ ! -f /sdcard/bromite/version ];
 then
