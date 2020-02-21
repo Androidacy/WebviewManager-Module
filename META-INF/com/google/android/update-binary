@@ -1,0 +1,129 @@
+#!/sbin/sh
+
+#################
+# Initialization
+#################
+
+umask 022
+
+# Global vars
+TMPDIR=/dev/tmp
+PERSISTDIR=/sbin/.magisk/mirror/persist
+
+rm -rf $TMPDIR 2>/dev/null
+mkdir -p $TMPDIR
+
+# echo before loading util_functions
+ui_print() { echo "$1"; }
+
+require_new_magisk() {
+  ui_print "*******************************"
+  ui_print " Please install Magisk v19.0+! "
+  ui_print "*******************************"
+  exit 1
+}
+
+print_modname() {
+  local len
+  len=`echo -n $MODNAME | wc -c`
+  len=$((len + 2))
+  local pounds=`printf "%${len}s" | tr ' ' '*'`
+  ui_print "$pounds"
+  ui_print " $MODNAME "
+  ui_print "$pounds"
+  if $MAGISK; then
+    ui_print "*******************"
+    ui_print " Powered by Magisk "
+    ui_print "*******************"
+  fi
+}
+
+##########################################################################################
+# Environment
+##########################################################################################
+
+OUTFD=$2
+ZIPFILE=$3
+
+mount /data 2>/dev/null
+
+# Load utility functions
+if [ -f /data/adb/magisk/util_functions.sh ]; then
+  MAGISK=true; NVBASE=/data/adb
+  . /data/adb/magisk/util_functions.sh
+  [ $MAGISK_VER_CODE -gt 18100 ] || require_new_magisk
+else
+  [ -f /data/magisk/util_functions.sh ] && require_new_magisk
+  MAGISK=false; UF=$TMPDIR/common/unityfiles
+  unzip -oqj "$ZIPFILE" 'common/unityfiles/*' -d $TMPDIR >&2
+  [ -f "$UF/util_functions.sh" ] || { ui_print "! Unable to extract zip file !"; exit 1; }
+  . $UF/util_functions.sh
+fi
+
+# Preperation for flashable zips
+setup_flashable
+
+# Mount partitions
+mount_partitions
+
+# Detect version and architecture
+api_level_arch_detect
+
+# Setup busybox and binaries, mount apex
+$BOOTMODE && boot_actions || recovery_actions
+
+##########################################################################################
+# Preparation
+##########################################################################################
+
+# Extract prop file
+unzip -o "$ZIPFILE" module.prop -d $TMPDIR >&2
+[ ! -f $TMPDIR/module.prop ] && abort "! Unable to extract zip file!"
+
+MODID=`grep_prop id $TMPDIR/module.prop`
+MODNAME=`grep_prop name $TMPDIR/module.prop`
+if $MAGISK; then
+  $BOOTMODE && MODDIRNAME=modules_update || MODDIRNAME=modules
+  MODULEROOT=$NVBASE/$MODDIRNAME
+  MOD_VER="$NVBASE/modules/$MODID/module.prop"
+else
+  MODULEROOT=$TMPDIR
+  MOD_VER="/system/etc/$MODID-module.prop"
+fi
+MODPATH=$MODULEROOT/$MODID
+
+# Determine mod installation status - allows flash to remove in TWRP for magisk modules
+if [ -f "$MOD_VER" ]; then
+  if [ $(grep_prop versionCode $MOD_VER) -ge $(grep_prop versionCode $TMPDIR/module.prop) ]; then
+    INSTATUS=1 # Uninstall
+  else
+    INSTATUS=2 # Upgrade
+  fi
+else
+  INSTATUS=0 # Install
+fi
+
+# Create mod paths
+rm -rf $MODPATH 2>/dev/null
+mkdir -p $MODPATH
+
+##########################################################################################
+# Install
+##########################################################################################
+
+print_modname
+
+unzip -o "$ZIPFILE" customize.sh -d $MODPATH >&2
+
+if ! grep -q '^SKIPUNZIP=1$' $MODPATH/customize.sh 2>/dev/null; then
+  ui_print "- Extracting module files"
+  unzip -o "$ZIPFILE" -x 'META-INF/*' -d $MODPATH >&2
+
+  # Default permissions
+  set_perm_recursive $MODPATH 0 0 0755 0644
+fi
+
+# Load customization script
+[ -f $MODPATH/customize.sh ] && . $MODPATH/customize.sh
+
+# Nothing after this matters
