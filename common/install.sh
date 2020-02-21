@@ -36,7 +36,7 @@ then
 		ui_print "Check your internet and try again"
 		abort;
 	fi
-	cp_ch -i ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
+	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
 elif [ "$BOOTMODE" = false ]; then
 	# Deal with broken recoveries
@@ -62,20 +62,20 @@ rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*
 if [ -d /product/overlay ];
 then
         mkdir -p $MODPATH/system/product/overlay
-        cp_ch -i $UF/treble-overlay-webview.apk $MODPATH/system/product/overlay;
+        cp_ch $TMPDIR/tools/WebviewOverlay.apk $MODPATH/system/product/overlay;
 elif [ -d /vendor/overlay ]
 then
 	mkdir -p $MODPATH/system/vendor/overlay
-	cp_ch -i $UF/treble-overlay-webview.apk $MODPATH/system/vendor/overlay;
+	cp_ch $TMPDIR/WebviewOverlay.apk $MODPATH/system/vendor/overlay;
 elif [ -d /system/overlay ]
 then
 	mkdir -p $MODPATH/system/overlay
-	cp_ch -i $UF/treble-overlay-webview.apk $MODPATH/system/overlay;
+	cp_ch $TMPDIR/tools/WebviewOverlay.apk $MODPATH/system/overlay;
 fi
 if [ "${API}" == "29" ];
 then
     ui_print "Android 10 detected"
 fi
 mkdir -p $MODPATH/apk
-cp_ch -i /sdcard/bromite/webview.apk $MODPATH/apk
-rm $MODPATH/system/app/placeholder
+cp_ch /sdcard/bromite/webview.apk $MODPATH/apk
+rm -f $MODPATH/system/app/placeholder
