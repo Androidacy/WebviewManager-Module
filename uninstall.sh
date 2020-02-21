@@ -1,17 +1,18 @@
-# Don't modify anything after this
-if [ -f $INFO ]; then
-  while read LINE; do
-    if [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
-      continue
-    elif [ -f "$LINE~" ]; then
-      mv -f $LINE~ $LINE
-    else
-      rm -f $LINE
-      while true; do
-        LINE=$(dirname $LINE)
-        [ "$(ls -A $LINE 2>/dev/null)" ] && break 1 || rm -rf $LINE
-      done
-    fi
-  done < $INFO
-  rm -f $INFO
-fi
+# If you are reading this you owe me $10 => https://paypal.me/innonetlife
+# Set various vars
+OL="me.phh.treble.overlay.webview"
+LIST="/data/system/overlays.xml"
+DR="$(find /system /system/product /vendor -maxdepth 1 | grep overlay)"
+# Forces Android to rebuild package cache and re-registered old webview
+rm -rf /data/resource-cache/*
+rm -rf /data/dalvik-cache/*
+rm -rf /cache/dalvik-cache/*
+rm -rf /data/*/com.android.webview*
+rm -rf /data/system/package_cache/*
+# Nuke old overlay, should prevent some bootloops
+sed -i "s|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/treble-overlay-webview.apk\" state=\"3\" isEnabled=\"true\" isStatic=\"true\" priority=\"98\" />||" $LIST
+# Reinstall old webview
+# for i in /system/product/app /system/app; 
+# do
+#	pm install - r $i/.eb.iew*/.eb.ie*.apk
+# 
