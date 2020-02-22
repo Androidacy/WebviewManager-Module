@@ -1,8 +1,8 @@
 # Here we set up the internal storage location
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
 VERSIONFILE='/sdcard/bromite/version'
-chmod 0755 $TMPDIR/tools/curl-$ARCH32
-alias curl='$TMPDIR/tools/curl-$ARCH32'
+chmod 0755 $MODPATH/common/tools/curl-$ARCH32
+alias curl='$MODPATH/common/tools/curl-$ARCH32'
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 if [ ! -f /sdcard/bromite/version ];
 then
@@ -38,21 +38,7 @@ then
 	fi
 	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
-elif [ "$BOOTMODE" = false ]; then
-	# Deal with broken recoveries
-	recovery_actions
-	ensure_bb
-	setup_flashable
-	if [ -f ${SDCARD}/bromite/webview.apk ];
-	then
-		cp_ch -i ${SDCARD}/bromite/webview.apk $MODPATH/system/webview;
-	elif [ ! -f ${SDCARD}/bromite/webview.apk ];
-	then
-		ui_print "Not booted and no apk found!"
-		ui_print "Copy the Bromite webview apk named webview.apk to /sdcard/bromite/webview.apk"
-		ui_print "Aborting..."
-		abort ;
-	fi
+# Unnecessary. mmt-ex doesn't allow TWRP installs.
 fi
 ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 ui_print "Reboot immediately after flashing or you may experience some issues! "
@@ -62,15 +48,15 @@ rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*
 if [ -d /product/overlay ];
 then
         mkdir -p $MODPATH/system/product/overlay
-        cp_ch $TMPDIR/tools/WebviewOverlay.apk $MODPATH/system/product/overlay;
+        cp_ch $MODPATH/common/WebviewOverlay.apk $MODPATH/system/product/overlay;
 elif [ -d /vendor/overlay ]
 then
 	mkdir -p $MODPATH/system/vendor/overlay
-	cp_ch $TMPDIR/WebviewOverlay.apk $MODPATH/system/vendor/overlay;
+	cp_ch $MODPATH/common/WebviewOverlay.apk $MODPATH/system/vendor/overlay;
 elif [ -d /system/overlay ]
 then
 	mkdir -p $MODPATH/system/overlay
-	cp_ch $TMPDIR/tools/WebviewOverlay.apk $MODPATH/system/overlay;
+	cp_ch $MODPATH/common/WebviewOverlay.apk $MODPATH/system/overlay;
 fi
 if [ "${API}" == "29" ];
 then
@@ -81,3 +67,5 @@ cp_ch /sdcard/bromite/webview.apk $MODPATH/apk
 rm -f $MODPATH/system/app/placeholder
 mkdir -p /sdcard/bromite/logs
 cp -f /sdcard/Download/${MODID}-debug.log /sdcard/bromite/logs
+rm f /sdcard/Download/${MODID}-debug.log
+rm -f $MODPATH/*.md
