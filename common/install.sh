@@ -4,6 +4,7 @@ VERSIONFILE='/sdcard/bromite/version'
 chmod 0755 $MODPATH/common/tools/curl-$ARCH32
 alias curl='$MODPATH/common/tools/curl-$ARCH32'
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
+# Set up version check
 if [ ! -f /sdcard/bromite/version ];
 then
 	mktouch $VERSIONFILE
@@ -67,5 +68,5 @@ cp_ch /sdcard/bromite/webview.apk $MODPATH/apk
 rm -f $MODPATH/system/app/placeholder
 mkdir -p /sdcard/bromite/logs
 cp -f /sdcard/Download/${MODID}-debug.log /sdcard/bromite/logs
-rm f /sdcard/Download/${MODID}-debug.log
+rm -f /sdcard/Download/${MODID}-debug.log
 rm -f $MODPATH/*.md

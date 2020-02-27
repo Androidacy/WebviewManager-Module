@@ -4,6 +4,11 @@ INFO=/data/adb/modules/.bromitewebview-files
 MODID=bromitewebview
 LIBDIR=/system
 MODPATH=/data/adb/modules/bromitewebview
+MODDIR=${0%/*}
+INFO=/data/adb/modules/.bromitewebview-files
+MODID=bromitewebview
+LIBDIR=/system
+MODPATH=/data/adb/modules/bromitewebview
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
 exxit() {
