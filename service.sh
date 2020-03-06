@@ -28,7 +28,7 @@ echo "Started at $(date)"
 if [ -f $MODDIR/apk/webview.apk ] ;
 then
 	sleep 30
-	pm install $MODDIR/apk/webview.apk
+	pm install -r $MODDIR/apk/webview.apk
 	rm -rf $MODDIR/apk/webview.apk
 	echo "Installed bromite webview as user app.."
 	if pm list packages -a|grep -q com.google.android.webview;
