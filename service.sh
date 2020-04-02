@@ -1,14 +1,4 @@
 #!/system/bin/sh
-MODDIR=${0%/*}
-INFO=/data/adb/modules/.bromitewebview-files
-MODID=bromitewebview
-LIBDIR=/system
-MODPATH=/data/adb/modules/bromitewebview
-MODDIR=${0%/*}
-INFO=/data/adb/modules/.bromitewebview-files
-MODID=bromitewebview
-LIBDIR=/system
-MODPATH=/data/adb/modules/bromitewebview
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
 exxit() {
@@ -28,7 +18,7 @@ echo "Started at $(date)"
 if [ -f $MODDIR/apk/webview.apk ] ;
 then
 	sleep 30
-	pm install -r $MODDIR/apk/webview.apk
+	pm install -r $MODDIR/apk/webview.apk 2>&-
 	rm -rf $MODDIR/apk/webview.apk
 	echo "Installed bromite webview as user app.."
 	if pm list packages -a|grep -q com.google.android.webview;
@@ -58,4 +48,3 @@ cat $MODDIR/logs/postfsdata-verbose.log >> $MODDIR/logs/verbose.log
 echo "\n\n" >> $MODDIR/logs/verbose.log
 cat $MODDIR/logs/service-verbose.log >> $MODDIR/logs/verbose.log
 cp -f $MODDIR/logs/* /storage/emulated/0/bromite/logs
-
