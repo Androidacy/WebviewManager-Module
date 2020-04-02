@@ -39,7 +39,7 @@ then
 	fi
 	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
-# Unnecessary. mmt-ex doesn't allow TWRP installs.
+# Unnecessary. mmt-ex doesn't allow TWRP installs. Probably shoudl remove this but it breaks stuff so it stays...
 fi
 ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 ui_print "Reboot immediately after flashing or you may experience some issues! "
@@ -61,12 +61,13 @@ then
 fi
 if [ "${API}" == "29" ];
 then
-    ui_print "Android 10 detected"
-fi
-mkdir -p $MODPATH/apk
-cp_ch /sdcard/bromite/webview.apk $MODPATH/apk
-rm -f $MODPATH/system/app/placeholder
-mkdir -p /sdcard/bromite/logs
-cp -f /sdcard/Download/${MODID}-debug.log /sdcard/bromite/logs
-rm -f /sdcard/Download/${MODID}-debug.log
-rm -f $MODPATH/*.md
+    ui_print "Android 10 detected" fi mkdir -p $MODPATH/apk cp_ch 
+/sdcard/bromite/webview.apk $MODPATH/apk rm -f 
+$MODPATH/system/app/placeholder mkdir -p 
+/storage/emulated/0/bromite/logs cp -f 
+/storage/emulated/0/Download/${MODID}-debug.log /sdcard/bromite/logs rm 
+-f /storage/eumlated/0/Download/${MODID}-debug.log rm -f $MODPATH/*.md 
+ui_print "\n\nEnjoy a more private and faster webview, done systemlessly" 
+ui_print "Don't forget my links:"
+ui_print "Social platforms: https://t.me/inlmagisk, https://t.me/bromitewebview, https://discord.gg/gTnDxQ6"
+ui_print "Donate at: https://paypal.me/linuxandria or https://www.patreon.com/linuxandria_xda"
