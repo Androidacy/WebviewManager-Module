@@ -33,10 +33,9 @@ then
 else
 echo "File either moved or doesn't need installed...."
 fi
-while [ ! "$(getprop sys.boot_completed)" == "1" ];
+while [ ! "$(getprop sys.boot_completed)" == "1" ] && [ -d /storage/emulated/0/Android ];
 do sleep 0.5;
 done
-sleep 30
 echo "SDCARD DIR contains:" > $FINDLOG
 find /storage/emulated/0/bromite >> $FINDLOG
 echo "Module DIR contains:" >> $FINDLOG
