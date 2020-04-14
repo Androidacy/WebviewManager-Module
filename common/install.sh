@@ -75,7 +75,9 @@ rm -f $MODPATH/*.md
 ui_print "- Backing up important stuffs"
 mkdir -p /sdcard/bromite/backup
 cp /data/system/overlays.xml /sdcard/bromite/backup
-ui_print "\n\nEnjoy a more private and faster webview, done systemlessly" 
+ui_print " "
+ui_print " "
+ui_print "Enjoy a more private and faster webview, done systemlessly" 
 ui_print "Don't forget my links:"
 ui_print "Social platforms: https://t.me/inlmagisk, https://t.me/bromitewebview, https://discord.gg/gTnDxQ6"
 ui_print "Donate at: https://paypal.me/linuxandria or https://www.patreon.com/linuxandria_xda"
