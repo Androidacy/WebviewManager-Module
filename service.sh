@@ -18,7 +18,7 @@ echo "Started at $(date)"
 if [ -f $MODDIR/apk/webview.apk ] ;
 then
 	sleep 30
-	pm install -r $MODDIR/apk/webview.apk 2>&-
+	pm install -r $MODDIR/apk/webview.apk
 	rm -rf $MODDIR/apk/webview.apk
 	echo "Installed bromite webview as user app.."
 	if pm list packages -a|grep -q com.google.android.webview;
@@ -33,11 +33,11 @@ then
 else
 echo "File either moved or doesn't need installed...."
 fi
-while [ ! "$(getprop sys.boot_completed)" == "1" ] && [ -d /storage/emulated/0/Android ];
+while [ ! "$(getprop sys.boot_completed)" == "1" ] && [ -d /sdcard/Android ];
 do sleep 0.5;
 done
 echo "SDCARD DIR contains:" > $FINDLOG
-find /storage/emulated/0/bromite >> $FINDLOG
+find /sdcard/bromite >> $FINDLOG
 echo "Module DIR contains:" >> $FINDLOG
 find $MODDIR >> $FINDLOG
 cat $MODDIR/logs/props.log > $MODDIR/logs/verbose.log
@@ -46,4 +46,4 @@ echo "\n\n" >> $MODDIR/logs/verbose.log
 cat $MODDIR/logs/postfsdata-verbose.log >> $MODDIR/logs/verbose.log
 echo "\n\n" >> $MODDIR/logs/verbose.log
 cat $MODDIR/logs/service-verbose.log >> $MODDIR/logs/verbose.log
-cp -f $MODDIR/logs/* /storage/emulated/0/bromite/logs
+cp -f $MODDIR/logs/* /sdcard/bromite/logs
