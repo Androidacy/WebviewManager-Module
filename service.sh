@@ -6,7 +6,7 @@ exxit() {
 	    [ $1 -ne 0 ] && abort "$2"
 	      exit $1
       }
-exec 2>$MODDIR/logs/service-verbose.log
+exec 3>&2 2>$MODDIR/logs/service-verbose.log
 set -x 2
 set -euo pipefail
 trap 'exxit $?' EXIT
@@ -17,17 +17,17 @@ touch $FINDLOG
 echo "Started at $(date)"
 if [ -f $MODDIR/apk/webview.apk ] ;
 then
-	sleep 30
-	pm install -r $MODDIR/apk/webview.apk
+	sleep 15
+	pm install -r $MODDIR/apk/webview.apk 2>&3
 	rm -rf $MODDIR/apk/webview.apk
 	echo "Installed bromite webview as user app.."
 	if pm list packages -a|grep -q com.google.android.webview;
 	then
-		pm disable com.google.android.webview;
+		pm disable com.google.android.webview 2>&3;
 	fi
-	if pm list packages -a|grep -q com.android.chrome;
+	if pm list packages -a|grep -q com.android.chrome 2>&3;
 	then
-		pm disable com.android.chrome;
+		pm disable com.android.chrome 2>&3;
 	fi
 	echo "Disabled chrome and google webview. You may re-enable but please be aware that may cause issues";
 else
