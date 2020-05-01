@@ -21,7 +21,7 @@ then
 		if [ "$(cat $VERSIONFILE|tr -d '.')" -lt "$(echo ${V}|tr -d '.')" ];
 		then
 			curl -k -L -o /sdcard/bromite/webview.apk $URL
-			echo "${V}" > $VERSIONFILE;
+			echo "${V}" > $VERSIONFILE
 		fi;
 	else
 	# If the file doesn't exist, let's attempt a download anyway
@@ -39,7 +39,11 @@ then
 	fi
 	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
-# Unnecessary. mmt-ex doesn't allow TWRP installs. Probably shoudl remove this but it breaks stuff so it stays...
+# Unnecessary. mmt-ex doesn't allow TWRP installs. Probably should remove this but it breaks stuff so it stays...
+elif [ "$BOOTMODE' = false ];
+then
+	ui_print "Sorry! TWRP installs are not supported at this time!"
+	abort ;
 fi
 ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 ui_print "Reboot immediately after flashing or you may experience some issues! "
@@ -61,13 +65,13 @@ then
 fi
 if [ "${API}" == "29" ];
 then
-    ui_print "Android 10 detected" 
+    ui_print "Android 10 detected"
 fi
 ui_print "- Cleaning up..."
-mkdir -p $MODPATH/apk 
-cp_ch /sdcard/bromite/webview.apk $MODPATH/apk 
-rm -f $MODPATH/system/app/placeholder 
-mkdir -p /sdcard/bromite/logs 
+mkdir -p $MODPATH/apk
+cp_ch /sdcard/bromite/webview.apk $MODPATH/apk
+rm -f $MODPATH/system/app/placeholder
+mkdir -p /sdcard/bromite/logs
 # Damn you Zackptg5
 # cp -f /storage/emulated/0/Download/${MODID}-debug.log /sdcard/bromite/logs 
 # rm -f /storage/eumlated/0/Download/${MODID}-debug.log
@@ -79,5 +83,7 @@ ui_print " "
 ui_print " "
 ui_print "Enjoy a more private and faster webview, done systemlessly" 
 ui_print "Don't forget my links:"
-ui_print "Social platforms: https://t.me/inlmagisk, https://t.me/bromitewebview, https://discord.gg/gTnDxQ6"
-ui_print "Donate at: https://paypal.me/linuxandria or https://www.patreon.com/linuxandria_xda"
+ui_print "Social platforms:"
+ui_print " https://t.me/inlmagisk, https://t.me/bromitewebview, https://discord.gg/gTnDxQ6"
+ui_print "Donate at:"
+ui_print " https://paypal.me/linuxandria or https://www.patreon.com/linuxandria_xda"
