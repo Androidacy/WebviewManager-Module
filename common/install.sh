@@ -40,7 +40,7 @@ then
 	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
 # Unnecessary. mmt-ex doesn't allow TWRP installs. Probably should remove this but it breaks stuff so it stays...
-elif [ "$BOOTMODE' = false ];
+elif [ "$BOOTMODE" = false ];
 then
 	ui_print "Sorry! TWRP installs are not supported at this time!"
 	abort ;
@@ -86,4 +86,5 @@ ui_print "Don't forget my links:"
 ui_print "Social platforms:"
 ui_print " https://t.me/inlmagisk, https://t.me/bromitewebview, https://discord.gg/gTnDxQ6"
 ui_print "Donate at:"
-ui_print " https://paypal.me/linuxandria or https://www.patreon.com/linuxandria_xda"
+ui_print " https://paypal.me/linuxandria" 
+ui_print " https://www.patreon.com/linuxandria_xda"
