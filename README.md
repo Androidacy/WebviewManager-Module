@@ -25,12 +25,14 @@ Thanks to @Skittles9823 for answering some of my questions.
 
 Credit to @topjohnwu for magisk and the magisk installer template.
 
-Huge thanks to @Zackptg5 for the unity template and helpingwith parts of the code
+Huge thanks to @Zackptg5 for the unity template and helping with parts of the code
+
+Thanks to @JohnFawkes for the logging code.
 
 ## ETAs/ Versions
 
 This module downloads the latest bromite webview APK every time it is flashed. I will otherwise update when I have time. 
-At any time, the latest beta if availablexan be downloadedby zipping the master branch of the upstream repository.
+At any time, the latest beta if available can be downloaded by zipping the master branch of the upstream repository.
 
 If you use F-Droid, you can add the bromite official F-Droid repository to keep the app updated
 
@@ -40,7 +42,7 @@ If you use F-Droid, you can add the bromite official F-Droid repository to keep 
 
 ## Donations
 
-Donations for me: [here](https://paypal.me/innonetlife)
+Donations for me: [here](https://paypal.me/linuxandria)
 
 Donations for Bromite can be found in the links below 
 
@@ -64,6 +66,7 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 - Magisk v18.2+ (No other root solution is supported, for forwards compatibility)
 - **Recommended to flash through magisk manager**
 	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the bromite webview.apk for your cpu architecture in /sdcard/bromite
+	     - Deprecated in v5.0.0
 - SELinux enforcing
 
 ## Other resources
