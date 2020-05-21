@@ -1,6 +1,20 @@
 
 # Changelog
 
+<h4>5.0.1</h4>
+
+- Switch to MMT-ex template
+
+- Major code refactoring
+
+- Better support Android 10
+
+- Update bundled overlay
+
+- Add backup for overlays.xml just in case
+
+- Misc bugfixes & improvements
+
 <h4>4.4.3</h4>
 
 - Hopefully last release 4.x series
