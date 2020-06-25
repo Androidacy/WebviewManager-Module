@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="https://schemas.android.com/apk/res/android"
+    package="com.linuxandria.WebviewOverlay">
+ 
+    <overlay android:targetPackage="android"
+             android:priority="9999"/>
+ 
+</manifest>
