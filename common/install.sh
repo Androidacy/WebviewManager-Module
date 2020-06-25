@@ -1,8 +1,21 @@
 # Here we set up the internal storage location
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
+mkdir $MODPATH/logs
 VERSIONFILE='/sdcard/bromite/version'
-chmod 0755 $MODPATH/common/tools/curl-$ARCH32
+alias aapt='$MODPATH/common/tools/aapt'
+alias sign='$MODPATH/common/tools/zipsigner'
 alias curl='$MODPATH/common/tools/curl-$ARCH32'
+chmod -R 0755 $MODPATH/common/tools
+# Thanks SKittles9832 for the code I shamelessly copied :)
+VEN=/system/vendor
+[ -L /system/vendor ] && VEN=/vendor
+if [ -f $VEN/build.prop ]; then BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
+# MIUI screws with our overlay and no one wants to tell me how to fix it
+MIUI=$(grep "ro.miui.ui.version.*" $BUILDS)
+if [ $MIUI ]; then
+  ui_print " MIUI is not supported, unless someone tells me how"
+  abort " Aborting..."
+fi
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 # Set up version check
 if [ ! -f /sdcard/bromite/version ];
@@ -49,42 +62,58 @@ ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 ui_print "Reboot immediately after flashing or you may experience some issues! "
 ui_print "Also, if you had any other webview such as Google webview, you may want to re-enable it but beware conflicts"
 ui_print "Next boot may take significantly longer, we have to clear Dalvik cache here"
-rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com.android.webview* /data/system/package_cache/*
+if [ "${API}" == "29" ];
+then
+    ui_print "Android 10 detected"
+		aapt p -f -v -M ${MODPATH}/common/overlay10/AndroidManifest.xml \
+                -I /system/framework/framework-res.apk -S ${MODPATH}/common/overlay10/ \
+                -F ${MODPATH}/unsigned.apk &>$MODPATH/logs/aapt.log
+else
+	ui_print "Android version less than 10 detected"
+	aapt p -f -v -M ${MODPATH}/common/overlay9/AndroidManifest.xml \
+							-I /system/framework/framework-res.apk -S ${MODPATH}/common/overlay9/ \
+							-F ${MODPATH}/unsigned.apk &>$MODPATH/logs/aapt.log
+fi
+if [ -s ${MODPATH}/unsigned.apk ]; then
+	sign ${MODPATH}/unsigned.apk ${MODPATH}/signed.apk
+	cp -rf ${MODPATH}/signed.apk ${MODPATH}/common/WebviewOverlay.apk
+	rm -rf ${MODDIR}/signed.apk ${MODDIR}/unsigned.apk
+else
+	ui_print "Overlay creation has failed! Some ROMs have this issue"
+	ui_print "Compatibility cannot be gauraunteed, contact me on telegram to try to fix!"
+fi
 if [ -d /product/overlay ];
 then
-        mkdir -p $MODPATH/system/product/overlay
-        cp_ch $MODPATH/common/WebviewOverlay.apk $MODPATH/system/product/overlay;
+      mkdir -p $MODPATH/system/product/overlay
+			cp_ch $MODPATH/common/WebviewOverlay.apk $MODPATH/system/product/overlay;
+			echo "/product/oeverlay" > $MODPATH/location;
 elif [ -d /vendor/overlay ]
 then
 	mkdir -p $MODPATH/system/vendor/overlay
 	cp_ch $MODPATH/common/WebviewOverlay.apk $MODPATH/system/vendor/overlay;
+	echo "/vendor/oeverlay" > $MODPATH/location;
 elif [ -d /system/overlay ]
 then
 	mkdir -p $MODPATH/system/overlay
 	cp_ch $MODPATH/common/WebviewOverlay.apk $MODPATH/system/overlay;
-fi
-if [ "${API}" == "29" ];
-then
-    ui_print "Android 10 detected"
+	echo "/system/oeverlay" > $MODPATH/location;
 fi
 ui_print "- Cleaning up..."
 mkdir -p $MODPATH/apk
 cp_ch /sdcard/bromite/webview.apk $MODPATH/apk
 rm -f $MODPATH/system/app/placeholder
 mkdir -p /sdcard/bromite/logs
-# Damn you Zackptg5
-# cp -f /storage/emulated/0/Download/${MODID}-debug.log /sdcard/bromite/logs 
-# rm -f /storage/eumlated/0/Download/${MODID}-debug.log
 rm -f $MODPATH/*.md
 ui_print "- Backing up important stuffs"
-mkdir -p /sdcard/bromite/backup
-cp /data/system/overlays.xml /sdcard/bromite/backup
+mkdir -p /sdcard/bromite/backup/$(date)
+cp /data/system/overlays.xml /sdcard/bromite/backup/$(date)
 ui_print " "
 ui_print " "
-ui_print "Enjoy a more private and faster webview, done systemlessly" 
+ui_print "Enjoy a more private and faster webview, done systemlessly"
 ui_print "Don't forget my links:"
 ui_print "Social platforms:"
 ui_print " https://t.me/inlmagisk, https://t.me/bromitewebview, https://discord.gg/gTnDxQ6"
 ui_print "Donate at:"
-ui_print " https://paypal.me/linuxandria" 
+ui_print " https://paypal.me/linuxandria"
 ui_print " https://www.patreon.com/linuxandria_xda"
+rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com.android.webview* /data/system/package_cache/*

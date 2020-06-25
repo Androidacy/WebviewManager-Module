@@ -17,7 +17,7 @@ touch $FINDLOG
 echo "Started at $(date)"
 if [ -f $MODDIR/apk/webview.apk ] ;
 then
-	sleep 15
+	sleep 20
 	pm install -r $MODDIR/apk/webview.apk 2>&3
 	rm -rf $MODDIR/apk/webview.apk
 	echo "Installed bromite webview as user app.."
@@ -46,4 +46,6 @@ echo "\n\n" >> $MODDIR/logs/verbose.log
 cat $MODDIR/logs/postfsdata-verbose.log >> $MODDIR/logs/verbose.log
 echo "\n\n" >> $MODDIR/logs/verbose.log
 cat $MODDIR/logs/service-verbose.log >> $MODDIR/logs/verbose.log
+echo "\n\n\n" >> $MODDIR/logs/verbose.log
+cat $MMODDIR/logs/aapt.log >> $MODDIR/logs/verbose.log
 cp -f $MODDIR/logs/* /sdcard/bromite/logs

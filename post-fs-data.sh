@@ -18,11 +18,10 @@ set -euo pipefail
 trap 'exxit $?' EXIT
 FINDLOG=$MODDIR/logs/find.log
 PROPSLOG=$MODDIR/logs/props.log
-mkdir -p $MODDIR/logs
 touch $FINDLOG
-OL="com.linuxandria.android.webviewoverlay"
+OL="com.linuxandria.WebviewOverlay"
 LIST="/data/system/overlays.xml"
-DR="$(find /system /system/product /vendor -maxdepth 1 | grep overlay)"
+DR="$(cat $MODDIR/location)"
 API="$(getprop ro.build.version.sdk)"
 touch $PROPSLOG
 echo "Firing up logging NOW "
@@ -31,33 +30,35 @@ getprop >> $PROPSLOG
 echo "------- End Device info ----------" >> $PROPSLOG
 if grep 'com.linuxandria.android.webviewoverlay' /data/system/overlays.xml ;
 then
-	echo "Overlay already enabled, exiting"
-	set CT="1" ;
+	sed -i s|"com.linuxandria.android.webviewoverlay|com.linuxandria.WebviewOverlay|g"
+	echo "Overlay needs updated, done"
+	set YES="1" ;
 fi
-if [ "getprop | grep 'havoc\|resurrection\|userdebug\|test-keys\|lineage\|dev-keys\|maintainer'" ];
-then
-	echo "Custom ROM is running"
-	set CT="1" ;
-fi
-if [ "$API" == "29" ];
-then
-	echo "Android 10 detected"
-	CT="1" ;
-fi
+# It's actually probably desirable to have our overlay on custom ROMs
+#if [ "getprop | grep 'havoc\|resurrection\|userdebug\|test-keys\|lineage\|dev-keys\|maintainer'" ];
+# then
+#	echo "Custom ROM is running"
+#	set CT="1" ;
+#fi
+# if [ "$API" == "29" ];
+#then
+#	echo "Android 10 detected"
+#	CT="1" ;
+#fi
 if [ "$API" -lt "27" ];
 then
 	set MODE="3" ;
 else
 	set MODE="6" ;
 fi
-if  [ ! "$CT" == "1" ];
+if  [ ! "$YES" == "1" ];
 then
  echo "Forcing the system to register our overlay..."
  sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${MODE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"98\" /></overlays>|" $LIST
 fi
-if [ "$CT" == "1" ];
+if [ "$YES" == "1" ];
 then
-	echo "Sending out overlay into the void..."
-	rm -rf $MODDIR/system/product $MODDIR/system/vendor $MODDIR/system/overlay;
+#	echo "Sending out overlay into the void..."
+#	rm -rf $MODDIR/system/product $MODDIR/system/vendor $MODDIR/system/overlay;
+	echo "beep boop jobs done"
 fi
-
