@@ -1,4 +1,4 @@
-#!/system/bin/sh
+#!/sbin/.magisk/busybox/ash
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
 exxit() {
@@ -47,5 +47,5 @@ cat $MODDIR/logs/postfsdata-verbose.log >> $MODDIR/logs/verbose.log
 echo "\n\n" >> $MODDIR/logs/verbose.log
 cat $MODDIR/logs/service-verbose.log >> $MODDIR/logs/verbose.log
 echo "\n\n\n" >> $MODDIR/logs/verbose.log
-cat $MMODDIR/logs/aapt.log >> $MODDIR/logs/verbose.log
+cat $MODDIR/logs/aapt.log >> $MODDIR/logs/verbose.log
 cp -f $MODDIR/logs/* /sdcard/bromite/logs

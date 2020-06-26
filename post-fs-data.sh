@@ -1,5 +1,6 @@
-#!/system/bin/sh
+#!/sbin/.magisk/busybox/ash
 MODDIR=${0%/*}
+YES=0
 INFO=/data/adb/modules/.bromitewebview-files
 MODID=bromitewebview
 LIBDIR=/system
