@@ -48,9 +48,12 @@ then
 		ui_print "Sorry! A problem occurred."
 		ui_print "No capable apk was found, the files failed to download, or both!"
 		ui_print "Check your internet and try again"
-}		abort;
+		abort;
 	fi
-	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
+   paths=$(cmd package dump com.android.webview | grep codePath)
+  APKPATH=$(echo ${paths##*=})
+	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH$APKPATH/webview.apk
+  touch $MODPATH$APKPATH/.replace
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
 # Unnecessary. mmt-ex doesn't allow TWRP installs. Probably should remove this but it breaks stuff so it stays...
 elif [ "$BOOTMODE" = false ];
@@ -77,7 +80,7 @@ fi
 if [ -s ${MODPATH}/unsigned.apk ]; then
 	sign ${MODPATH}/unsigned.apk ${MODPATH}/signed.apk
 	cp -rf ${MODPATH}/signed.apk ${MODPATH}/common/WebviewOverlay.apk
-	rm -rf ${MODDIR}/signed.apk ${MODDIR}/unsigned.apk
+	rm -rf ${MODPATH}/signed.apk ${MODPATH}/unsigned.apk
 else
 	ui_print "Overlay creation has failed! Some ROMs have this issue"
 	ui_print "Compatibility cannot be gauraunteed, contact me on telegram to try to fix!"
@@ -105,8 +108,8 @@ rm -f $MODPATH/system/app/placeholder
 mkdir -p /sdcard/bromite/logs
 rm -f $MODPATH/*.md
 ui_print "- Backing up important stuffs"
-mkdir -p /sdcard/bromite/backup/$(date)
-cp /data/system/overlays.xml /sdcard/bromite/backup/$(date)
+mkdir -p /sdcard/bromite/backup/$
+cp /data/system/overlays.xml /sdcard/bromite/backup/
 ui_print " "
 ui_print " "
 ui_print "Enjoy a more private and faster webview, done systemlessly"
