@@ -48,7 +48,7 @@ then
 		ui_print "Sorry! A problem occurred."
 		ui_print "No capable apk was found, the files failed to download, or both!"
 		ui_print "Check your internet and try again"
-		abort;
+}		abort;
 	fi
 	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH/system/app/webview/webview.apk
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
@@ -66,12 +66,12 @@ if [ "${API}" == "29" ];
 then
     ui_print "Android 10 detected"
 		aapt p -f -v -M ${MODPATH}/common/overlay10/AndroidManifest.xml \
-                -I /system/framework/framework-res.apk -S ${MODPATH}/common/overlay10/ \
-                -F ${MODPATH}/unsigned.apk &>$MODPATH/logs/aapt.log
+                -I /system/framework/framework-res.apk -S ${MODPATH}/common/overlay10/res \
+                -F ${MODPATH}/unsigned.apk &>$MODPATH/logs/aapt.log 
 else
 	ui_print "Android version less than 10 detected"
 	aapt p -f -v -M ${MODPATH}/common/overlay9/AndroidManifest.xml \
-							-I /system/framework/framework-res.apk -S ${MODPATH}/common/overlay9/ \
+							-I /system/framework/framework-res.apk -S ${MODPATH}/common/overlay9/res \
 							-F ${MODPATH}/unsigned.apk &>$MODPATH/logs/aapt.log
 fi
 if [ -s ${MODPATH}/unsigned.apk ]; then
