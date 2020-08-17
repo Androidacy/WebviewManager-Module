@@ -1,0 +1,4 @@
+{
+    "editor.wordWrap": "on",
+    "editor.defaultFormatter": "mads-hartmann.bash-ide-vscode"
+}

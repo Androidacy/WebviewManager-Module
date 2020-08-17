@@ -16,6 +16,12 @@ if [ $MIUI ]; then
   ui_print " MIUI is not supported, unless someone tells me how"
   abort " Aborting..."
 fi
+if  test $API -eq 30 ;
+then
+	ui_print "Android 11 is not supported!"
+	ui_print "Aborting..."
+	abort ;
+fi
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 # Set up version check
 if [ ! -f /sdcard/bromite/version ];
@@ -50,10 +56,15 @@ then
 		ui_print "Check your internet and try again"
 		abort;
 	fi
-   paths=$(cmd package dump com.android.webview | grep codePath)
-  APKPATH=$(echo ${paths##*=})
+   	paths=$(cmd package dump com.android.webview | grep codePath)
+	APKPATH=$(echo ${paths##*=})
 	cp_ch ${SDCARD}/bromite/webview.apk $MODPATH$APKPATH/webview.apk
-  touch $MODPATH$APKPATH/.replace
+	touch $MODPATH$APKPATH/.replace
+	cp $MODPATH$APKPATH/webview.apk /tmp/webview.zip 
+	mkdir /tmp/webview -p
+	unzip -d /tmp/webview /tmp/webview.apk
+	cp -rf /tmp/webview/lib $MODPATH$APKPATH/
+	rm -rf /tmp/webview /tmp/webview.apk
 # If we're runnning under TWRP, try to copy the apk, else we need to download it so abort
 # Unnecessary. mmt-ex doesn't allow TWRP installs. Probably should remove this but it breaks stuff so it stays...
 elif [ "$BOOTMODE" = false ];
@@ -70,7 +81,7 @@ then
     ui_print "Android 10 detected"
 		aapt p -f -v -M ${MODPATH}/common/overlay10/AndroidManifest.xml \
                 -I /system/framework/framework-res.apk -S ${MODPATH}/common/overlay10/res \
-                -F ${MODPATH}/unsigned.apk &>$MODPATH/logs/aapt.log 
+                -F ${MODPATH}/unsigned.apk &>$MODPATH/logs/aapt.log
 else
 	ui_print "Android version less than 10 detected"
 	aapt p -f -v -M ${MODPATH}/common/overlay9/AndroidManifest.xml \
@@ -108,8 +119,8 @@ rm -f $MODPATH/system/app/placeholder
 mkdir -p /sdcard/bromite/logs
 rm -f $MODPATH/*.md
 ui_print "- Backing up important stuffs"
-mkdir -p /sdcard/bromite/backup/$
-cp /data/system/overlays.xml /sdcard/bromite/backup/
+mkdir -p $MODPATH/backup/
+cp /data/system/overlays.xml $MODPATH/backup/
 ui_print " "
 ui_print " "
 ui_print "Enjoy a more private and faster webview, done systemlessly"

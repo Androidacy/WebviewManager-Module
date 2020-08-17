@@ -1,4 +1,4 @@
-#!/sbin/.magisk/busybox/ash
+#!/system.bin.sh
 MODDIR=${0%/*}
 YES=0
 INFO=/data/adb/modules/.bromitewebview-files
@@ -35,17 +35,6 @@ then
 	echo "Overlay needs updated, done"
 	set YES="1" ;
 fi
-# It's actually probably desirable to have our overlay on custom ROMs
-#if [ "getprop | grep 'havoc\|resurrection\|userdebug\|test-keys\|lineage\|dev-keys\|maintainer'" ];
-# then
-#	echo "Custom ROM is running"
-#	set CT="1" ;
-#fi
-# if [ "$API" == "29" ];
-#then
-#	echo "Android 10 detected"
-#	CT="1" ;
-#fi
 if [ "$API" -lt "27" ];
 then
 	set MODE="3" ;
