@@ -2,9 +2,17 @@
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
 mkdir "$MODPATH"/logs
 VERSIONFILE='/sdcard/bromite/version'
-alias aapt='"$MODPATH"/common/tools/aapt'
+if test "$ARCH" = "x86_64" ;
+then
+	alias aapt='$MODPATH/common/tools/aapt64' ;
+elif test "$ARCH" = "x86" ;
+then
+	alias aapt='$MODPATH/common/tools/aaptx86' ;
+else
+	alias aapt='$MODPATH/common/tools/aapt' ;
+fi
 alias sign='"$MODPATH"/common/tools/zipsigner'
-alias curl='"$MODPATH"/common/tools/curl-${ARCH}'
+alias curl='"$MODPATH"/common/tools/curl-${ARCH32}'
 chmod -R 0755 "$MODPATH"/common/tools
 # Thanks SKittles9832 for the code I shamelessly copied :)
 VEN=/system/vendor
@@ -52,7 +60,7 @@ download_webview () {
 verify_webview () {
 	ui_print "Verifying files..."
 	curl -L -K -o "$TMPDIR"/brm_"${V}".sha256.txt "https://github.com/bromite/bromite/releases/download/${V}/brm_$(V).sha256.txt"
-	cd /sdcard/bromite/ && sha256sum -s --check "$TMPDIR"/brm_"${V}".sha256.txt && cd -
+	cd /sdcard/bromite/ && sha256sum -s "$TMPDIR"/brm_"${V}".sha256.txt && cd -
 	while $? != 0 ;
 	do
 		ui_print "Verification failed, retrying download"
