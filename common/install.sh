@@ -46,29 +46,33 @@ download_webview () {
 	if [ -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk ] ;
 	then
 	# Only re-download if it's an upgrade
-		if [ "$(tr -d '.' < "$VERSIONFILE")" -lt "$(echo "${V}"|tr -d '.')" ];
+		if [ "$(tr -d '.' < "$VERSIONFILE")" -lt "$(tr -d '.' < "$V" )" ];
 		then
 			curl -k -L -o /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL"
-			echo "${V}" > "$VERSIONFILE"
+			echo "$V" > "$VERSIONFILE"
 		fi
 	else
 		# If the file doesn't exist, let's attempt a download anyway
-		curl -k -L -o /sdcard/bromite/ "$URL"
-		echo "${V}" > "$VERSIONFILE";
+		curl -k -L -o /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL"
+		echo "$V" > "$VERSIONFILE";
 	fi
 }
 verify_webview () {
 	ui_print "Verifying files..."
-	curl -L -K -o "$TMPDIR"/brm_"${V}".sha256.txt "https://github.com/bromite/bromite/releases/download/${V}/brm_$(V).sha256.txt"
-	cd /sdcard/bromite/ && sha256sum -s "$TMPDIR"/brm_"${V}".sha256.txt && cd -
-	while $? != 0 ;
-	do
+	curl -L -k -o "$TMPDIR"/"$ARCH"_SystemWebview.apk.sha256.txt "https://github.com/bromite/bromite/releases/download/$V/brm_$V.sha256.txt"
+	cd /sdcard/bromite || return
+	grep "$ARCH"_SystemWebview.apk "$TMPDIR"/"$ARCH"_SystemWebview.apk.sha256.txt > "$ARCH"_SystemWebview.apk.sha256.txt 
+	sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt 
+	cd - || return &>/dev/null
+	if test $? -ne 0 ;
+	then
 		ui_print "Verification failed, retrying download"
 		rm -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk
 		download_webview
 		verify_webview ;
-	done
+	else
 	ui_print "Verified successfully. Proceeding..."
+	fi
 }
 ping -c 1 -q github.com >&/dev/null
 if test $? -eq 0 ;
@@ -86,15 +90,15 @@ fi
 # Try to determine existing webview install
 unset APKPATH
 paths=$(cmd package dump com.android.webview | grep codePath)
-APKPATH=$(${paths##*=})
+APKPATH=${paths##*=}
 if test -z ${var+APKPATH} ;
 then
 	paths=$(cmd package dump com.google.android.webview | grep codePath)
-	APKPATH=$(${paths##*=});
+	APKPATH=${paths##*=};
 fi
 if test -z ${var+APKPATH} ;
 then
-	APKPATH="system/app/webview";
+	APKPATH="/system/app/webview";
 fi
 cp_ch ${SDCARD}/bromite/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
 touch "$MODPATH"$APKPATH/.replace
@@ -153,32 +157,21 @@ rm -f "$MODPATH"/*.md
 ui_print "- Backing up important stuffs"
 mkdir -p "$MODPATH"/backup/
 cp /data/system/overlays.xml "$MODPATH"/backup/
-ui_print " "
-ui_print " "
-ui_print " ______   _______  _______  _______ __________________ _______                   
-(  ___ \ (  ____ )(  ___  )(       )\__   __/\__   __/(  ____ \                  
-| (   ) )| (    )|| (   ) || () () |   ) (      ) (   | (    \/                  
-| (__/ / | (____)|| |   | || || || |   | |      | |   | (__                      
-|  __ (  |     __)| |   | || |(_)| |   | |      | |   |  __)                     
-| (  \ \ | (\ (   | |   | || |   | |   | |      | |   | (                        
-| )___) )| ) \ \__| (___) || )   ( |___) (___   | |   | (____/\                  
-|/ \___/ |/   \__/(_______)|/     \|\_______/   )_(   (_______/                  
- _______          _________ _______  _______  _        _______  _______  _______ 
-(  ____ \|\     /|\__   __/(  ____ \(       )( \      (  ____ \(  ____ \(  ____ \
-| (    \/( \   / )   ) (   | (    \/| () () || (      | (    \/| (    \/| (    \/
-| (_____  \ (_) /    | |   | (__    | || || || |      | (__    | (_____ | (_____ 
-(_____  )  \   /     | |   |  __)   | |(_)| || |      |  __)   (_____  )(_____  )
-      ) |   ) (      | |   | (      | |   | || |      | (            ) |      ) |
-/\____) |   | |      | |   | (____/\| )   ( || (____/\| (____/\/\____) |/\____) |
-\_______)   \_/      )_(   (_______/|/     \|(_______/(_______/\_______)\_______)
-          _______  ______           _________ _______                            
-|\     /|(  ____ \(  ___ \ |\     /|\__   __/(  ____ \|\     /|                  
-| )   ( || (    \/| (   ) )| )   ( |   ) (   | (    \/| )   ( |                  
-| | _ | || (__    | (__/ / | |   | |   | |   | (__    | | _ | |                  
-| |( )| ||  __)   |  __ (  ( (   ) )   | |   |  __)   | |( )| |                  
-| || || || (      | (  \ \  \ \_/ /    | |   | (      | || || |                  
-| () () || (____/\| )___) )  \   /  ___) (___| (____/\| () () |                  
-(_______)(_______/|/ \___/    \_/   \_______/(_______/(_______)       "
+ui_print "  
+  / _ )  ____ ___   __ _   (_) / /_ ___                 
+ / _  | / __// _ \ /  ' \ / / / __// -_)                
+/____/ /_/   \___//_/_/_//_/  \__/ \__/                 
+                                                        
+   ____              __                __               
+  / __/  __ __  ___ / /_ ___   __ _   / / ___   ___  ___
+ _\ \   / // / (_-</ __// -_) /  ' \ / / / -_) (_-< (_-<
+/___/   \_, / /___/\__/ \__/ /_/_/_//_/  \__/ /___//___/
+       /___/                                            
+  _      __        __          _                        
+ | | /| / / ___   / /  _  __  (_) ___  _    __          
+ | |/ |/ / / -_) / _ \| |/ / / / / -_)| |/|/ /          
+ |__/|__/  \__/ /_.__/|___/ /_/  \__/ |__,__/           
+                                                        "
 ui_print "Enjoy a more private and faster webview, done systemlessly"
 ui_print "Don't forget my links:"
 ui_print "Social platforms:"
