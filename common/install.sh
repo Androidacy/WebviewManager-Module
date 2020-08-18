@@ -42,28 +42,26 @@ rm -rf /sdcard/bromite/webview.apk
 download_webview () {
 	ui_print "- Downloading extra files please be patient..."
 	V=$(curl -k -L --silent "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')
+	echo "$V" > "$VERSIONFILE"
 	URL="https://github.com/bromite/bromite/releases/download/${V}/${ARCH}_SystemWebView.apk"
 	if [ -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk ] ;
 	then
 	# Only re-download if it's an upgrade
-		if [ "$(tr -d '.' < "$VERSIONFILE")" -lt "$(tr -d '.' < "$V" )" ];
+		if [ "$(cat "$VERSIONFILE" | tr -d '.')" -lt "$(echo "$V" | tr -d '.')" ];
 		then
 			curl -k -L -o /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL"
-			echo "$V" > "$VERSIONFILE"
 		fi
 	else
 		# If the file doesn't exist, let's attempt a download anyway
-		curl -k -L -o /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL"
-		echo "$V" > "$VERSIONFILE";
+		curl -k -L -o /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL" ;
 	fi
 }
 verify_webview () {
 	ui_print "Verifying files..."
-	curl -L -k -o "$TMPDIR"/"$ARCH"_SystemWebview.apk.sha256.txt "https://github.com/bromite/bromite/releases/download/$V/brm_$V.sha256.txt"
+	curl -L -k -o "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt https://github.com/bromite/bromite/releases/download/"$V"/brm_"$V".sha256.txt
 	cd /sdcard/bromite || return
-	grep "$ARCH"_SystemWebview.apk "$TMPDIR"/"$ARCH"_SystemWebview.apk.sha256.txt > "$ARCH"_SystemWebview.apk.sha256.txt 
+	grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt &> /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt 
 	sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt 
-	cd - || return &>/dev/null
 	if test $? -ne 0 ;
 	then
 		ui_print "Verification failed, retrying download"
@@ -73,6 +71,7 @@ verify_webview () {
 	else
 	ui_print "Verified successfully. Proceeding..."
 	fi
+	cd - || return &>/dev/null
 }
 ping -c 1 -q github.com >&/dev/null
 if test $? -eq 0 ;
@@ -91,21 +90,26 @@ fi
 unset APKPATH
 paths=$(cmd package dump com.android.webview | grep codePath)
 APKPATH=${paths##*=}
-if test -z ${var+APKPATH} ;
+if [[ -v $APKPATH ]] ;
 then
 	paths=$(cmd package dump com.google.android.webview | grep codePath)
-	APKPATH=${paths##*=};
+	APKPATH=${paths##*=}
 fi
-if test -z ${var+APKPATH} ;
+if [[ -v $APKPATH ]] ;
 then
-	APKPATH="/system/app/webview";
+	paths=$(cmd package dump com.android.webview | grep codePath)
+	APKPATH=${paths##*=}
+fi
+if [[ -v $APKPATH ]] ;
+then
+	APKPATH="/system/app/webview"
 fi
 cp_ch ${SDCARD}/bromite/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
 touch "$MODPATH"$APKPATH/.replace
 cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip 
 mkdir "$TMPDIR"/webview -p
-unzip -d "$TMPDIR"/webview /"$TMPDIR"/webview.apk
-cp -rf "$TMPDIR"/webview/lib "$MODPATH"$APKPATH/
+unzip -d "$TMPDIR"/webview "$TMPDIR"/webview.zip &>/dev/null
+cp -rf "$TMPDIR"/webview/lib $MODPATH$APKPATH/
 rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.apk
 ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 ui_print "Reboot immediately after flashing or you may experience some issues! "
@@ -150,7 +154,7 @@ then
 fi
 ui_print "- Cleaning up..."
 mkdir -p "$MODPATH"/apk
-cp_ch /sdcard/bromite/webview.apk "$MODPATH"/apk
+cp_ch /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk
 rm -f "$MODPATH"/system/app/placeholder
 mkdir -p /sdcard/bromite/logs
 rm -f "$MODPATH"/*.md
