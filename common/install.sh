@@ -178,5 +178,5 @@ ui_print " https://paypal.me/linuxandria"
 ui_print " https://www.patreon.com/linuxandria_xda"
 rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com.android.webview* /data/system/package_cache/*
 # Breaks, I mean, fixes up the service script
-sed -i s/webiew.apk/"$ARCH"_SystemWebView.apk/ig "$MODPATH"/service.sh
+sed -i s/webview.apk/"$ARCH"_SystemWebView.apk/ig "$MODPATH"/service.sh
 
