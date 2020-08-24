@@ -1,4 +1,5 @@
 {
     "editor.wordWrap": "on",
-    "editor.defaultFormatter": "mads-hartmann.bash-ide-vscode"
+    "editor.defaultFormatter": "mads-hartmann.bash-ide-vscode",
+    "svn.ignoreMissingSvnWarning": true
 }

@@ -1,4 +1,6 @@
 # Here we set up the internal storage location
+# shellcheck shell=dash
+
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
 mkdir "$MODPATH"/logs
 VERSIONFILE='/sdcard/bromite/version'
@@ -47,7 +49,7 @@ download_webview () {
 	if [ -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk ] ;
 	then
 	# Only re-download if it's an upgrade
-		if [ "$(cat "$VERSIONFILE" | tr -d '.')" -lt "$(echo "$V" | tr -d '.')" ];
+		if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$V" | tr -d '.')" ];
 		then
 			curl -k -L -o /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL"
 		fi
@@ -60,7 +62,7 @@ verify_webview () {
 	ui_print "Verifying files..."
 	curl -L -k -o "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt https://github.com/bromite/bromite/releases/download/"$V"/brm_"$V".sha256.txt
 	cd /sdcard/bromite || return
-	grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt &> /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt 
+	grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt 
 	sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt 
 	if test $? -ne 0 ;
 	then
@@ -71,9 +73,9 @@ verify_webview () {
 	else
 	ui_print "Verified successfully. Proceeding..."
 	fi
-	cd - || return &>/dev/null
+	cd - || return >/dev/null
 }
-ping -c 1 -q github.com >&/dev/null
+ping -c 1 -q github.com > /dev/null
 if test $? -eq 0 ;
 then
 	download_webview
@@ -87,29 +89,20 @@ then
 	abort ;
 fi
 # Try to determine existing webview install
+ui_print "- Extracting downloaded file"
 unset APKPATH
-paths=$(cmd package dump com.android.webview | grep codePath)
-APKPATH=${paths##*=}
-if [[ -v $APKPATH ]] ;
-then
-	paths=$(cmd package dump com.google.android.webview | grep codePath)
-	APKPATH=${paths##*=}
-fi
-if [[ -v $APKPATH ]] ;
-then
-	paths=$(cmd package dump com.android.webview | grep codePath)
-	APKPATH=${paths##*=}
-fi
-if [[ -v $APKPATH ]] ;
-then
-	APKPATH="/system/app/webview"
-fi
+paths=$(cmd package dump com.android.webview | grep codePath); APKPATH=${paths##*=}
+[ -z "${APKPATH}" ] && paths=$(cmd package dump com.google.android.webview | grep codePath); APKPATH=${paths##*=}
+[ -z "${APKPATH}" ] && paths=$(cmd package dump com.android.webview | grep codePath); APKPATH=${paths##*=}
+[ -z "${APKPATH}" ] && APKPATH="/system/app/webview"
 cp_ch ${SDCARD}/bromite/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
 touch "$MODPATH"$APKPATH/.replace
 cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip 
 mkdir "$TMPDIR"/webview -p
-unzip -d "$TMPDIR"/webview "$TMPDIR"/webview.zip &>/dev/null
-cp -rf "$TMPDIR"/webview/lib $MODPATH$APKPATH/
+unzip -d "$TMPDIR"/webview "$TMPDIR"/webview.zip > /dev/null
+cp -rf "$TMPDIR"/webview/lib "$MODPATH"$APKPATH/
+mv "$MODPATH"$APKPATH/lib/arm64-v8a "$MODPATH"$APKPATH/lib/arm64
+mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH/lib/arm
 rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.apk
 ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 ui_print "Reboot immediately after flashing or you may experience some issues! "
@@ -121,12 +114,12 @@ then
     ui_print "Android 10 detected"
 		aapt p -f -v -M "$MODPATH"/common/overlay10/AndroidManifest.xml \
                 -I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay10/res \
-                -F "$MODPATH"/unsigned.apk &>"$MODPATH"/logs/aapt.log
+                -F "$MODPATH"/unsigned.apk > "$MODPATH"/logs/aapt.log
 else
 	ui_print "Android version less than 10 detected"
 	aapt p -f -v -M "$MODPATH"/common/overlay9/AndroidManifest.xml \
 							-I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay9/res \
-							-F "$MODPATH"/unsigned.apk &>"$MODPATH"/logs/aapt.log
+							-F "$MODPATH"/unsigned.apk > "$MODPATH"/logs/aapt.log
 fi
 if [ -s "$MODPATH"/unsigned.apk ]; then
 	sign "$MODPATH"/unsigned.apk "$MODPATH"/signed.apk
@@ -184,3 +177,6 @@ ui_print "Donate at:"
 ui_print " https://paypal.me/linuxandria"
 ui_print " https://www.patreon.com/linuxandria_xda"
 rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com.android.webview* /data/system/package_cache/*
+# Breaks, I mean, fixes up the service script
+sed -i s/webiew.apk/"$ARCH"_SystemWebView.apk/ig "$MODPATH"/service.sh
+
