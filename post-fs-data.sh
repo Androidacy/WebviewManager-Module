@@ -17,7 +17,7 @@ PROPSLOG="$MODDIR"/logs/props.log
 touch "$FINDLOG"
 OL="com.linuxandria.WebviewOverlay"
 LIST="/data/system/overlays.xml"
-DR="$(cat "$MODDIR"/location)"
+DR="$(cat "$MODDIR"/overlay)"
 API="$(getprop ro.build.version.sdk)"
 touch "$PROPSLOG"
 echo "Firing up logging NOW "
