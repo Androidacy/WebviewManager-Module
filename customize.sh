@@ -3,11 +3,12 @@
 # MMT Extended Config Script
 #
 ##########################################################################################
-
+# shellcheck shell=dash
+# shellcheck disable=SC2034
+# shellcheck disable=SC1090
 ##########################################################################################
 # Config Flags
 ##########################################################################################
-
 # Uncomment and change 'MINAPI' and 'MAXAPI' to the minimum and maximum android version for your mod
 # Uncomment DYNLIB if you want libs installed to vendor for oreo+ and system for anything older
 # Uncomment DEBUG if you want full debug logs (saved to /sdcard)
@@ -25,12 +26,6 @@ DEBUG=true
 
 # Construct your list in the following format
 # This is an example
-REPLACE_EXAMPLE="
-/system/app/Youtube
-/system/priv-app/SystemUI
-/system/priv-app/Settings
-/system/framework
-"
 
 # Construct your own list here
 REPLACE="

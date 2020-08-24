@@ -4,8 +4,8 @@ MODDIR=${0%/*}
 YES=0
 exxit() {
 	  set +euxo pipefail
-	    [ $1 -ne 0 ] && abort "$2"
-	      exit $1
+	    [ "$1" -ne 0 ] && abort "$2"
+	      exit "$1"
       }
 mkdir -p "$MODDIR"/logs
 exec 2>"$MODDIR"/logs/postfsdata-verbose.log
