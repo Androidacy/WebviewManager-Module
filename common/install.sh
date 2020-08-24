@@ -133,17 +133,17 @@ if [ -d /product/overlay ];
 then
       mkdir -p "$MODPATH"/system/product/overlay
 			cp_ch "$MODPATH"/common/WebviewOverlay.apk "$MODPATH"/system/product/overlay;
-			echo "/product/oeverlay" > "$MODPATH"/overlay;
+			echo "/product/overlay" > "$MODPATH"/overlay;
 elif [ -d /vendor/overlay ]
 then
 	mkdir -p "$MODPATH"/system/vendor/overlay
 	cp_ch "$MODPATH"/common/WebviewOverlay.apk "$MODPATH"/system/vendor/overlay;
-	echo "/vendor/oeverlay" > "$MODPATH"/overlay;
+	echo "/vendor/overlay" > "$MODPATH"/overlay;
 elif [ -d /system/overlay ]
 then
 	mkdir -p "$MODPATH"/system/overlay
 	cp_ch "$MODPATH"/common/WebviewOverlay.apk "$MODPATH"/system/overlay;
-	echo "/system/oeverlay" > "$MODPATH"/overlay;
+	echo "/system/overlay" > "$MODPATH"/overlay;
 fi
 ui_print "- Cleaning up..."
 mkdir -p "$MODPATH"/apk
