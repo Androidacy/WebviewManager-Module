@@ -1,4 +1,4 @@
-# Here we set up the internal storage location
+ # Here we set up the internal storage location
 # shellcheck shell=dash
 
 $BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
@@ -109,7 +109,7 @@ ui_print "Reboot immediately after flashing or you may experience some issues! "
 ui_print "Also, if you had any other webview such as Google webview, you may want to re-enable it"
 UI_PRINT "but beware conflicts"
 ui_print "Next boot may take significantly longer, we have to clear Dalvik cache here"
-if test"${API}" == "29" ;
+if test  "${API}" == "29" ;
 then
     ui_print "Android 10 detected"
 		aapt p -f -v -M "$MODPATH"/common/overlay10/AndroidManifest.xml \

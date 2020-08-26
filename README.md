@@ -55,14 +55,16 @@ Issues with the module should be filed [here](https://github.com/Magisk-Modules-
 
 Our XDA thread is [here](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
 
-Our telegram support group is [this lovely place](https://t.me/inlmagisk)
+Our telegram support group is [this lovely place](https://t.me/alexiadev)
 
 Here is our [Discord](https://discord.gg/gTnDxQ6)
 
 
 ## Compatibility
 
-- Android 5.x to 10.0 (7.x+ recommended)
+- Android 5.x to 10.0 (7.x+ recommended). 
+  - With current tools Android 11 cannot be supported.
+  - MIUI is not supported unless someone is willing to share the overlays used in MIUI
 - Magisk v18.2+ (No other root solution is supported, for forwards compatibility)
 - **Recommended to flash through magisk manager**
 	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the bromite webview.apk for your cpu architecture in /sdcard/bromite
@@ -73,4 +75,4 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 
 * [Bromite SystemWebView wiki page](https://github.com/bromite/bromite/wiki/Installing-SystemWebView)
 * [Bromite website](https://bromite.org)
-* [Upstream repository](https://github.com/alexa-v2/bromitewebview)
+* [Upstream repository](https://git.linuxandria.com/unixandria-git/bromitewebview)

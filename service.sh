@@ -38,4 +38,4 @@ do sleep 0.5;
 done
 { echo "SDCARD DIR contains:"; find /sdcard/bromite; echo "Module DIR contains:"; find "$MODDIR"; } > "$FINDLOG"
 tail -n +1 "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log "$MODDIR"/logs/aapt.log > "$MODDIR"/logs/verbose.log 
-cp -rf "$MODDIR"/logs /sdcard/bromite/logs
+cp -rf "$MODDIR"/logs /sdcard/bromite/
