@@ -1,6 +1,20 @@
 
 # Changelog
 
+<h4>6.0.0</h4>
+
+- Rework overlay to prevent some boot loop
+
+- Separate overlays for Android 10 and < 10
+
+- Fix overlay flag on Android < 9
+
+- Verify downloads for security
+
+- Prepare for bromite upstream changes
+
+- Extract libraries from all, meaning even if install fails no crashing should occur
+
 <h4>5.0.1</h4>
 
 - Switch to MMT-ex template
