@@ -106,8 +106,8 @@ mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH/lib/arm
 rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.apk
 ui_print "!!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ!!!!!!!!!!!!!!!!!"
 ui_print "Reboot immediately after flashing or you may experience some issues! "
-ui_print "Also, if you had any other webview such as Google webview, you may want to re-enable it"
-UI_PRINT "but beware conflicts"
+ui_print "Also, if you had any other webview such as Google webview, you may re-enable"
+ui_print "But beware conflicts"
 ui_print "Next boot may take significantly longer, we have to clear Dalvik cache here"
 if test  "${API}" == "29" ;
 then
