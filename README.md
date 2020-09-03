@@ -64,7 +64,7 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 
 - Android 5.x to 10.0 (7.x+ recommended). 
   - With current tools Android 11 cannot be supported.
-  - MIUI is not supported unless someone is willing to share the overlays used in MIUI
+  - MIUI is not officially supported unless someone is willing to share the overlays used in MIUI. I have mixed results from testers in how well it works.
 - Magisk v18.2+ (No other root solution is supported, for forwards compatibility)
 - **Recommended to flash through magisk manager**
 	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the bromite webview.apk for your cpu architecture in /sdcard/bromite

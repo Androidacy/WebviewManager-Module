@@ -21,11 +21,12 @@ VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
 if [ -f $VEN/build.prop ]; then BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
 # MIUI screws with our overlay and no one wants to tell me how to fix it
-MIUI=$(grep "ro.miui.ui.version.*" $BUILDS)
-if [ "$MIUI" ]; then
-  ui_print " MIUI is not supported, unless someone tells me how"
-  abort " Aborting..."
-fi
+# Needs to be evaluated
+#MIUI=$(grep "ro.miui.ui.version.*" $BUILDS)
+##if [ "$MIUI" ]; then
+#  ui_print " MIUI is not supported, unless someone tells me how"
+#  abort " Aborting..."
+#fi
 if  test "$API" -eq 30 ;
 then
 	ui_print "Android 11 is not supported!"
