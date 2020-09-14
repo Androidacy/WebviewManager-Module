@@ -4,6 +4,17 @@
 # Initialization
 #################
 
+# Its broken okay?!?!
+# shellcheck disable=SC2155
+# shellcheck disable=SC2034
+# shellcheck disable=SC1090
+# shellcheck disable=SC2086
+# shellcheck disable=SC2169
+# shellcheck disable=SC2046
+# shellcheck disable=SC2044
+# shellcheck disable=SC2166
+# shellcheck disable=SC2039
+
 umask 022
 
 # Global vars
@@ -30,9 +41,9 @@ is_legacy_script() {
 
 print_modname() {
   local len
-  len=`echo -n $MODNAME | wc -c`
+  len=$(echo -n $MODNAME | wc -c)
   len=$((len + 2))
-  local pounds=`printf "%${len}s" | tr ' ' '*'`
+  local pounds=$(printf "%${len}s" | tr ' ' '*')
   ui_print "$pounds"
   ui_print " $MODNAME "
   ui_print "$pounds"
@@ -51,7 +62,7 @@ ZIPFILE=$3
 mount /data 2>/dev/null
 
 # Load utility functions
-[ -f /data/adb/magisk/util_functions.sh ] || require_new_magisk
+[ -f /data/adb/magisk/util_functions.sh ] || MODPATH="/"
 . /data/adb/magisk/util_functions.sh
 [ $MAGISK_VER_CODE -gt 18100 ] || require_new_magisk
 
@@ -63,6 +74,41 @@ mount_partitions
 
 # Detect version and architecture
 api_level_arch_detect
+
+recovery_actions() {
+  # Make sure random won't get blocked
+  mount -o bind /dev/urandom /dev/random
+  # Unset library paths
+  OLD_LD_LIB=$LD_LIBRARY_PATH
+  OLD_LD_PRE=$LD_PRELOAD
+  OLD_LD_CFG=$LD_CONFIG_FILE
+  unset LD_LIBRARY_PATH
+  unset LD_PRELOAD
+  unset LD_CONFIG_FILE
+  mount_apex
+}
+
+recovery_cleanup() {
+  local DIR
+  ui_print "- Unmounting partitions"
+  (umount_apex
+  if [ ! -d /postinstall/tmp ]; then
+    umount -l /system
+    umount -l /system_root
+  fi
+  umount -l /vendor
+  umount -l /persist
+  for DIR in /apex /system /system_root; do
+    if [ -L "${DIR}_link" ]; then
+      rmdir $DIR
+      mv -f ${DIR}_link $DIR
+    fi
+  done
+  umount -l /dev/random) 2>/dev/null
+  [ -z $OLD_LD_LIB ] || export LD_LIBRARY_PATH=$OLD_LD_LIB
+  [ -z $OLD_LD_PRE ] || export LD_PRELOAD=$OLD_LD_PRE
+  [ -z $OLD_LD_CFG ] || export LD_CONFIG_FILE=$OLD_LD_CFG
+}
 
 # Setup busybox and binaries
 $BOOTMODE && boot_actions || recovery_actions
@@ -77,9 +123,12 @@ unzip -o "$ZIPFILE" module.prop -d $TMPDIR >&2
 
 $BOOTMODE && MODDIRNAME=modules_update || MODDIRNAME=modules
 MODULEROOT=$NVBASE/$MODDIRNAME
-MODID=`grep_prop id $TMPDIR/module.prop`
-MODPATH=$MODULEROOT/$MODID
-MODNAME=`grep_prop name $TMPDIR/module.prop`
+MODID=$(grep_prop id $TMPDIR/module.prop)
+if test -n $MODPATH
+then
+  MODPATH=$MODULEROOT/$MODID
+fi
+MODNAME=$(grep_prop name $TMPDIR/module.prop)
 
 # Create mod paths
 rm -rf $MODPATH 2>/dev/null

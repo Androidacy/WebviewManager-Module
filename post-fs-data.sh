@@ -28,8 +28,14 @@ if grep 'com.linuxandria.android.webviewoverlay' /data/system/overlays.xml ;
 then
 	sed -i s|"com.linuxandria.android.webviewoverlay|com.linuxandria.WebviewOverlay|g"
 	echo "Overlay needs updated, done"
-	YES="1" ;
+	YES="0" ;
 fi
+
+if grep 'com.linuxandria.android.WebviewOverlay' /data/system/overlays.xml ;
+then
+	YES="01" ;
+fi
+
 if [ "$API" -lt "27" ];
 then
 	MODE="3" ;
