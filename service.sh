@@ -33,8 +33,8 @@ then
 else
 echo "File either moved or doesn't need installed...."
 fi
-while test ! "$(getprop sys.boot_completed)" = "1"  && test -d /sdcard/Android ;
-do sleep 0.5;
+while test "$(getprop sys.boot_completed)" != "1"  && test ! -d /sdcard/Android ;
+do sleep 30;
 done
 { echo "SDCARD DIR contains:"; find /sdcard/bromite; echo "Module DIR contains:"; find "$MODDIR"; } > "$FINDLOG"
 tail -n +1 "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log "$MODDIR"/logs/aapt.log > "$MODDIR"/logs/verbose.log 
