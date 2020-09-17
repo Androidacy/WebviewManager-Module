@@ -1,6 +1,4 @@
-# Here we set up the internal storage location
 # shellcheck shell=dash
-$BOOTMODE && SDCARD=/storage/emulated/0 || SDCARD=/sdcard
 mkdir "$MODPATH"/logs
 TRY_COUNT=0
 VERSIONFILE='/sdcard/bromite/version'
@@ -19,8 +17,8 @@ VEN=/system/vendor
 if [ -f $VEN/build.prop ]; then export BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 test_connection() {
-  echo "- Testing internet connectivity"
-  (ping -q -c 1 -W 1 google.com >/dev/null 2>&1) && return 0 || return 1
+  ui_print "- Testing internet connectivity"
+  (ping -4 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
 }
 check_version () {
 # Set up version check
@@ -141,7 +139,7 @@ set_path() {
 }
 extract_apk () {
 	ui_print "- Extracting downloaded file"
-	cp_ch ${SDCARD}/bromite/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
+	cp_ch /data/media/0/bromite/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
 	touch "$MODPATH"$APKPATH/.replace
 	cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip 
 	mkdir "$TMPDIR"/webview -p	
@@ -181,6 +179,14 @@ else
 fi
 }
 do_install () {
+	if ! "$BOOTMODE";
+	then
+		ui_print " - Detected recovery install! Falling back to offline install!"
+		recovery_actions
+		offline_install
+		recovery_cleanup
+		do_cleanup ;
+	fi
 	test_connection
 	if test $? -ne 0 ;
 	then
