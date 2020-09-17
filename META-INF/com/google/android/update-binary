@@ -62,7 +62,7 @@ ZIPFILE=$3
 mount /data 2>/dev/null
 
 # Load utility functions
-[ -f /data/adb/magisk/util_functions.sh ] || require_new_magisk
+[ -f /data/adb/magisk/util_functions.sh ] || MODPATH="/"
 . /data/adb/magisk/util_functions.sh
 [ $MAGISK_VER_CODE -gt 18100 ] || require_new_magisk
 
@@ -124,7 +124,10 @@ unzip -o "$ZIPFILE" module.prop -d $TMPDIR >&2
 $BOOTMODE && MODDIRNAME=modules_update || MODDIRNAME=modules
 MODULEROOT=$NVBASE/$MODDIRNAME
 MODID=$(grep_prop id $TMPDIR/module.prop)
-MODPATH=$MODULEROOT/$MODID
+if test -n $MODPATH
+then
+  MODPATH=$MODULEROOT/$MODID
+fi
 MODNAME=$(grep_prop name $TMPDIR/module.prop)
 
 # Create mod paths
