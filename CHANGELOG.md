@@ -1,6 +1,14 @@
 
 # Changelog
 
+<h4>6.1.0</h4>
+
+- Support recovery and system installs - system installs are experimental and I will NOT provide support for them
+
+- Update used tools
+
+- Hopefully fix "no connection" issues for some users
+
 <h4>6.0.0</h4>
 
 - Rework overlay to prevent some boot loop
