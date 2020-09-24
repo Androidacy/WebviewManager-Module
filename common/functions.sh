@@ -206,9 +206,9 @@ if $DEBUG; then
   ui_print "- Debug mode"
   ui_print "  Module install log will include debug info"
   ui_print "  It's in /sdcard/bromite/logs"
+  mkdir -p /data/media/0/bromite/logs/
   exec 2>/data/media/0/bromite/logs/install.log 
   set -x
-  mkdir -p /data/media/0/bromite/logs/
 fi
 
 # Extract files
