@@ -1,3 +1,4 @@
+#!/system/bin/sh
 # If you are reading this you owe me $10 => https://paypal.me/innonetlife
 # Set various vars
 OL="me.phh.treble.overlay.webview"
@@ -12,8 +13,4 @@ rm -rf /data/system/package_cache/*
 # Nuke old overlay, should prevent some bootloops
 sed -i "s|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/treble-overlay-webview.apk\" state=\"3\" isEnabled=\"true\" isStatic=\"true\" priority=\"98\" />||" $LIST
 # Instead we will restore our backup. Sorry substratum users in the future
-# Reinstall old webview
-# for i in /system/product/app /system/app; 
-# do
-#	pm install - r $i/.eb.iew*/.eb.ie*.apk
-# 
+
