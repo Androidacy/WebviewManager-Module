@@ -1,0 +1,8 @@
+# Config file for the module
+# Format is key=value, eg bromite=1
+# Put this in /sdcard/bromite to have it used during install
+# DO NOT ADD ANY LINES!!!
+forceoffline=0
+ungoogled=0
+bromite=1
+browser=1
