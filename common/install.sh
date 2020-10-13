@@ -16,6 +16,9 @@ VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
 if [ -f $VEN/build.prop ]; then export BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
+get_config () {
+	. "$MODPATH"/config.txt
+}
 test_connection() {
   ui_print "- Testing internet connectivity"
   (ping -4 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
