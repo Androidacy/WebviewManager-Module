@@ -33,8 +33,17 @@ fi
 	test_connection
 	if test ${?} -eq "0" ;
 	then
-		VERSION="$(wget -qO- "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
-		echo "$VERSION" > $VERSIONFILE
+		if test "$UNGOOGLED" == "1"
+		then
+			ui_print "- Version check for ungoogled-chromium not implemented, downloading the version set in the module"
+		elif test "$VANILLA" == "1"
+		then
+			VERSION="$(wget -qO- "https://api.github.com/repos/bromite/chromium/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
+			echo "$VERSION" > $VERSIONFILE
+		else
+			VERSION="$(wget -qO- "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
+			echo "$VERSION" > $VERSIONFILE
+		fi
 	else
 		VERSION="$(cat $VERSIONFILE)"
 	fi
@@ -56,44 +65,105 @@ it_failed () {
 	ui_print " Aborting!"
 	abort 
 }
-download_webview () {
+set_url () {
+	if "$VANILLA" == "1";
+	then
+		URL="https://github.com/bromite/chromium"
+	elif "$UNGOOGLED" == "1"
+	then
+		if "$ARCH" == "arm64"
+		then
+			URL2="https://git.droidware.info/attachments/18caf284-8eb3-4385-83b8-57576d3c8951"
+		elif "$ARCH" == "arm"
+		then
+			URL2="https://git.droidware.info/attachments/332e6f8a-4020-46b9-bb6d-75e888291bb2"
+		elif "$ARCH" == "x86" or "x86_64"
+		then
+			URL2="https://git.droidware.info/attachments/479c91fa-7de1-4746-9292-46c2d0374dab"
+		fi
+	else
+		URL="https://github.com/bromite/bromite"
+	fi
+}
+download_start () {
+	set_url
 	check_version
 	ui_print "- Downloading extra files please be patient..."
-	URL="https://github.com/bromite/bromite/releases/download/${VERSION}/${ARCH}_SystemWebView.apk"
+	if test -z $URL2
+	then
+		URL2="$URL/releases/download/${VERSION}/${ARCH}_"
+	fi
+
 	if [ -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk ] ;
 	then
-	# Only re-download if it's an upgrade
-		if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
+		if test "$VANILLA" == "1" or "$BROMITE" == "1"
 		then
-			wget -qO /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL"
+			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
+			then
+				wget -qO /sdcard/bromite/"${ARCH}"_SystemWebView.apk "${URL2}SystemWebView.apk"
+			fi
+		else
+			wget -qO /sdcard/bromite/"${ARCH}"_SystemWebView.apk "${URL2}"
 		fi
 	else
 		# If the file doesn't exist, let's attempt a download anyway
-		wget -qO /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL" ;
+		wget -qO /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL2" ;
+	fi
+
+	if test "$BROWSER" == "1"
+	then
+		wget -qO /sdcard/bromite/"$ARCH"_ChromePublic.apk "${URL2}ChromePublic.apk"
 	fi
 }
 verify_webview () {
 	ui_print " Verifying files..."
-	wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt https://github.com/bromite/bromite/releases/download/"$VERSION"/brm_"$VERSION".sha256.txt
-	cd /sdcard/bromite || return
-	grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt 
-	sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt 
-	if test $? -ne 0 ;
+	if test "$VANILLA" == "1"
 	then
-		ui_print " Verification failed, retrying download"
-		rm -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk
-		TRY_COUNT=$((TRY_COUNT + 1))
-		if test ${TRY_COUNT} -ge 3 ;
+		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION"/chr_"$VERSION".sha256.txt
+		cd /sdcard/bromite || return
+		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt 
+		sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt 
+		if test $? -ne 0 ;
 		then
-			it_failed ;
-		else
-			download_webview
-			verify_webview ;
+			ui_print " Verification failed, retrying download"
+			rm -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk
+			TRY_COUNT=$((TRY_COUNT + 1))
+			if test ${TRY_COUNT} -ge 3 ;
+			then
+				it_failed ;
+			else
+				download_start
+				verify_webview ;
 		fi
 	else
 	ui_print " Verified successfully. Proceeding..."
 	fi
 	cd - || return >/dev/null
+	elif test "$UNGOOGLED" == "1"
+	then
+		ui_print "- Verifying Ungoogled Chromium is not implemented!"
+	else
+		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION"/brm_"$VERSION".sha256.txt
+		cd /sdcard/bromite || return
+		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt 
+		sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt 
+		if test $? -ne 0 ;
+		then
+			ui_print " Verification failed, retrying download"
+			rm -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk
+			TRY_COUNT=$((TRY_COUNT + 1))
+			if test ${TRY_COUNT} -ge 3 ;
+			then
+				it_failed ;
+			else
+				download_start
+				verify_webview ;
+		fi
+		else
+			ui_print " Verified successfully. Proceeding..."
+		fi
+		cd - || return >/dev/null
+	fi
 }
 create_overlay () {
 if test  "${API}" -ge "29" ;
@@ -154,7 +224,8 @@ extract_apk () {
 }
 online_install() {
 	ui_print "- Awesome, you have internet"
-	download_webview
+	set_url
+	download_start
 	verify_webview
 	set_path
 	extract_apk 
@@ -182,7 +253,7 @@ else
 fi
 }
 do_install () {
-	if ! "$BOOTMODE";
+	if test ! "$BOOTMODE";
 	then
 		ui_print " - Detected recovery install! Falling back to offline install!"
 		recovery_actions
@@ -190,10 +261,16 @@ do_install () {
 		recovery_cleanup
 		do_cleanup ;
 	fi
+	if test "$OFFLINE" == "1"
+	then
+		offline_install 
+		do_cleanup ;
+	fi
 	test_connection
 	if test $? -ne 0 ;
 	then
-		offline_install ;
+		offline_install 
+		do_cleanup ;
 	else
 		if test ${TRY_COUNT} -ge 3 ;
 		then
@@ -227,7 +304,6 @@ if test ${TRY_COUNT} -ge "3" ;
 			do_install 
 			do_cleanup ;
 		fi
-
 ui_print " !!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ !!!!!!!!!!!!!!!!!"
 ui_print " Reboot immediately after flashing or you may experience some issues! "
 ui_print " Also, if you had any other webview such as Google webview, you may re-enable"
