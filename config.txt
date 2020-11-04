@@ -2,7 +2,8 @@
 # Format is key=value, eg bromite=1
 # Put this in /sdcard/bromite to have it used during install
 # DO NOT ADD ANY LINES!!!
-forceoffline=0
-ungoogled=0
-bromite=1
-browser=1
+OFFLINE=0
+UNGOOGLED=0
+BROMITE=1
+BROWSER=1
+VANILLA=0
