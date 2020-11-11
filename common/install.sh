@@ -1,15 +1,22 @@
 # shellcheck shell=dash
 mkdir "$MODPATH"/logs
 TRY_COUNT=0
-VERSIONFILE='/sdcard/bromite/version'
+VERSIONFILE='/sdcard/WebviewSwitcher/version'
 alias aapt='"$MODPATH"/common/tools/aapt-"$ARCH"'
 alias sign='"$MODPATH"/common/tools/zipsigner'
 alias ping='$MODPATH/common/tools/busybox-$ARCH-selinux ping'
 alias wget='$MODPATH/common/tools/busybox-$ARCH-selinux wget'
 chmod -R 0755 "$MODPATH"/common/tools
-if test ! -d /sdcard/bromite ;
+# Set up working directory
+# Handle version upgrades
+if test -f /sdcard/bromite
 then
-	mkdir -p /sdcard/bromite ;
+	rm -rf /sdcard/bromite
+	ui_print "- Major version upgrade! Performing migration!"
+fi
+if test ! -d /sdcard/WebviewSwitcher ;
+then
+	mkdir -p /sdcard/WebviewSwitcher ;
 fi
 # Thanks SKittles9832 for the code I shamelessly copied :)
 VEN=/system/vendor
@@ -17,7 +24,15 @@ VEN=/system/vendor
 if [ -f $VEN/build.prop ]; then export BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 get_config () {
-	. "$MODPATH"/config.txt
+	ui_print "- Setting configs..."
+	if test -f /sdcard/WebviewSwitcher/config.txt
+	then
+		. /sdcard/WebviewSwitcher/config.txt
+	else
+		"- No config found, using default and copying to /sdcard/WebviewSwitcher"
+		cp "$MODPATH"/config.txt /sdcard/WebviewSwitcher
+		. /sdcard/WebviewSwitcher/config.txt
+	fi
 }
 test_connection() {
   ui_print "- Testing internet connectivity"
@@ -25,7 +40,7 @@ test_connection() {
 }
 check_version () {
 # Set up version check
-if [ ! -f /sdcard/bromite/version ];
+if [ ! -f /sdcard/WebviewSwitcher/version ];
 then
 	mktouch $VERSIONFILE
 	echo "0" > $VERSIONFILE;
@@ -48,8 +63,6 @@ fi
 		VERSION="$(cat $VERSIONFILE)"
 	fi
 }
-# Handle version upgrades
-rm -rf /sdcard/bromite/webview.apk
 it_failed () {
 	# File wasn't found and all attempts to download failed
 	ui_print " Uh-oh a problem occurred."
@@ -60,7 +73,7 @@ it_failed () {
 	else
 		ui_print " No capable apk was found, the files failed to download, or both!"
 		ui_print " Check your internet and try again"
-		ui_print " For offiline installs save the apk in /sdcard/bromite and retry"
+		ui_print " For offiline installs save the apk in /sdcard/WebviewSwitcher and retry"
 	fi
 	ui_print " Aborting!"
 	abort 
@@ -71,6 +84,8 @@ set_url () {
 		URL="https://github.com/bromite/chromium"
 	elif "$UNGOOGLED" == "1"
 	then
+		ui_print "- WARNING!!! Ungoogled chromium uses Gitea, and therefore is impossible to support version checks at this time!"
+		ui_print "- After install and reboot, please manually update the webview and/or browser"
 		if "$ARCH" == "arm64"
 		then
 			URL2="https://git.droidware.info/attachments/18caf284-8eb3-4385-83b8-57576d3c8951"
@@ -94,25 +109,25 @@ download_start () {
 		URL2="$URL/releases/download/${VERSION}/${ARCH}_"
 	fi
 
-	if [ -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk ] ;
+	if [ -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk ] ;
 	then
 		if test "$VANILLA" == "1" or "$BROMITE" == "1"
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
 			then
-				wget -qO /sdcard/bromite/"${ARCH}"_SystemWebView.apk "${URL2}SystemWebView.apk"
+				wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "${URL2}SystemWebView.apk"
 			fi
 		else
-			wget -qO /sdcard/bromite/"${ARCH}"_SystemWebView.apk "${URL2}"
+			wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "${URL2}"
 		fi
 	else
 		# If the file doesn't exist, let's attempt a download anyway
-		wget -qO /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$URL2" ;
+		wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$URL2" ;
 	fi
 
 	if test "$BROWSER" == "1"
 	then
-		wget -qO /sdcard/bromite/"$ARCH"_ChromePublic.apk "${URL2}ChromePublic.apk"
+		wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}ChromePublic.apk"
 	fi
 }
 verify_webview () {
@@ -120,13 +135,13 @@ verify_webview () {
 	if test "$VANILLA" == "1"
 	then
 		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION"/chr_"$VERSION".sha256.txt
-		cd /sdcard/bromite || return
-		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt 
-		sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt 
+		cd /sdcard/WebviewSwitcher || return
+		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt 
+		sha256sum -sc /sdcard/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt 
 		if test $? -ne 0 ;
 		then
 			ui_print " Verification failed, retrying download"
-			rm -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk
+			rm -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			if test ${TRY_COUNT} -ge 3 ;
 			then
@@ -144,13 +159,13 @@ verify_webview () {
 		ui_print "- Verifying Ungoogled Chromium is not implemented!"
 	else
 		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION"/brm_"$VERSION".sha256.txt
-		cd /sdcard/bromite || return
-		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt 
-		sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt 
+		cd /sdcard/WebviewSwitcher || return
+		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt 
+		sha256sum -sc /sdcard/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt 
 		if test $? -ne 0 ;
 		then
 			ui_print " Verification failed, retrying download"
-			rm -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk
+			rm -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			if test ${TRY_COUNT} -ge 3 ;
 			then
@@ -232,15 +247,15 @@ online_install() {
 	create_overlay ;
 }
 offline_install() {
-if test ! -f /sdcard/bromite/"${ARCH}"_SystemWebView.apk ;
+if test ! -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk ;
 then
 	it_failed ;
 else
 	# File was found, lets go
 	# Try to verify the file if we previously had a sha256
-	if test -f /sdcard/bromite/"$ARCH"_SystemWebView.apk.sha256.txt ;
+	if test -f /sdcard/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt ;
 	then
-		sha256sum -sc /sdcard/bromite/"$ARCH"_SystemWebview.apk.sha256.txt
+		sha256sum -sc /sdcard/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt
 		if test $? -ne 0 ;
 		then
 			it_failed ;
@@ -287,9 +302,9 @@ clean_dalvik () {
 do_cleanup () {
 	ui_print "- Cleaning up..."
 	mkdir -p "$MODPATH"/apk
-	cp_ch /sdcard/bromite/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk
+	cp_ch /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk
 	rm -f "$MODPATH"/system/app/placeholder
-	mkdir -p /sdcard/bromite/logs
+	mkdir -p /sdcard/WebviewSwitcher/logs
 	rm -f "$MODPATH"/*.md
 	ui_print "- Backing up important stuffs to module directory"
 	mkdir -p "$MODPATH"/backup/

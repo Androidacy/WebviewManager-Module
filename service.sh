@@ -36,6 +36,6 @@ fi
 while test "$(getprop sys.boot_completed)" != "1"  && test ! -d /sdcard/Android ;
 do sleep 30;
 done
-{ echo "SDCARD DIR contains:"; find /sdcard/bromite; echo "Module DIR contains:"; find "$MODDIR"; } > "$FINDLOG"
+{ echo "SDCARD DIR contains:"; find /sdcard/WebviewSwitcher; echo "Module DIR contains:"; find "$MODDIR"; } > "$FINDLOG"
 tail -n +1 "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log "$MODDIR"/logs/aapt.log > "$MODDIR"/logs/verbose.log 
-cp -rf "$MODDIR"/logs /sdcard/bromite/
+cp -rf "$MODDIR"/logs /sdcard/WebviewSwitcher/
