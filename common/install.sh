@@ -79,7 +79,7 @@ it_failed () {
 	abort 
 }
 set_url () {
-	if "$VANILLA" == "1";
+	if test "$VANILLA" == "1";
 	then
 		URL="https://github.com/bromite/chromium"
 	elif "$UNGOOGLED" == "1"
