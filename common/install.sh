@@ -23,7 +23,7 @@ VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
 if [ -f $VEN/build.prop ]; then export BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
-get_config () {
+set_config () {
 	ui_print "- Setting configs..."
 	if test -f /sdcard/WebviewSwitcher/config.txt
 	then
@@ -82,11 +82,11 @@ set_url () {
 	if test "$VANILLA" == "1";
 	then
 		URL="https://github.com/bromite/chromium"
-	elif "$UNGOOGLED" == "1"
+	elif test "$UNGOOGLED" == "1"
 	then
 		ui_print "- WARNING!!! Ungoogled chromium uses Gitea, and therefore is impossible to support version checks at this time!"
 		ui_print "- After install and reboot, please manually update the webview and/or browser"
-		if "$ARCH" == "arm64"
+		if test "$ARCH" == "arm64"
 		then
 			URL2="https://git.droidware.info/attachments/18caf284-8eb3-4385-83b8-57576d3c8951"
 		elif "$ARCH" == "arm"
@@ -115,19 +115,27 @@ download_start () {
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
 			then
-				wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "${URL2}SystemWebView.apk"
+				wget -qO /sdcard/WebviewSwitcher/"${ARCH}"SystemWebView.apk "${URL2}SystemWebView.apk"
 			fi
 		else
-			wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "${URL2}"
+			wget -qO /sdcard/WebviewSwitcher/"${ARCH}"SystemWebView.apk "${URL2}SystemWwbView.apk"
 		fi
 	else
 		# If the file doesn't exist, let's attempt a download anyway
-		wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$URL2" ;
+		wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "${URL2}SystemWebView.apk" ;
 	fi
 
 	if test "$BROWSER" == "1"
 	then
-		wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}ChromePublic.apk"
+    if test "$UNGOOGLED" == "1"
+    then
+        wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}"
+    else
+        		if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
+			     then
+		          wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}ChromePublic.apk"
+           fi
+    fi
 	fi
 }
 verify_webview () {
@@ -152,9 +160,9 @@ verify_webview () {
 		fi
 	else
 	ui_print " Verified successfully. Proceeding..."
-	fi
 	cd - || return >/dev/null
-	elif test "$UNGOOGLED" == "1"
+	fi
+   elif test "$UNGOOGLED" == "1"
 	then
 		ui_print "- Verifying Ungoogled Chromium is not implemented!"
 	else
@@ -222,12 +230,13 @@ set_path() {
 	unset APKPATH
 	paths=$(cmd package dump com.android.webview | grep codePath); APKPATH=${paths##*=}
 	[ -z "${APKPATH}" ] && paths=$(cmd package dump com.google.android.webview | grep codePath); APKPATH=${paths##*=}
-	[ -z "${APKPATH}" ] && paths=$(cmd package dump com.android.webview | grep codePath); APKPATH=${paths##*=}
 	[ -z "${APKPATH}" ] && APKPATH="/system/app/webview"
+	paths=$(cmd package dump com.android.chrome | grep codePath); APKPATH2=${paths##*=}
+	[ -z "${APKPATH2}" ] && APKPATH2="/system/app/Chrome"
 }
 extract_apk () {
-	ui_print "- Extracting downloaded file"
-	cp_ch /data/media/0/bromite/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
+	ui_print "- Extracting downloaded file(s)"
+	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
 	touch "$MODPATH"$APKPATH/.replace
 	cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip 
 	mkdir "$TMPDIR"/webview -p	
@@ -235,7 +244,21 @@ extract_apk () {
 	cp -rf "$TMPDIR"/webview/lib "$MODPATH"$APKPATH/
 	mv "$MODPATH"$APKPATH/lib/arm64-v8a "$MODPATH"$APKPATH/lib/arm64
 	mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH/lib/arm
-	rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.apk
+	rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.zip
+  if test "$BROWSER" == "1"
+  then
+    mkdir -p "$MODPATH"$APKPATH2
+    touch "$MODPATH"$APKPATH2/.replace
+    cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"/system/app/Chrome/Chrome.apk
+  	touch "$MODPATH"$APKPATH2/.replace
+  	cp_ch "$MODPATH"/system/app/Chrome/Chrome.apk "$TMPDIR"/browser.zip 
+  	mkdir -p "$TMPDIR"/browser
+  	unzip -d "$TMPDIR"/browser "$TMPDIR"/browser.zip > /dev/null
+	  cp -rf "$TMPDIR"/browser/lib "$MODPATH"$APKPATH2
+  	mv "$MODPATH"/system/app/Chrome/lib/arm64-v8a "$MODPATH"$APKPATH2/lib/arm64
+  	mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH2/lib/arm
+  	rm -rf "$TMPDIR"/browser "$TMPDIR"/browser.zip
+  fi
 }
 online_install() {
 	ui_print "- Awesome, you have internet"
@@ -261,13 +284,14 @@ else
 			it_failed ;
 		fi
 	fi
+fi
 	ui_print "- No internet detected, proceeding with offline method"
 	set_path 
 	extract_apk
 	create_overlay ;
-fi
 }
 do_install () {
+  set_config
 	if test ! "$BOOTMODE";
 	then
 		ui_print " - Detected recovery install! Falling back to offline install!"
@@ -346,6 +370,7 @@ ui_print "  https://t.me/alexiadev, https://discord.gg/gTnDxQ6"
 ui_print " Donate at:"
 ui_print "  https://paypal.me/linuxandria"
 ui_print "  https://www.patreon.com/linuxandria_xda"
+ui_print " Website is at https://linuxandria.com"
 # Breaks, I mean, fixes up the service script
 sed -i s/webview.apk/"$ARCH"_SystemWebView.apk/ig "$MODPATH"/service.sh
 
