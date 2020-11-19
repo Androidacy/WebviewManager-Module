@@ -1,4 +1,23 @@
 # shellcheck shell=dash
+# Pretty banner!
+ui_print "$(
+cat << "EOF" 
+db   d8b   db d88888b d8888b. db    db d888888b d88888b db   d8b   db   
+88   I8I   88 88'     88  `8D 88    88   `88'   88'     88   I8I   88   
+88   I8I   88 88ooooo 88oooY' Y8    8P    88    88ooooo 88   I8I   88   
+Y8   I8I   88 88~~~~~ 88~~~b. `8b  d8'    88    88~~~~~ Y8   I8I   88   
+`8b d8'8b d8' 88.     88   8D  `8bd8'    .88.   88.     `8b d8'8b d8'   
+ `8b8' `8d8'  Y88888P Y8888P'    YP    Y888888P Y88888P  `8b8' `8d8'    
+                                                                        
+                                                                        
+.d8888. db   d8b   db d888888b d888888b  .o88b. db   db d88888b d8888b. 
+88'  YP 88   I8I   88   `88'   `~~88~~' d8P  Y8 88   88 88'     88  `8D 
+`8bo.   88   I8I   88    88       88    8P      88ooo88 88ooooo 88oobY' 
+  `Y8b. Y8   I8I   88    88       88    8b      88~~~88 88~~~~~ 88`8b   
+db   8D `8b d8'8b d8'   .88.      88    Y8b  d8 88   88 88.     88 `88. 
+`8888Y'  `8b8' `8d8'  Y888888P    YP     `Y88P' YP   YP Y88888P 88   YD 
+EOF
+)"
 mkdir "$MODPATH"/logs
 TRY_COUNT=0
 VERSIONFILE='/sdcard/WebviewSwitcher/version'
@@ -33,10 +52,23 @@ set_config () {
 		cp "$MODPATH"/config.txt /sdcard/WebviewSwitcher
 		. /sdcard/WebviewSwitcher/config.txt
 	fi
+	if "$UNGOOGLED"
+	then
+		ui_print "- Ungoogled chrome selected"
+	elif "$VANILLA"
+	then
+		ui_print "- Vanilla chromium selected"
+	elif "$BROMITE"
+	then
+		ui_print "- Bromite selected"
+	else
+		ui_print "- No valid choice selected, falling back to Bromite"
+		BROMITE=true
+	fi
 }
 test_connection() {
   ui_print "- Testing internet connectivity"
-  (ping -4 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
+  (ping -5 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
 }
 check_version () {
 # Set up version check
@@ -66,23 +98,29 @@ fi
 it_failed () {
 	# File wasn't found and all attempts to download failed
 	ui_print " Uh-oh a problem occurred."
-	if test ${TRY_COUNT} -ge "3" ;
+	if test ${TRY_COUNT} -ge "5" ;
 	then
-		ui_print " WARNING! Loop scenario detected!"
+		ui_print " !!! WARNING !!!"
+		ui_print " Loop scenario detected!"
 		ui_print " Under normal usage this should NEVER happen!"
+		ui_print " This could mean you edited config.txt incorrectly, or there's something wrong"
+		ui_print " Like unstable internet, etc"
+		ui_print " !!! WARNING !!!"
 	else
+		ui_print " !!! WARNING !!!"
 		ui_print " No capable apk was found, the files failed to download, or both!"
 		ui_print " Check your internet and try again"
-		ui_print " For offiline installs save the apk in /sdcard/WebviewSwitcher and retry"
+		ui_print " For offiline installs save the apk in /sdcard/WebviewSwitcher, set OFFLINE=true in config.txt, and retry"
+		ui_print " !!! WARNING !!!"
 	fi
 	ui_print " Aborting!"
 	abort 
 }
 set_url () {
-	if test "$VANILLA" == "1";
+	if "$VANILLA"
 	then
 		URL="https://github.com/bromite/chromium"
-	elif test "$UNGOOGLED" == "1"
+	elif "$UNGOOGLED"
 	then
 		ui_print "- WARNING!!! Ungoogled chromium uses Gitea, and therefore is impossible to support version checks at this time!"
 		ui_print "- After install and reboot, please manually update the webview and/or browser"
@@ -111,7 +149,7 @@ download_start () {
 
 	if [ -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk ] ;
 	then
-		if test "$VANILLA" == "1" or "$BROMITE" == "1"
+		if "$VANILLA" or "$BROMITE"
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
 			then
@@ -125,22 +163,22 @@ download_start () {
 		wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "${URL2}SystemWebView.apk" ;
 	fi
 
-	if test "$BROWSER" == "1"
+	if "$BROWSER"
 	then
-    if test "$UNGOOGLED" == "1"
-    then
-        wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}"
-    else
-        		if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
-			     then
-		          wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}ChromePublic.apk"
-           fi
+	    if "$UNGOOGLED"
+		    then
+	        	wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}"
+	    else
+	        if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
+			then
+				wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}ChromePublic.apk"
+        fi
     fi
-	fi
+fi
 }
 verify_webview () {
 	ui_print " Verifying files..."
-	if test "$VANILLA" == "1"
+	if "$VANILLA"
 	then
 		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION"/chr_"$VERSION".sha256.txt
 		cd /sdcard/WebviewSwitcher || return
@@ -162,9 +200,9 @@ verify_webview () {
 	ui_print " Verified successfully. Proceeding..."
 	cd - || return >/dev/null
 	fi
-   elif test "$UNGOOGLED" == "1"
-	then
-		ui_print "- Verifying Ungoogled Chromium is not implemented!"
+	elif "$UNGOOGLED"
+		then
+			ui_print "- Verifying Ungoogled Chromium is not implemented!"
 	else
 		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION"/brm_"$VERSION".sha256.txt
 		cd /sdcard/WebviewSwitcher || return
@@ -254,7 +292,7 @@ extract_apk () {
   	cp_ch "$MODPATH"/system/app/Chrome/Chrome.apk "$TMPDIR"/browser.zip 
   	mkdir -p "$TMPDIR"/browser
   	unzip -d "$TMPDIR"/browser "$TMPDIR"/browser.zip > /dev/null
-	  cp -rf "$TMPDIR"/browser/lib "$MODPATH"$APKPATH2
+	cp -rf "$TMPDIR"/browser/lib "$MODPATH"$APKPATH2
   	mv "$MODPATH"/system/app/Chrome/lib/arm64-v8a "$MODPATH"$APKPATH2/lib/arm64
   	mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH2/lib/arm
   	rm -rf "$TMPDIR"/browser "$TMPDIR"/browser.zip
@@ -274,16 +312,7 @@ if test ! -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk ;
 then
 	it_failed ;
 else
-	# File was found, lets go
-	# Try to verify the file if we previously had a sha256
-	if test -f /sdcard/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt ;
-	then
-		sha256sum -sc /sdcard/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt
-		if test $? -ne 0 ;
-		then
-			it_failed ;
-		fi
-	fi
+	ui_print "- Checksum verification not implemented for offline install"
 fi
 	ui_print "- No internet detected, proceeding with offline method"
 	set_path 
@@ -294,13 +323,14 @@ do_install () {
   set_config
 	if test ! "$BOOTMODE";
 	then
-		ui_print " - Detected recovery install! Falling back to offline install!"
+		ui_print "- Detected recovery install! Falling back to offline install!"
+		ui_print "- Please note you may encounter issues with this method"
 		recovery_actions
 		offline_install
 		recovery_cleanup
 		do_cleanup ;
 	fi
-	if test "$OFFLINE" == "1"
+	if "$OFFLINE"
 	then
 		offline_install 
 		do_cleanup ;
@@ -335,34 +365,18 @@ do_cleanup () {
 	cp /data/system/overlays.xml "$MODPATH"/backup/
 	clean_dalvik
 }
-
-if test ${TRY_COUNT} -ge "3" ;
-		then
-			it_failed ;
-		else
-			do_install 
-			do_cleanup ;
-		fi
+if test ${TRY_COUNT} -ge "5" ;
+then
+	it_failed ;
+else
+	do_install 
+	do_cleanup ;
+fi
 ui_print " !!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ !!!!!!!!!!!!!!!!!"
 ui_print " Reboot immediately after flashing or you may experience some issues! "
 ui_print " Also, if you had any other webview such as Google webview, you may re-enable"
 ui_print " But beware conflicts"
 ui_print " Next boot may take significantly longer, we have to clear Dalvik cache here"
-ui_print "  
-	  / _ )  ____ ___   __ _   (_) / /_ ___                 
-	 / _  | / __// _ \ /  ' \ / / / __// -_)                
-	/____/ /_/   \___//_/_/_//_/  \__/ \__/                 
-	
-	   ____              __                __               
-	  / __/  __ __  ___ / /_ ___   __ _   / / ___   ___  ___
-	 _\ \   / // / (_-</ __// -_) /  ' \ / / / -_) (_-< (_-<
-	/___/   \_, / /___/\__/ \__/ /_/_/_//_/  \__/ /___//___/
-	       /___/                                            
-	  _      __        __          _                        
-	 | | /| / / ___   / /  _  __  (_) ___  _    __          
-	 | |/ |/ / / -_) / _ \| |/ / / / / -_)| |/|/ /          
-	 |__/|__/  \__/ /_.__/|___/ /_/  \__/ |__,__/           
-	                                                        "
 ui_print " Enjoy a more private and faster webview, done systemlessly"
 ui_print " Don't forget my links:"
 ui_print " Social platforms:"

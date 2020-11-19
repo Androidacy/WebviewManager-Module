@@ -1,9 +1,17 @@
-# Config file for the module
-# Format is key=value, eg bromite=1
-# Put this in /sdcard/bromite to have it used during install
-# DO NOT ADD ANY LINES!!!
-OFFLINE=0
-UNGOOGLED=0
-BROMITE=1
-BROWSER=1
-VANILLA=0
+# Config file for Webview Switcher
+# Format is key=value, eg bromite=true
+# Put this in /sdcard/WebviewSwitcher to have it used during install, otherwise a default config will be used
+# !!! DO NOT ADD ANY LINES OR EDIT ANY NAMES !!!
+
+# Setting this to true will not do any online checks !!! NOT RECOMMENDED !!!
+OFFLINE=false
+# Setting this to true will use ungoogled chromium for webview
+UNGOOGLED=false
+# Setting this to false will not use bromite webview unless no other valid value is found
+# If no valid value is found then the module falls back to Bromite
+BROMITE=true
+# Setting this to true will use upstream vanilla chromium
+VANILLA=false
+# Setting this to false will not install the browser that corresponds to the selected webview
+BROWSER=true
+
