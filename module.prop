@@ -1,6 +1,6 @@
 id=bromitewebview
-name=Webview Switccher
-version=7.0.0-alpha1
-versionCode=4001
+name=Webview Switcher
+version=7.0.0-alpha2
+versionCode=4002
 author=Alexandria C
-description=Install Bromite System Webview systemless-ly, on most ROMs! You can block ads and fingerprinting, and protect your privacy with it. Bromite is created by csagan5. See the README for support (tap the module in Downloads in Magisk Manager)
+description=Switch System WebView systemless-ly, on most ROMs even stock! You can block ads and fingerprinting, increase privacy, or just update to a newer webview and/or browser!
