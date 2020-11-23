@@ -1,7 +1,8 @@
 # Config file for Webview Switcher
 # Format is key=value, eg bromite=true
 # Put this in /sdcard/WebviewSwitcher to have it used during install, otherwise a default config will be used
-# !!! DO NOT ADD ANY LINES OR EDIT ANY NAMES !!!
+# Do not add any lines, do not change any names, and only use true/false
+# Otherwise it *will* break the module
 
 # Setting this to true will not do any online checks !!! NOT RECOMMENDED !!!
 OFFLINE=false
