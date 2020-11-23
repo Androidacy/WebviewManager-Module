@@ -23,9 +23,25 @@ TRY_COUNT=0
 VERSIONFILE='/sdcard/WebviewSwitcher/version'
 alias aapt='"$MODPATH"/common/tools/aapt-"$ARCH"'
 alias sign='"$MODPATH"/common/tools/zipsigner'
-alias ping='$MODPATH/common/tools/busybox-$ARCH-selinux ping'
-alias wget='$MODPATH/common/tools/busybox-$ARCH-selinux wget'
 chmod -R 0755 "$MODPATH"/common/tools
+setup_certs () {
+	mkdir -p "$MODPATH"/system/etc/security
+    if [ -f "/system/etc/security/ca-certificates.crt" ]; then
+      cp -f /system/etc/security/ca-certificates.crt "$MODPATH"/ca-certificates.crt
+    else
+      for i in /system/etc/security/cacerts*/*.0; do
+        sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i" >> "$MODPATH"/ca-certificates.crt
+      done
+	SEC=true
+    fi
+}
+dl () {
+	if ! $SEC
+	then
+		setup_certs
+	fi
+    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
+}
 # Set up working directory
 # Handle version upgrades
 if test -f /sdcard/bromite
@@ -33,22 +49,34 @@ then
 	rm -rf /sdcard/bromite
 	ui_print "- Major version upgrade! Performing migration!"
 fi
-if test ! -d /sdcard/WebviewSwitcher ;
+if test ! -d /sdcard/WebviewSwitcher
 then
-	mkdir -p /sdcard/WebviewSwitcher ;
+	mkdir -p /sdcard/WebviewSwitcher
 fi
 # Thanks SKittles9832 for the code I shamelessly copied :)
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
-if [ -f $VEN/build.prop ]; then export BUILDS="/system/build.prop $VEN/build.prop"; else BUILDS="/system/build.prop"; fi
+if [ -f $VEN/build.prop ]
+then
+	export BUILDS="/system/build.prop $VEN/build.prop"
+else
+BUILDS="/system/build.prop"
+fi
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 set_config () {
 	ui_print "- Setting configs..."
+	ui_print "- Make sure if you want/need a custom setup to edit config.txt and reflash the module"
 	if test -f /sdcard/WebviewSwitcher/config.txt
 	then
 		. /sdcard/WebviewSwitcher/config.txt
+		if test $? -ne 0
+		then
+			ui_print "- Invalid config file! Using defaults"
+			cp "$MODPATH"/config.txt /sdcard/WebviewSwitcher
+			. /sdcard/WebviewSwitcher/config.txt
+		fi
 	else
-		"- No config found, using default and copying to /sdcard/WebviewSwitcher"
+		ui_print "- No config found, using defaults"
 		cp "$MODPATH"/config.txt /sdcard/WebviewSwitcher
 		. /sdcard/WebviewSwitcher/config.txt
 	fi
@@ -68,7 +96,7 @@ set_config () {
 }
 test_connection() {
   ui_print "- Testing internet connectivity"
-  (ping -5 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
+  (ping -q -c 3 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
 }
 check_version () {
 # Set up version check
@@ -123,16 +151,28 @@ set_url () {
 	elif "$UNGOOGLED"
 	then
 		ui_print "- WARNING!!! Ungoogled chromium uses Gitea, and therefore is impossible to support version checks at this time!"
-		ui_print "- After install and reboot, please manually update the webview and/or browser"
+		ui_print "- After install and reboot, please manually update the webview and/or browser as necessary"
+		ui_print "- Ungoogled chromium version is v86.0.4240.111-1"
+		ui_print "- Also, please note at this time the module DOES NOT download the extensions version of ungoogled-chromium"
 		if test "$ARCH" == "arm64"
 		then
-			URL2="https://git.droidware.info/attachments/18caf284-8eb3-4385-83b8-57576d3c8951"
+			URL2="https://git.droidware.info/attachments/535df675-b2a0-4640-99bb-b0ac899ed0ed"
 		elif "$ARCH" == "arm"
 		then
-			URL2="https://git.droidware.info/attachments/332e6f8a-4020-46b9-bb6d-75e888291bb2"
+			URL2="https://git.droidware.info/attachments/775c2964-d51d-4deb-918d-3b9c83010890"
 		elif "$ARCH" == "x86" or "x86_64"
 		then
-			URL2="https://git.droidware.info/attachments/479c91fa-7de1-4746-9292-46c2d0374dab"
+			URL2="https://git.droidware.info/attachments/f25a149b-af2d-4eb4-bb76-b3c62b4b57ea"
+		fi
+		if test "$ARCH" == "arm64"
+		then
+			URL3="https://git.droidware.info/attachments/4df74253-bc03-4574-9073-2f8b9371209a"
+		elif "$ARCH" == "arm"
+		then
+			URL3="https://git.droidware.info/attachments/49980430-16a3-4884-8bf0-07d690ccd8bb"
+		elif "$ARCH" == "x86" or "x86_64"
+		then
+			URL3="https://git.droidware.info/attachments/db5a8c23-8c3b-4392-a367-5408262b2831"
 		fi
 	else
 		URL="https://github.com/bromite/bromite"
@@ -153,25 +193,26 @@ download_start () {
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
 			then
-				wget -qO /sdcard/WebviewSwitcher/"${ARCH}"SystemWebView.apk "${URL2}SystemWebView.apk"
+				dl "${URL2}SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 			fi
 		else
-			wget -qO /sdcard/WebviewSwitcher/"${ARCH}"SystemWebView.apk "${URL2}SystemWwbView.apk"
+			dl "${URL2}" -d /sdcard/WebviewSwitcher/
 		fi
 	else
 		# If the file doesn't exist, let's attempt a download anyway
-		wget -qO /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "${URL2}SystemWebView.apk" ;
+		dl "${URL2}SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 	fi
 
 	if "$BROWSER"
 	then
 	    if "$UNGOOGLED"
 		    then
-	        	wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}"
+	        	dl "${URL3}" -d /sdcard/WebviewSwitcher/
+				mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromeModernPublic.apk
 	    else
 	        if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
 			then
-				wget -qO /sdcard/WebviewSwitcher/"$ARCH"_ChromePublic.apk "${URL2}ChromePublic.apk"
+				dl "${URL2}ChromePublic.apk" -d /sdcard/WebviewSwitcher/
         fi
     fi
 fi
@@ -297,6 +338,7 @@ extract_apk () {
   	mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH2/lib/arm
   	rm -rf "$TMPDIR"/browser "$TMPDIR"/browser.zip
   fi
+
 }
 online_install() {
 	ui_print "- Awesome, you have internet"
@@ -374,20 +416,22 @@ else
 fi
 ui_print " !!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ !!!!!!!!!!!!!!!!!"
 ui_print " Reboot immediately after flashing or you may experience some issues! "
-ui_print " Also, if you had any other webview such as Google webview, you may re-enable"
-ui_print " But beware conflicts"
+ui_print " Also, if you had any other webview such as Google webview, it's gone"
+ui_print " You can reinstall but beware conflicts"
 ui_print " Next boot may take significantly longer, we have to clear Dalvik cache here"
+sleep 1
 ui_print " Enjoy a more private and faster webview, done systemlessly"
 ui_print " Don't forget my links:"
+sleep 0.5
 ui_print " Social platforms:"
-ui_print "  https://t.me/alexiadev, https://discord.gg/gTnDxQ6"
+ui_print "	https://t.me/unixandria_dev, https://discord.gg/gTnDxQ6"
+sleep 0.5
 ui_print " Donate at:"
-ui_print "  https://paypal.me/linuxandria"
-ui_print "  https://www.patreon.com/linuxandria_xda"
-ui_print " Website is at https://linuxandria.com"
-# Breaks, I mean, fixes up the service script
-sed -i s/webview.apk/"$ARCH"_SystemWebView.apk/ig "$MODPATH"/service.sh
-
+ui_print "	https://paypal.me/linuxandria"
+ui_print "	https://www.patreon.com/linuxandria_xda"
+ui_print " Website is at https://www.linuxandria.com"
+ui_print " You can support me by checking out my site with adblock disabled."
+sleep 0.5
 ui_print "- All commands ran successfully please reboot"
 ui_print " "
 
