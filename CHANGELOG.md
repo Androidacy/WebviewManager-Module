@@ -16,7 +16,10 @@
 - Switch to Magisk's internal BusyBox
 
 - Use aria2 for faster downloads
-.0 betabView apk
+
+- Fix broken version check
+
+- Add verification for WebView apk
 
 <h4>6.1.0</h4>
 
