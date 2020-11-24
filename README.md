@@ -17,17 +17,17 @@ A WebView is like a minimal browser, but for non-browsers that display web conte
 
 ## Credits
 
-Module created by unixandria
+Bromite itself is created by and copyright of the developers of the [Bromite project](https://github.com/bromite/bromite). The upstream official repository can be found [here](https://github.com/bromite/bromitewebview). The source code is [here](https://github.com/bromite/bromite)
 
-Bromite itself is created by and copyright of the developers of the [Bromite project](https://github.com/bromite/bromite). The upstream official repository can be found [here](https://github.com/bromite/bromitewebview)
+Ungoogled-chromium Android is created by and copyright [The Ungoogled Chromium Authors](https://ungoogled-software.github.io/). Source code for Android builds can be found [here](https://git.droidware.info/wchen342/ungoogled-chromium-android)
 
-Thanks to @Skittles9823 for answering some of my questions.
+Chromium is created by and copyright [The Chromium Project](http://www.chromium.org/). Source code used in the Chromium implementation is [here](https://github.com/bromite/chromium)
 
-Credit to @topjohnwu for magisk and the magisk installer template.
+All binaries utilized and the original MMT-Extended template are developed by and copyright Zackptg5 excluding BusyBox and the original installer template which is build by John Wu. The upstream binaries are copyright and developed by there original authors.
 
-Huge thanks to @Zackptg5 for the unity template and helping with parts of the code
+Module created by Alexandria Cortez with a help early on from Skittles9823 and Zackptg5. The module is licensed under Apache-2.0 effective Novemeber 24, 2020, see the LICENSE file. Any versions released before that date were licensed under GPL 2.0.
 
-Thanks to @JohnFawkes for the logging code.
+The logging code used was orginally developed and copyright John Fawkes, and modified later by Alexandria Cortez
 
 ## ETAs/ Versions
 

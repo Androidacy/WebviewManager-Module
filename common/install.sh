@@ -103,25 +103,26 @@ check_version () {
 if [ ! -f /sdcard/WebviewSwitcher/version ];
 then
 	mktouch $VERSIONFILE
-	echo "0" > $VERSIONFILE;
+	echo "1" > $VERSIONFILE;
 fi
 	test_connection
 	if test ${?} -eq "0" ;
 	then
-		if test "$UNGOOGLED" == "1"
+		if "$UNGOOGLED"
 		then
 			ui_print "- Version check for ungoogled-chromium not implemented, downloading the version set in the module"
-		elif test "$VANILLA" == "1"
+		elif "$VANILLA"
 		then
-			VERSION="$(wget -qO- "https://api.github.com/repos/bromite/chromium/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
-			echo "$VERSION" > $VERSIONFILE
+			ui_print "- Checing for version upgrade...."
+			VERSION2="$(wget -qO- "https://api.github.com/repos/bromite/chromium/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
 		else
-			VERSION="$(wget -qO- "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
-			echo "$VERSION" > $VERSIONFILE
+			ui_print "- Checing for version upgrade...."
+			VERSION2="$(wget -qO- "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
 		fi
 	else
-		VERSION="$(cat $VERSIONFILE)"
+		VERSION2="$(cat $VERSIONFILE)"
 	fi
+VERSION=$(cat $VERSIONFILE)
 }
 it_failed () {
 	# File wasn't found and all attempts to download failed
@@ -181,41 +182,58 @@ set_url () {
 download_start () {
 	set_url
 	check_version
-	ui_print "- Downloading extra files please be patient..."
 	if test -z $URL2
 	then
 		URL2="$URL/releases/download/${VERSION}/${ARCH}_"
 	fi
 
-	if [ -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk ] ;
+	if test -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 	then
-		if "$VANILLA" or "$BROMITE"
+		if "$VANILLA"
 		then
-			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
+			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
+				ui_print "- Downloading extra files please be patient..."
 				dl "${URL2}SystemWebView.apk" -d /sdcard/WebviewSwitcher/
+				echo "$VERSION2" > "$VERSIONFILE"
+			else
+				ui_print "- Not a version upgrade! Using existing apk"
 			fi
-		else
+		elif "$BROMITE"
+		then
+			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
+			then
+				ui_print "- Downloading extra files please be patient..."
+				dl "${URL2}SystemWebView.apk" -d /sdcard/WebviewSwitcher/
+				echo "$VERSION2" > "$VERSIONFILE"
+			else
+				ui_print "- Not a version upgrade! Using existing apk"
+			fi
+		elif $UNGOOGLED
+		then
+			ui_print "- Downloading extra files please be patient..."
 			dl "${URL2}" -d /sdcard/WebviewSwitcher/
 		fi
 	else
 		# If the file doesn't exist, let's attempt a download anyway
 		dl "${URL2}SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 	fi
-
 	if "$BROWSER"
 	then
-	    if "$UNGOOGLED"
-		    then
-	        	dl "${URL3}" -d /sdcard/WebviewSwitcher/
-				mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromeModernPublic.apk
-	    else
-	        if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION" | tr -d '.')" ];
-			then
-				dl "${URL2}ChromePublic.apk" -d /sdcard/WebviewSwitcher/
-        fi
-    fi
-fi
+		if test -f /sdcard/WebviewSwitcher/"${ARCH}"_ChromeModernPublic.apk
+		then
+		    if "$UNGOOGLED"
+			    then
+		        	dl "${URL3}" -d /sdcard/WebviewSwitcher/
+					mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromeModernPublic.apk
+		    else
+				if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
+				then
+					dl "${URL2}ChromePublic.apk" -d /sdcard/WebviewSwitcher/
+				fi
+			fi
+    	fi
+	fi
 }
 verify_webview () {
 	ui_print " Verifying files..."
@@ -239,7 +257,7 @@ verify_webview () {
 		fi
 	else
 	ui_print " Verified successfully. Proceeding..."
-	cd - || return >/dev/null
+	cd - || return
 	fi
 	elif "$UNGOOGLED"
 		then
@@ -324,7 +342,7 @@ extract_apk () {
 	mv "$MODPATH"$APKPATH/lib/arm64-v8a "$MODPATH"$APKPATH/lib/arm64
 	mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH/lib/arm
 	rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.zip
-  if test "$BROWSER" == "1"
+  if "$BROWSER"
   then
     mkdir -p "$MODPATH"$APKPATH2
     touch "$MODPATH"$APKPATH2/.replace
