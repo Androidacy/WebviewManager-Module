@@ -1,6 +1,23 @@
 
 # Changelog
 
+<h4>7.0.0</h4>
+
+**CURRENTLY IN BETA**
+
+- Rebrand the module to reflect new abilities
+
+- Add support for bundling browser
+
+- Add ungoogled chromium and vanilla chromium
+
+- Massive code refactoring
+
+- Switch to Magisk's internal BusyBox
+
+- Use aria2 for faster downloads
+.0 betabView apk
+
 <h4>6.1.0</h4>
 
 - Support recovery and system installs - system installs are experimental and I will NOT provide support for them
