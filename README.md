@@ -7,7 +7,7 @@ Most useful features of Bromite are that you can block ads, trackers and resist 
 
 The module will always download the latest version of the webview, to update it just reflash the module
 
-The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.xROM)s.
+The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.x ROMs).
 
 ## Authors website
 

@@ -1,23 +1,5 @@
 # shellcheck shell=dash
 # Pretty banner!
-ui_print "$(
-cat << "EOF" 
-db   d8b   db d88888b d8888b. db    db d888888b d88888b db   d8b   db   
-88   I8I   88 88'     88  `8D 88    88   `88'   88'     88   I8I   88   
-88   I8I   88 88ooooo 88oooY' Y8    8P    88    88ooooo 88   I8I   88   
-Y8   I8I   88 88~~~~~ 88~~~b. `8b  d8'    88    88~~~~~ Y8   I8I   88   
-`8b d8'8b d8' 88.     88   8D  `8bd8'    .88.   88.     `8b d8'8b d8'   
- `8b8' `8d8'  Y88888P Y8888P'    YP    Y888888P Y88888P  `8b8' `8d8'    
-                                                                        
-                                                                        
-.d8888. db   d8b   db d888888b d888888b  .o88b. db   db d88888b d8888b. 
-88'  YP 88   I8I   88   `88'   `~~88~~' d8P  Y8 88   88 88'     88  `8D 
-`8bo.   88   I8I   88    88       88    8P      88ooo88 88ooooo 88oobY' 
-  `Y8b. Y8   I8I   88    88       88    8b      88~~~88 88~~~~~ 88`8b   
-db   8D `8b d8'8b d8'   .88.      88    Y8b  d8 88   88 88.     88 `88. 
-`8888Y'  `8b8' `8d8'  Y888888P    YP     `Y88P' YP   YP Y88888P 88   YD 
-EOF
-)"
 mkdir "$MODPATH"/logs
 TRY_COUNT=0
 VERSIONFILE='/sdcard/WebviewSwitcher/version'
@@ -40,7 +22,7 @@ dl () {
 	then
 		setup_certs
 	fi
-    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
+    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 5 --async-dns  --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
 # Set up working directory
 # Handle version upgrades
@@ -65,7 +47,7 @@ fi
 ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 set_config () {
 	ui_print "- Setting configs..."
-	ui_print "- Make sure if you want/need a custom setup to edit config.txt and reflash the module"
+	ui_print "- Make sure if you want/need a custom setup to edit config.txt and reflash"
 	if test -f /sdcard/WebviewSwitcher/config.txt
 	then
 		. /sdcard/WebviewSwitcher/config.txt
@@ -95,9 +77,13 @@ set_config () {
 	if "$BROMITE"
 	then
 		ui_print "- Bromite selected"
+		UNGOOGLED=false
+		VANILLA=false
 	else
 		ui_print "- No valid choice selected, falling back to Bromite"
 		BROMITE=true
+		UNGOOGLED=false
+		VANILLA=false
 	fi
 }
 test_connection() {
@@ -109,24 +95,23 @@ check_version () {
 if [ ! -f /sdcard/WebviewSwitcher/version ];
 then
 	mktouch $VERSIONFILE
-	echo "1" > $VERSIONFILE;
+	echo "0" > $VERSIONFILE;
 fi
 	test_connection
 	if test ${?} -eq "0" ;
 	then
 		if "$UNGOOGLED"
 		then
-			ui_print "- Version check for ungoogled-chromium not implemented, downloading the version set in the module"
+			ui_print "- Checking for version upgrade...."
+			VERSION2="$(wget -qO- "https://api.github.com/repos/ungoogled-software/ungoogled-chromium-android/releases/latest" | grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/'    )"
 		elif "$VANILLA"
 		then
-			ui_print "- Checing for version upgrade...."
-			VERSION2="$(wget -qO- "https://api.github.com/repos/bromite/chromium/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
+			ui_print "- Checking for version upgrade...."
+			VERSION2="$(wget -qO- "https://api.github.com/repos/bromite/chromium/releases/latest" | grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/'    )"
 		else
-			ui_print "- Checing for version upgrade...."
-			VERSION2="$(wget -qO- "https://api.github.com/repos/bromite/bromite/releases/latest" |   grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/')"
+			ui_print "- Checking for version upgrade...."
+			VERSION2="$(wget -qO- "https://api.github.com/repos/bromite/bromite/releases/latest" | grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/'    )"
 		fi
-	else
-		VERSION2="$(cat $VERSIONFILE)"
 	fi
 VERSION=$(cat $VERSIONFILE)
 }
@@ -151,100 +136,133 @@ it_failed () {
 	abort 
 }
 set_url () {
-	if "$VANILLA"
+	if $VANILLA
 	then
 		URL="https://github.com/bromite/chromium"
-	elif "$UNGOOGLED"
+	elif $UNGOOGLED
 	then
-		ui_print "- WARNING!!! Ungoogled chromium uses Gitea, and therefore is impossible to support version checks at this time!"
-		ui_print "- After install and reboot, please manually update the webview and/or browser as necessary"
-		ui_print "- Ungoogled chromium version is v86.0.4240.111-1"
-		ui_print "- Also, please note at this time the module DOES NOT download the extensions version of ungoogled-chromium"
-		if test "$ARCH" == "arm64"
-		then
-			URL2="https://git.droidware.info/attachments/535df675-b2a0-4640-99bb-b0ac899ed0ed"
-		elif "$ARCH" == "arm"
-		then
-			URL2="https://git.droidware.info/attachments/775c2964-d51d-4deb-918d-3b9c83010890"
-		elif "$ARCH" == "x86" or "x86_64"
-		then
-			URL2="https://git.droidware.info/attachments/f25a149b-af2d-4eb4-bb76-b3c62b4b57ea"
-		fi
-		if test "$ARCH" == "arm64"
-		then
-			URL3="https://git.droidware.info/attachments/4df74253-bc03-4574-9073-2f8b9371209a"
-		elif "$ARCH" == "arm"
-		then
-			URL3="https://git.droidware.info/attachments/49980430-16a3-4884-8bf0-07d690ccd8bb"
-		elif "$ARCH" == "x86" or "x86_64"
-		then
-			URL3="https://git.droidware.info/attachments/db5a8c23-8c3b-4392-a367-5408262b2831"
-		fi
+		URL="https://github.com/ungoogled-software/ungoogled-chromium-android"
 	else
-		URL="https://github.com/bromite/bromite"
+		URL="https://github.com/bromite/bromite" 
 	fi
 }
-download_start () {
+download_webview () {
 	set_url
 	check_version
-	if test -z $URL2
+	if test -z "$URL2"
 	then
-		URL2="$URL/releases/download/${VERSION}/${ARCH}_"
+		URL2="$URL/releases/download/${VERSION2}/"
 	fi
-
 	if test -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 	then
-		if "$VANILLA"
+		if $VANILLA
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
 				ui_print "- Downloading extra files please be patient..."
-				dl "${URL2}SystemWebView.apk" -d /sdcard/WebviewSwitcher/
+				dl "${URL2}${ARCH}_SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
 				ui_print "- Not a version upgrade! Using existing apk"
 			fi
-		elif "$BROMITE"
+		elif $BROMITE
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
 				ui_print "- Downloading extra files please be patient..."
-				dl "${URL2}SystemWebView.apk" -d /sdcard/WebviewSwitcher/
+				dl "${URL2}${ARCH}_SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
 				ui_print "- Not a version upgrade! Using existing apk"
 			fi
 		elif $UNGOOGLED
 		then
-			ui_print "- Downloading extra files please be patient..."
-			dl "${URL2}" -d /sdcard/WebviewSwitcher/
+			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt  "$(echo "$VERSION2" | tr -d '.')" ]
+					then
+                    	ui_print "- Downloading extra files please be patient..."
+		        		dl "${URL2}SystemWebView.apk_${ARCH}.apk" -d /sdcard/WebviewSwitcher/
+						mv /sdcard/WebviewSwitcher/SystemWebView_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+						echo "$VERSION2" > "$VERSIONFILE"
+				 fi
 		fi
-	else
-		# If the file doesn't exist, let's attempt a download anyway
-		dl "${URL2}SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 	fi
-	if "$BROWSER"
+	if test ! -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 	then
-		if test -f /sdcard/WebviewSwitcher/"${ARCH}"_ChromeModernPublic.apk
-		then
-		    if "$UNGOOGLED"
+		if $UNGOOGLED
 			    then
-		        	dl "${URL3}" -d /sdcard/WebviewSwitcher/
-					mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromeModernPublic.apk
+                    	ui_print "- Downloading extra files please be patient..."
+		        		dl "${URL2}SystemWebView.apk_${ARCH}.apk" -d /sdcard/WebviewSwitcher/
+						mv /sdcard/WebviewSwitcher/SystemWebView_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+						echo "$VERSION2" > "$VERSIONFILE"
 		    else
-				if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
-				then
-					dl "${URL2}ChromePublic.apk" -d /sdcard/WebviewSwitcher/
-				fi
+			# If the file doesn't exist, let's attempt a download anyway
+			dl "${URL2}${ARCH}_SystemWebView.apk" -d /sdcard/WebviewSwitcher/
+			mv /sdcard/WebviewSwitcher/SystemWebview_${ARCH}.apk /sdcard/WebviewSwitcher/${ARCH}_SystemWebView.apk
+			echo "$VERSION2" > "$VERSIONFILE"
+		fi
+	fi
+}
+download_browser () {
+		set_url
+	check_version
+	if test -z "$URL2"
+	then
+		URL2="$URL/releases/download/${VERSION2}/"
+	fi
+	if test -f /sdcard/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
+	then
+		if $VANILLA
+		then
+			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
+			then
+				ui_print "- Downloading extra files please be patient..."
+				dl "${URL2}${ARCH}_ChromePublic.apk" -d /sdcard/WebviewSwitcher/
+				echo "$VERSION2" > "$VERSIONFILE"
+			else
+				ui_print "- Not a version upgrade! Using existing apk"
 			fi
-    	fi
+		elif $BROMITE
+		then
+			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
+			then
+				ui_print "- Downloading extra files please be patient..."
+				dl "${URL2}${ARCH}_ChromePublic.apk" -d /sdcard/WebviewSwitcher/
+				echo "$VERSION2" > "$VERSIONFILE"
+			else
+				ui_print "- Not a version upgrade! Using existing apk"
+			fi
+		elif $UNGOOGLED
+		then
+			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt  "$(echo "$VERSION2" | tr -d '.')" ]
+					then
+                    	ui_print "- Downloading extra files please be patient..."
+		        		dl "${URL2}ChromeModernPublic.apk_${ARCH}.apk" -d /sdcard/WebviewSwitcher/
+						mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
+						echo "$VERSION2" > "$VERSIONFILE"
+				 fi
+		fi
+	fi
+	if test ! -f /sdcard/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
+	then
+		if $UNGOOGLED
+			    then
+                    	ui_print "- Downloading extra files please be patient..."
+		        		dl "${URL2}ChromeModernPublic_${ARCH}.apk" -d /sdcard/WebviewSwitcher/
+						mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
+						echo "$VERSION2" > "$VERSIONFILE"
+		    else
+			# If the file doesn't exist, let's attempt a download anyway
+			dl "${URL2}${ARCH}_ChromePublic.apk" -d /sdcard/WebviewSwitcher/
+			# mv /sdcard/WebviewSwitcher/SystemWebview_${ARCH}.apk /sdcard/WebviewSwitcher/${ARCH}_SystemWebView.apk
+			echo "$VERSION2" > "$VERSIONFILE"
+		fi
 	fi
 }
 verify_webview () {
 	ui_print " Verifying files..."
-	if "$VANILLA"
+	if $VANILLA
 	then
-		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION"/chr_"$VERSION".sha256.txt
+		wget -qO  "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION2"/chr_"$VERSION2".sha256.txt
 		cd /sdcard/WebviewSwitcher || return
 		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt 
 		sha256sum -sc /sdcard/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt 
@@ -253,7 +271,7 @@ verify_webview () {
 			ui_print " Verification failed, retrying download"
 			rm -f /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
-			if test ${TRY_COUNT} -ge 3 ;
+			if test ${TRY_COUNT} -ge 5;
 			then
 				it_failed ;
 			else
@@ -264,11 +282,11 @@ verify_webview () {
 	ui_print " Verified successfully. Proceeding..."
 	cd - || return
 	fi
-	elif "$UNGOOGLED"
+	elif $UNGOOGLED
 		then
 			ui_print "- Verifying Ungoogled Chromium is not implemented!"
 	else
-		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION"/brm_"$VERSION".sha256.txt
+		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION2"/brm_"$VERSION2".sha256.txt
 		cd /sdcard/WebviewSwitcher || return
 		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /sdcard/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt 
 		sha256sum -sc /sdcard/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt 
@@ -281,7 +299,7 @@ verify_webview () {
 			then
 				it_failed ;
 			else
-				download_start
+				download_webview
 				verify_webview ;
 		fi
 		else
@@ -366,7 +384,11 @@ extract_apk () {
 online_install() {
 	ui_print "- Awesome, you have internet"
 	set_url
-	download_start
+	download_webview
+	if $BROWSER
+	then
+            download_browser
+    fi
 	verify_webview
 	set_path
 	extract_apk 
@@ -379,14 +401,14 @@ then
 else
 	ui_print "- Checksum verification not implemented for offline install"
 fi
-	ui_print "- No internet detected, proceeding with offline method"
+	ui_print "- Proceeding with offline method"
 	set_path 
 	extract_apk
 	create_overlay ;
 }
 do_install () {
   set_config
-	if test ! "$BOOTMODE";
+	if test ! $BOOTMODE
 	then
 		ui_print "- Detected recovery install! Falling back to offline install!"
 		ui_print "- Please note you may encounter issues with this method"
@@ -395,7 +417,7 @@ do_install () {
 		recovery_cleanup
 		do_cleanup ;
 	fi
-	if "$OFFLINE"
+	if $OFFLINE
 	then
 		offline_install 
 		do_cleanup ;
@@ -406,7 +428,7 @@ do_install () {
 		offline_install 
 		do_cleanup ;
 	else
-		if test ${TRY_COUNT} -ge 3 ;
+		if test ${TRY_COUNT} -ge 5 
 		then
 			it_failed ;
 		else
@@ -437,7 +459,7 @@ else
 	do_install 
 	do_cleanup ;
 fi
-ui_print " !!!!!!!!!!!!!!! VERY IMPORTANT PLEASE READ !!!!!!!!!!!!!!!!!"
+ui_print "  VERY IMPORTANT PLEASE READ"
 ui_print " Reboot immediately after flashing or you may experience some issues! "
 ui_print " Also, if you had any other webview such as Google webview, it's gone"
 ui_print " You can reinstall but beware conflicts"
