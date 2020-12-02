@@ -1,6 +1,6 @@
 id=bromitewebview
 name=Webview Switcher
-version=7.0.0-beta1
-versionCode=4006
+version=7.0.1
+versionCode=4007
 author=Alexandria C
 description=Switch System WebView systemless-ly, on most ROMs even stock! You can block ads and fingerprinting, increase privacy, or just update to a newer webview and/or browser!
