@@ -1,9 +1,7 @@
 
 # Changelog
 
-<h4>7.0.0</h4>
-
-**CURRENTLY IN BETA**
+<h4>7.0.1</h4>
 
 - Rebrand the module to reflect new abilities
 
@@ -20,6 +18,8 @@
 - Fix broken version check
 
 - Add verification for WebView apk
+
+- Other optimizations
 
 <h4>6.1.0</h4>
 

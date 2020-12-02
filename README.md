@@ -7,7 +7,13 @@ Most useful features of Bromite are that you can block ads, trackers and resist 
 
 The module will always download the latest version of the webview, to update it just reflash the module
 
-The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.x).
+The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.xROM)s.
+
+## Authors website
+
+My website can be found at [https://www.linuxandria.com/](https://www.linuxandria.com/).
+
+My blog is at [https://www.linuxandria.com/blog/](https://www.linuxandria.com/blog/)
 
 ## What is a WebView?
 
@@ -63,16 +69,14 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 ## Compatibility
 
 - Android 5.x to 10.0 (7.x+ recommended). 
-  - With current tools Android 11 cannot be supported.
+  - Android 11 is not officially supported. Your mileage may vary!
   - MIUI is not officially supported unless someone is willing to share the overlays used in MIUI. I have mixed results from testers in how well it works.
-- Magisk v18.2+ (No other root solution is supported, for forwards compatibility)
+- Magisk v20.1+ recommended
 - **Recommended to flash through magisk manager**
-	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the bromite webview.apk for your cpu architecture in /sdcard/bromite
-	     - Deprecated in v5.0.0
-- SELinux enforcing
+	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the offline install method
+- SELinux enforcing/pernissive
 
 ## Other resources
 
-* [Bromite SystemWebView wiki page](https://github.com/bromite/bromite/wiki/Installing-SystemWebView)
-* [Bromite website](https://bromite.org)
-* [Upstream repository](https://git.linuxandria.com/unixandria-git/bromitewebview)
+* [Bromite SystemWebView wiki page for reference](https://github.com/bromite/bromite/wiki/Installing-SystemWebView). The information there is not the most effective method but is linked for reference.
+* [Upstream repository](https://git.linuxandria.com/unixandria-git/bromitewebview). All development is done here until stable release.

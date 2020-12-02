@@ -32,8 +32,8 @@ setup_certs () {
       for i in /system/etc/security/cacerts*/*.0; do
         sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i" >> "$MODPATH"/ca-certificates.crt
       done
-	SEC=true
     fi
+	SEC=true
 }
 dl () {
 	if ! $SEC
@@ -46,8 +46,8 @@ dl () {
 # Handle version upgrades
 if test -f /sdcard/bromite
 then
-	rm -rf /sdcard/bromite
 	ui_print "- Major version upgrade! Performing migration!"
+	rm -rf /sdcard/bromite
 fi
 if test ! -d /sdcard/WebviewSwitcher
 then
@@ -83,10 +83,16 @@ set_config () {
 	if "$UNGOOGLED"
 	then
 		ui_print "- Ungoogled chrome selected"
-	elif "$VANILLA"
+		BROMITE=false
+		VANILLA=false
+	fi
+	if "$VANILLA"
 	then
 		ui_print "- Vanilla chromium selected"
-	elif "$BROMITE"
+		UNGOOGLED=false
+		BROMITE=false
+	fi
+	if "$BROMITE"
 	then
 		ui_print "- Bromite selected"
 	else
@@ -126,14 +132,13 @@ VERSION=$(cat $VERSIONFILE)
 }
 it_failed () {
 	# File wasn't found and all attempts to download failed
-	ui_print " Uh-oh a problem occurred."
 	if test ${TRY_COUNT} -ge "5" ;
 	then
 		ui_print " !!! WARNING !!!"
-		ui_print " Loop scenario detected!"
+		ui_print " The installer detected a loop condition"
 		ui_print " Under normal usage this should NEVER happen!"
-		ui_print " This could mean you edited config.txt incorrectly, or there's something wrong"
-		ui_print " Like unstable internet, etc"
+		ui_print " This could mean you edited config.txt incorrectly, or there's something very wrong"
+		ui_print " Like unstable internet, corrupt installer or files, etc"
 		ui_print " !!! WARNING !!!"
 	else
 		ui_print " !!! WARNING !!!"
