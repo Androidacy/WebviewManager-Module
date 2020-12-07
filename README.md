@@ -1,11 +1,12 @@
-# Bromite Systemless Webview
+# Webview Switcher
 	
 	ANY PROBLEMS WITH INSTALLATION SHOULD BE REPORTED WITH LOGS AT OUR TELEGRAM GROUP BELOW
 	
-This module allows you to install [Bromite SystemWebView](https://www.bromite.org/system_web_view) systemless-ly.
-Most useful features of Bromite are that you can block ads, trackers and resist fingerprinting; see the full features list [here](https://github.com/bromite/bromite/blob/master/README.md#features)
+This module allows you to install [Bromite SystemWebView](https://www.bromite.org/system_web_view) systemless-ly by default, or any available in config.txt
 
-The module will always download the latest version of the webview, to update it just reflash the module
+Most useful features of Bromite (the default) are that you can block ads, trackers and resist fingerprinting; see the full features list [here](https://github.com/bromite/bromite/blob/master/README.md#features)
+
+The module will always download the latest version of the webview and browser (if not disabled), to update it just reflash the module
 
 The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.x ROMs).
 
@@ -17,9 +18,9 @@ My blog is at [https://www.linuxandria.com/blog/](https://www.linuxandria.com/bl
 
 ## What is a WebView?
 
-A WebView is like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include Outlook or GoDaddy apps or even some banking apps. Even the Google app uses a webview
+A WebView is like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include Outlook or GoDaddy apps or even some banking apps. Even the Google app uses a webview. Webview is a shared component between apps to display web content instead of directing to a browser.
 
-**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE WEBVIEW**. I can't fix that and any issues on it will be closed and ignored.
+**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE'S OWN WEBVIEW**. I can't fix that and any issues on it will be closed and ignored. Complain to the app developer, not me.
 
 ## Credits
 
@@ -29,7 +30,7 @@ Ungoogled-chromium Android is created by and copyright [The Ungoogled Chromium A
 
 Chromium is created by and copyright [The Chromium Project](http://www.chromium.org/). Source code used in the Chromium implementation is [here](https://github.com/bromite/chromium)
 
-All binaries utilized and the original MMT-Extended template are developed by and copyright Zackptg5 excluding BusyBox and the original installer template which is build by John Wu. The upstream binaries are copyright and developed by there original authors.
+All binaries utilized and the original MMT-Extended template are developed by and copyright Zackptg5 excluding BusyBox and the original installer template which is built by and copyright John Wu. The upstream binaries are copyright and developed by the original authors.
 
 Module created by Alexandria Cortez with a help early on from Skittles9823 and Zackptg5. The module is licensed under Apache-2.0 effective Novemeber 24, 2020, see the LICENSE file. Any versions released before that date were licensed under GPL 2.0.
 
@@ -37,8 +38,8 @@ The logging code used was orginally developed and copyright John Fawkes, and mod
 
 ## ETAs/ Versions
 
-This module downloads the latest bromite webview APK every time it is flashed. I will otherwise update when I have time. 
-At any time, the latest beta if available can be downloaded by zipping the master branch of the upstream repository.
+This module downloads the latest browser and/or webview APK every time it is flashed. I will otherwise update when I have time. 
+At any time, the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although I recommend waiting for me to do a release on https://downloads.linuxandria.com, click in magisk modules then bromitewebview
 
 If you use F-Droid, you can add the bromite official F-Droid repository to keep the app updated
 
