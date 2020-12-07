@@ -47,9 +47,4 @@ then
  echo "Forcing the system to register our overlay..."
  sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${STATE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"98\" /></overlays>|" $LIST
 fi
-if test "$YES" -eq "1" ;
-then
-#	echo "Sending out overlay into the void..."
-#	rm -rf "$MODDIR"/system/product "$MODDIR"/system/vendor "$MODDIR"/system/overlay;
-	echo "beep boop jobs done"
-fi
+

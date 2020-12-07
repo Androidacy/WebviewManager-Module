@@ -1,4 +1,5 @@
 # shellcheck shell=dash
+# shellcheck disable=SC1091
 # Pretty banner!
 mkdir "$MODPATH"/logs
 TRY_COUNT=0
@@ -113,7 +114,6 @@ fi
 			VERSION2="$(wget -qO- "https://api.github.com/repos/bromite/bromite/releases/latest" | grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/'    )"
 		fi
 	fi
-VERSION=$(cat $VERSIONFILE)
 }
 it_failed () {
 	# File wasn't found and all attempts to download failed
@@ -197,13 +197,13 @@ download_webview () {
 		    else
 			# If the file doesn't exist, let's attempt a download anyway
 			dl "${URL2}${ARCH}_SystemWebView.apk" -d /sdcard/WebviewSwitcher/
-			mv /sdcard/WebviewSwitcher/SystemWebview_${ARCH}.apk /sdcard/WebviewSwitcher/${ARCH}_SystemWebView.apk
+			mv /sdcard/WebviewSwitcher/SystemWebview_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 			echo "$VERSION2" > "$VERSIONFILE"
 		fi
 	fi
 }
 download_browser () {
-		set_url
+	set_url
 	check_version
 	if test -z "$URL2"
 	then
@@ -355,8 +355,9 @@ set_path() {
 	[ -z "${APKPATH2}" ] && APKPATH2="/system/app/Chrome"
 }
 extract_apk () {
-	ui_print "- Extracting downloaded file(s)"
+	ui_print "- Installing Webview"
 	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
+	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk/webview.apk
 	touch "$MODPATH"$APKPATH/.replace
 	cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip 
 	mkdir "$TMPDIR"/webview -p	
@@ -367,9 +368,11 @@ extract_apk () {
 	rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.zip
   if "$BROWSER"
   then
+	ui_print "- Installing Browser"
     mkdir -p "$MODPATH"$APKPATH2
     touch "$MODPATH"$APKPATH2/.replace
-    cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"/system/app/Chrome/Chrome.apk
+    cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"$APKPATH2/Chrome.apk
+	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"/apk/browser.apk
   	touch "$MODPATH"$APKPATH2/.replace
   	cp_ch "$MODPATH"/system/app/Chrome/Chrome.apk "$TMPDIR"/browser.zip 
   	mkdir -p "$TMPDIR"/browser
@@ -408,7 +411,12 @@ fi
 }
 do_install () {
   set_config
-	if test ! $BOOTMODE
+  	if $OFFLINE
+	then
+		offline_install 
+		do_cleanup ;
+	fi
+	if test ! "$BOOTMODE"
 	then
 		ui_print "- Detected recovery install! Falling back to offline install!"
 		ui_print "- Please note you may encounter issues with this method"
@@ -417,14 +425,10 @@ do_install () {
 		recovery_cleanup
 		do_cleanup ;
 	fi
-	if $OFFLINE
-	then
-		offline_install 
-		do_cleanup ;
-	fi
 	test_connection
 	if test $? -ne 0 ;
 	then
+		ui_print "- No internet detcted, attempting offline install"
 		offline_install 
 		do_cleanup ;
 	else

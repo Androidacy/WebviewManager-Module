@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# If you are reading this you owe me $10 => https://paypal.me/innonetlife
+# If you are reading this you owe me $10 => https://paypal.me/linuxandria
 # Set various vars
 OL="com.linuxandria.WebviewOverlay"
 LIST="/data/system/overlays.xml"

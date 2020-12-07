@@ -15,11 +15,11 @@ FINDLOG=$MODDIR/logs/find.log
 VERBOSELOG=$MODDIR/logs/service-verbose.log
 touch "$VERBOSELOG"
 echo "Started at $(date)"
-if test -f "$MODDIR"/apk/webview.apk ;
+if test -d "$MODDIR"/apk/ ;
 then
 	sleep 20
 	pm install -r -g "$MODDIR"/apk/webview.apk 2>&3
-	rm -rf "$MODDIR"/apk/webview.apk
+	pm install -r -g "$MODDIR"/apk/browser.apk 2>&3
 	echo "Installed bromite webview as user app.."
 	if pm list packages -a|grep -q com.google.android.webview 2>&3;
 	then
@@ -30,6 +30,7 @@ then
 		pm disable com.android.chrome 2>&3;
 	fi
 	echo "Disabled chrome and google webview. You may re-enable but please be aware that may cause issues";
+	rm -rf "$MODDIR"/apk/
 else
 echo "File either moved or doesn't need installed...."
 fi
