@@ -331,20 +331,18 @@ else
 fi
 if [ -d /product/overlay ];
 then
-      mkdir -p "$MODPATH"/system/product/overlay
-			cp_ch "$MODPATH"/common/WebviewOverlay.apk "$MODPATH"/system/product/overlay;
-			echo "/product/overlay" > "$MODPATH"/overlay;
+OLP=/product/overlay
 elif [ -d /vendor/overlay ]
 then
-	mkdir -p "$MODPATH"/system/vendor/overlay
-	cp_ch "$MODPATH"/common/WebviewOverlay.apk "$MODPATH"/system/vendor/overlay;
-	echo "/vendor/overlay" > "$MODPATH"/overlay;
+OLP=/vendor/overlay
 elif [ -d /system/overlay ]
 then
-	mkdir -p "$MODPATH"/system/overlay
-	cp_ch "$MODPATH"/common/WebviewOverlay.apk "$MODPATH"/system/overlay;
-	echo "/system/overlay" > "$MODPATH"/overlay;
+OLP=/system/overlay
 fi
+mkdir -p "$MODPATH""$OLP"
+cp_ch "$MODPATH"/common/WebviewOverlay.apk "$MODPATH""$OLP";
+echo "$OLP" > "$MODPATH"/overlay;
+
 }
 set_path() {
 	unset APKPATH
