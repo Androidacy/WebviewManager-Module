@@ -331,10 +331,10 @@ else
 fi
 if [ -d /product/overlay ];
 then
-OLP=/product/overlay
+OLP=/system/product/overlay
 elif [ -d /vendor/overlay ]
 then
-OLP=/vendor/overlay
+OLP=/system/vendor/overlay
 elif [ -d /system/overlay ]
 then
 OLP=/system/overlay
