@@ -89,7 +89,7 @@ set_config () {
 }
 test_connection() {
   ui_print "- Testing internet connectivity"
-  (ping -q -c 3 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
+  (ping -q -c 3 -W 1 linuxandria.com >/dev/null 2>&1) && return 0 || return 1
 }
 check_version () {
 # Set up version check
@@ -409,32 +409,31 @@ fi
 }
 do_install () {
   set_config
-  	if $OFFLINE
-	then
-		offline_install 
-		do_cleanup ;
-	fi
 	if test ! "$BOOTMODE"
 	then
-		ui_print "- Detected recovery install! Falling back to offline install!"
-		ui_print "- Please note you may encounter issues with this method"
+		ui_print "- Detected recovery install! Proceeding with reduced featureset"
 		recovery_actions
 		offline_install
 		recovery_cleanup
-		do_cleanup ;
-	fi
-	test_connection
-	if test $? -ne 0 ;
+		do_cleanup
+	elif $OFFLINE
 	then
-		ui_print "- No internet detcted, attempting offline install"
 		offline_install 
-		do_cleanup ;
+		do_cleanup
 	else
-		if test ${TRY_COUNT} -ge 5 
+		test_connection
+		if test $? -ne 0
 		then
-			it_failed ;
+			ui_print "- No internet detcted, falling back to offline install"
+			offline_install 
+			do_cleanup
 		else
-			online_install ;
+			if test ${TRY_COUNT} -ge 5 
+			then
+				it_failed
+			else
+				online_install
+			fi
 		fi
 	fi
 }
