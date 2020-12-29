@@ -1,3 +1,9 @@
+Be sure to check out my new module, Font Revival!
+
+- Downloads are [here](https://downloads.linuxandria.com/?eeFolder=magisk-modules%2Ffontrevival&eeListID=1)
+
+- The source is [here](https://git.linuxandria.com/unixandria-git/fontrevival)
+
 # Webview Switcher
 	
 	ANY PROBLEMS WITH INSTALLATION SHOULD BE REPORTED WITH LOGS AT OUR TELEGRAM GROUP BELOW
