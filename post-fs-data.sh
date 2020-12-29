@@ -31,9 +31,9 @@ then
 	YES="0" ;
 fi
 
-if grep 'com.linuxandria.android.WebviewOverlay' /data/system/overlays.xml ;
+if grep 'com.linuxandria.WebviewOverlay' /data/system/overlays.xml ;
 then
-	YES="01" ;
+	YES="0" ;
 fi
 
 if test "$API" -lt "27" ;
