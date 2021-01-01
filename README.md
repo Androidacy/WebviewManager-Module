@@ -1,8 +1,10 @@
-Be sure to check out my new module, Font Revival!
+Be sure to check out my new module, Fontifier!
 
 - Downloads are [here](https://downloads.linuxandria.com/?eeFolder=magisk-modules%2Ffontrevival&eeListID=1)
 
 - The source is [here](https://git.linuxandria.com/unixandria-git/fontrevival)
+
+- XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
 
 # Webview Switcher
 	
