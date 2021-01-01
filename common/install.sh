@@ -98,7 +98,6 @@ then
 	mktouch $VERSIONFILE
 	echo "0" > $VERSIONFILE;
 fi
-	test_connection
 	if test ${?} -eq "0" ;
 	then
 		if "$UNGOOGLED"
@@ -133,7 +132,7 @@ it_failed () {
 		ui_print " !!! WARNING !!!"
 	fi
 	ui_print " Aborting!"
-	abort 
+	abort
 }
 set_url () {
 	if $VANILLA
@@ -143,7 +142,7 @@ set_url () {
 	then
 		URL="https://github.com/ungoogled-software/ungoogled-chromium-android"
 	else
-		URL="https://github.com/bromite/bromite" 
+		URL="https://github.com/bromite/bromite"
 	fi
 }
 download_webview () {
@@ -357,8 +356,8 @@ extract_apk () {
 	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
 	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk/webview.apk
 	touch "$MODPATH"$APKPATH/.replace
-	cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip 
-	mkdir "$TMPDIR"/webview -p	
+	cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip
+	mkdir "$TMPDIR"/webview -p
 	unzip -d "$TMPDIR"/webview "$TMPDIR"/webview.zip > /dev/null
 	cp -rf "$TMPDIR"/webview/lib "$MODPATH"$APKPATH/
 	mv "$MODPATH"$APKPATH/lib/arm64-v8a "$MODPATH"$APKPATH/lib/arm64
@@ -372,7 +371,7 @@ extract_apk () {
     cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"$APKPATH2/Chrome.apk
 	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"/apk/browser.apk
   	touch "$MODPATH"$APKPATH2/.replace
-  	cp_ch "$MODPATH"/system/app/Chrome/Chrome.apk "$TMPDIR"/browser.zip 
+  	cp_ch "$MODPATH"/system/app/Chrome/Chrome.apk "$TMPDIR"/browser.zip
   	mkdir -p "$TMPDIR"/browser
   	unzip -d "$TMPDIR"/browser "$TMPDIR"/browser.zip > /dev/null
 	cp -rf "$TMPDIR"/browser/lib "$MODPATH"$APKPATH2
@@ -389,10 +388,10 @@ online_install() {
 	if $BROWSER
 	then
             download_browser
-    fi
+	fi
 	verify_webview
 	set_path
-	extract_apk 
+	extract_apk
 	create_overlay ;
 }
 offline_install() {
@@ -403,7 +402,7 @@ else
 	ui_print "- Checksum verification not implemented for offline install"
 fi
 	ui_print "- Proceeding with offline method"
-	set_path 
+	set_path
 	extract_apk
 	create_overlay ;
 }
@@ -418,17 +417,17 @@ do_install () {
 		do_cleanup
 	elif $OFFLINE
 	then
-		offline_install 
+		offline_install
 		do_cleanup
 	else
 		test_connection
 		if test $? -ne 0
 		then
 			ui_print "- No internet detcted, falling back to offline install"
-			offline_install 
+			offline_install
 			do_cleanup
 		else
-			if test ${TRY_COUNT} -ge 5 
+			if test ${TRY_COUNT} -ge 5
 			then
 				it_failed
 			else
@@ -453,12 +452,12 @@ do_cleanup () {
 	cp /data/system/overlays.xml "$MODPATH"/backup/
 	clean_dalvik
 }
-if test ${TRY_COUNT} -ge "5" ;
+if test ${TRY_COUNT} -ge "5"
 then
-	it_failed ;
+	it_failed
 else
-	do_install 
-	do_cleanup ;
+	do_install
+	do_cleanup
 fi
 ui_print "  VERY IMPORTANT PLEASE READ"
 ui_print " Reboot immediately after flashing or you may experience some issues! "
