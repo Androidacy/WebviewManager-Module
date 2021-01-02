@@ -251,6 +251,7 @@ download_browser () {
 						mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
 						echo "$VERSION2" > "$VERSIONFILE"
 		    else
+			ui_print "- Downloading browser files please be patient..."
 			# If the file doesn't exist, let's attempt a download anyway
 			dl "${URL2}${ARCH}_ChromePublic.apk" -d /sdcard/WebviewSwitcher/
 			# mv /sdcard/WebviewSwitcher/SystemWebview_${ARCH}.apk /sdcard/WebviewSwitcher/${ARCH}_SystemWebView.apk
