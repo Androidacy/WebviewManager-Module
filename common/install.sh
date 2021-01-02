@@ -158,7 +158,7 @@ download_webview () {
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
-				ui_print "- Downloading extra files please be patient..."
+				ui_print "- Downloading webview files, please be patient"
 				dl "${URL2}${ARCH}_SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
@@ -168,7 +168,7 @@ download_webview () {
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
-				ui_print "- Downloading extra files please be patient..."
+				ui_print "- Downloading webview files, please be patient"
 				dl "${URL2}${ARCH}_SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
@@ -178,7 +178,7 @@ download_webview () {
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt  "$(echo "$VERSION2" | tr -d '.')" ]
 					then
-                    	ui_print "- Downloading extra files please be patient..."
+                    	ui_print "- Downloading webview files, please be patient"
 		        		dl "${URL2}SystemWebView.apk_${ARCH}.apk" -d /sdcard/WebviewSwitcher/
 						mv /sdcard/WebviewSwitcher/SystemWebView_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 						echo "$VERSION2" > "$VERSIONFILE"
@@ -189,11 +189,12 @@ download_webview () {
 	then
 		if $UNGOOGLED
 			    then
-                    	ui_print "- Downloading extra files please be patient..."
+                    	ui_print "- Downloading webview files please be patient..."
 		        		dl "${URL2}SystemWebView.apk_${ARCH}.apk" -d /sdcard/WebviewSwitcher/
 						mv /sdcard/WebviewSwitcher/SystemWebView_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 						echo "$VERSION2" > "$VERSIONFILE"
 		    else
+			ui_print "- Downloading webview files please be patient..."
 			# If the file doesn't exist, let's attempt a download anyway
 			dl "${URL2}${ARCH}_SystemWebView.apk" -d /sdcard/WebviewSwitcher/
 			mv /sdcard/WebviewSwitcher/SystemWebview_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
@@ -214,7 +215,7 @@ download_browser () {
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
-				ui_print "- Downloading extra files please be patient..."
+				ui_print "- Downloading browser files please be patient..."
 				dl "${URL2}${ARCH}_ChromePublic.apk" -d /sdcard/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
@@ -224,7 +225,7 @@ download_browser () {
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
-				ui_print "- Downloading extra files please be patient..."
+				ui_print "- Downloading browser files please be patient..."
 				dl "${URL2}${ARCH}_ChromePublic.apk" -d /sdcard/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
@@ -234,7 +235,7 @@ download_browser () {
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt  "$(echo "$VERSION2" | tr -d '.')" ]
 					then
-                    	ui_print "- Downloading extra files please be patient..."
+                    	ui_print "- Downloading browser files please be patient..."
 		        		dl "${URL2}ChromeModernPublic.apk_${ARCH}.apk" -d /sdcard/WebviewSwitcher/
 						mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
 						echo "$VERSION2" > "$VERSIONFILE"
@@ -245,7 +246,7 @@ download_browser () {
 	then
 		if $UNGOOGLED
 			    then
-                    	ui_print "- Downloading extra files please be patient..."
+                    	ui_print "- Downloading browser files please be patient..."
 		        		dl "${URL2}ChromeModernPublic_${ARCH}.apk" -d /sdcard/WebviewSwitcher/
 						mv /sdcard/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /sdcard/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
 						echo "$VERSION2" > "$VERSIONFILE"
@@ -438,7 +439,8 @@ do_install () {
 }
 clean_dalvik () {
 	# Removes dalvik cache to re-register our overlay and webview
-	rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com.android.webview* /data/system/package_cache/*
+	ui_print "Dalvik cache will be clear next boot"
+	ui_print "Expect longer boot time"
 }
 do_cleanup () {
 	ui_print "- Cleaning up..."
@@ -463,8 +465,7 @@ ui_print "  VERY IMPORTANT PLEASE READ"
 ui_print " Reboot immediately after flashing or you may experience some issues! "
 ui_print " Also, if you had any other webview such as Google webview, it's gone"
 ui_print " You can reinstall but beware conflicts"
-ui_print " Next boot may take significantly longer, we have to clear Dalvik cache here"
-sleep 1
+sleep 0.5
 ui_print " Enjoy a more private and faster webview, done systemlessly"
 ui_print " Don't forget my links:"
 sleep 0.5
@@ -474,7 +475,7 @@ sleep 0.5
 ui_print " Donate at:"
 ui_print "	https://paypal.me/linuxandria"
 ui_print "	https://www.patreon.com/linuxandria_xda"
-ui_print " Website is at https://www.linuxandria.com"
+ui_print " Website and blog is at https://www.linuxandria.com"
 ui_print " You can support me by checking out my site with adblock disabled."
 sleep 0.5
 ui_print "- All commands ran successfully please reboot"
