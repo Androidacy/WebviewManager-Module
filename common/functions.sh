@@ -205,7 +205,7 @@ fi
 if $DEBUG; then
   ui_print "- Debug mode"
   ui_print "  Module install log will include debug info"
-  ui_print "  It's in /sdcard/WebviewSwitcher/logs"
+  ui_print "  It's in /data/media/0/WebviewSwitcher/logs"
   mkdir -p /data/media/0/WebviewSwitcher/logs/
   exec 2>/data/media/0/WebviewSwitcher/logs/install.log 
   set -x

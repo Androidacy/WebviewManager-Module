@@ -11,7 +11,14 @@ rm -rf /data/*/com.android.webview*
 rm -rf /data/system/package_cache/*
 # Nuke old overlay, should prevent some bootloops
 sed -i "/item packageName=\"${OL}\"/d" $LIST
-# Instead we will restore our backup in the future. Sorry substratum users in the future
-sleep 15
+echo "# Webview Switcher Cleanup Script
+while test \"$(getprop sys.boot_completed)\" != \"1\"  && test ! -d /data/media/0/Android ;
+do sleep 30;
+done
+rm -rf /data/media/0/WebviewSwitcher
+rm -rf /data/adb/service.d/ws-cleanup.sh
+exit 0" > /data/adb/service.d/ws-cleanup.sh
+chmod 755 /data/adb/service.d/ws-cleanup.sh
+sleep 5
 reboot
 
