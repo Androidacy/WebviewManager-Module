@@ -23,7 +23,7 @@ dl () {
 	then
 		setup_certs
 	fi
-    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --download-result=hide --summary-interval=0 "$@"
+    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
 # Set up working directory
 # Handle version upgrades
