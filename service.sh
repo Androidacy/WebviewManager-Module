@@ -17,14 +17,10 @@ touch "$VERBOSELOG"
 echo "Started at $(date)"
 if test -d "$MODDIR"/apk/ ;
 then
-	sleep 20
+	sleep 30
 	pm install -r -g "$MODDIR"/apk/webview.apk 2>&3
 	pm install -r -g "$MODDIR"/apk/browser.apk 2>&3
 	echo "Installed bromite webview as user app.."
-	if pm list packages -a|grep -q com.google.android.webview 2>&3;
-	then
-		pm disable com.google.android.webview 2>&3;
-	fi
 	if pm list packages -a|grep -q com.android.chrome 2>&3;
 	then
 		pm disable com.android.chrome 2>&3;
@@ -32,11 +28,11 @@ then
 	echo "Disabled chrome and google webview. You may re-enable but please be aware that may cause issues";
 	rm -rf "$MODDIR"/apk/
 else
-echo "File either moved or doesn't need installed...."
+	echo "Skipping install, as the needed files are not present. This is most likely because they've already been installed"
 fi
-while test "$(getprop sys.boot_completed)" != "1"  && test ! -d /sdcard/Android ;
+while test "$(getprop sys.boot_completed)" != "1"  && test ! -d /data/media/0/Android ;
 do sleep 30;
 done
-{ echo "SDCARD DIR contains:"; find /sdcard/WebviewSwitcher; echo "Module DIR contains:"; find "$MODDIR"; } > "$FINDLOG"
-tail -n +1 "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log "$MODDIR"/logs/aapt.log > "$MODDIR"/logs/verbose.log 
-cp -rf "$MODDIR"/logs /sdcard/WebviewSwitcher/
+{ echo "SDCARD DIR contains:\n"; find /data/media/0/WebviewSwitcher; echo "\nModule DIR contains:\n"; find "$MODDIR"; } > "$FINDLOG"
+tail -n +1 "$MODDIR"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log > "$MODDIR"/logs/complete.log 
+cp -rf "$MODDIR"/logs /data/media/0/WebviewSwitcher/

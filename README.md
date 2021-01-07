@@ -1,10 +1,19 @@
-Be sure to check out my new module, Fontifier!
+### Be sure to check out my new module, Fontifier!
 
 - Downloads are [here](https://downloads.linuxandria.com/?eeFolder=magisk-modules%2Ffontrevival&eeListID=1)
 
 - The source is [here](https://git.linuxandria.com/unixandria-git/fontrevival)
 
 - XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
+
+## Authors website
+
+- Main site: [https://www.linuxandria.com/](https://www.linuxandria.com/).
+
+- Blog/Updates: [https://www.linuxandria.com/blog/](https://www.linuxandria.com/blog/).
+
+<sub>As ironic as me running ads is, by disabling adblock on my website you are supporting me and this project.</sub>
+
 
 # Webview Switcher
 	
@@ -17,12 +26,6 @@ Most useful features of Bromite (the default) are that you can block ads, tracke
 The module will always download the latest version of the webview and browser (if not disabled), to update it just reflash the module
 
 The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.x ROMs).
-
-## Authors website
-
-My website can be found at [https://www.linuxandria.com/](https://www.linuxandria.com/).
-
-My blog is at [https://www.linuxandria.com/blog/](https://www.linuxandria.com/blog/)
 
 ## What is a WebView?
 

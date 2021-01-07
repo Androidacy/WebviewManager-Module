@@ -1,6 +1,6 @@
 # Config file for Webview Switcher
 # Format is key=value, eg bromite=true
-# Put this in /sdcard/WebviewSwitcher to have it used during install, otherwise a default config will be used
+# Put this in /data/media/0/WebviewSwitcher to have it used during install, otherwise a default config will be used
 # Do not add any lines, do not change any names, and only use true/false
 # Otherwise it *will* break the module
 
