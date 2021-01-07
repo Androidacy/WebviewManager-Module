@@ -3,7 +3,7 @@
 # Pretty banner!
 mkdir "$MODPATH"/logs
 TRY_COUNT=0
-VERSIONFILE='/data/media/0/WebviewSwitcher/version'
+VERSIONFILE='/storage/emulated/0/WebviewSwitcher/version'
 alias aapt='"$MODPATH"/common/tools/aapt-"$ARCH"'
 alias sign='"$MODPATH"/common/tools/zipsigner'
 chmod -R 0755 "$MODPATH"/common/tools
@@ -23,19 +23,23 @@ dl () {
 	then
 		setup_certs
 	fi
-    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 5 --async-dns  --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
+    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
 # Set up working directory
 # Handle version upgrades
-if test -f /data/media/0/bromite
+if test -f /storage/emulated/0/bromite
 then
 	ui_print "- Major version upgrade! Performing migration!"
-	rm -rf /data/media/0/bromite
+	rm -rf /storage/emulated/0/bromite
 fi
-if test ! -d /data/media/0/WebviewSwitcher
+if test ! -d /storage/emulated/0/WebviewSwitcher
 then
-	mkdir -p /data/media/0/WebviewSwitcher
+	mkdir -p /storage/emulated/0/WebviewSwitcher
 fi
+magiskpolicy --live "allow system_server untrusted_app_25_devpts chr_file { read write }"
+magiskpolicy --live "allow system_server sdcardfs file { read write }"
+magiskpolicy --live "allow zygote adb_data_file file getattr"
+
 # Thanks SKittles9832 for the code I shamelessly copied :)
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
@@ -49,19 +53,19 @@ ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 set_config () {
 	ui_print "- Setting configs..."
 	ui_print "- Make sure if you want/need a custom setup to edit config.txt and reflash"
-	if test -f /data/media/0/WebviewSwitcher/config.txt
+	if test -f /storage/emulated/0/WebviewSwitcher/config.txt
 	then
-		. /data/media/0/WebviewSwitcher/config.txt
+		. /storage/emulated/0/WebviewSwitcher/config.txt
 		if test $? -ne 0
 		then
 			ui_print "- Invalid config file! Using defaults"
-			cp "$MODPATH"/config.txt /data/media/0/WebviewSwitcher
-			. /data/media/0/WebviewSwitcher/config.txt
+			cp "$MODPATH"/config.txt /storage/emulated/0/WebviewSwitcher
+			. /storage/emulated/0/WebviewSwitcher/config.txt
 		fi
 	else
 		ui_print "- No config found, using defaults"
-		cp "$MODPATH"/config.txt /data/media/0/WebviewSwitcher
-		. /data/media/0/WebviewSwitcher/config.txt
+		cp "$MODPATH"/config.txt /storage/emulated/0/WebviewSwitcher
+		. /storage/emulated/0/WebviewSwitcher/config.txt
 	fi
 	if "$UNGOOGLED"
 	then
@@ -93,7 +97,7 @@ test_connection() {
 }
 check_version () {
 # Set up version check
-if [ ! -f /data/media/0/WebviewSwitcher/version ];
+if [ ! -f /storage/emulated/0/WebviewSwitcher/version ];
 then
 	mktouch $VERSIONFILE
 	echo "0" > $VERSIONFILE;
@@ -128,7 +132,7 @@ it_failed () {
 		ui_print " !!! WARNING !!!"
 		ui_print " No capable apk was found, the files failed to download, or both!"
 		ui_print " Check your internet and try again"
-		ui_print " For offiline installs save the apk in /data/media/0/WebviewSwitcher, set OFFLINE=true in config.txt, and retry"
+		ui_print " For offiline installs save the apk in /storage/emulated/0//WebviewSwitcher, set OFFLINE=true in config.txt, and retry"
 		ui_print " !!! WARNING !!!"
 	fi
 	ui_print " Aborting!"
@@ -152,14 +156,14 @@ download_webview () {
 	then
 		URL2="$URL/releases/download/${VERSION2}/"
 	fi
-	if test -f /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+	if test -f /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 	then
 		if $VANILLA
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
 				ui_print "- Downloading webview files, please be patient"
-				dl "${URL2}${ARCH}_SystemWebView.apk" -d /data/media/0/WebviewSwitcher/
+				dl "${URL2}${ARCH}_SystemWebView.apk" -d /storage/emulated/0/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
 				ui_print "- Not a version upgrade! Using existing apk"
@@ -169,7 +173,7 @@ download_webview () {
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
 				ui_print "- Downloading webview files, please be patient"
-				dl "${URL2}${ARCH}_SystemWebView.apk" -d /data/media/0/WebviewSwitcher/
+				dl "${URL2}${ARCH}_SystemWebView.apk" -d /storage/emulated/0/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
 				ui_print "- Not a version upgrade! Using existing apk"
@@ -179,25 +183,25 @@ download_webview () {
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt  "$(echo "$VERSION2" | tr -d '.')" ]
 					then
                     	ui_print "- Downloading webview files, please be patient"
-		        		dl "${URL2}SystemWebView.apk_${ARCH}.apk" -d /data/media/0/WebviewSwitcher/
-						mv /data/media/0/WebviewSwitcher/SystemWebView_"${ARCH}".apk /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+		        		dl "${URL2}SystemWebView.apk_${ARCH}.apk" -d /storage/emulated/0/WebviewSwitcher/
+						mv /storage/emulated/0/WebviewSwitcher/SystemWebView_"${ARCH}".apk /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 						echo "$VERSION2" > "$VERSIONFILE"
 				 fi
 		fi
 	fi
-	if test ! -f /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+	if test ! -f /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 	then
 		if $UNGOOGLED
 			    then
                     	ui_print "- Downloading webview files please be patient..."
-		        		dl "${URL2}SystemWebView.apk_${ARCH}.apk" -d /data/media/0/WebviewSwitcher/
-						mv /data/media/0/WebviewSwitcher/SystemWebView_"${ARCH}".apk /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+		        		dl "${URL2}SystemWebView.apk_${ARCH}.apk" -d /storage/emulated/0/WebviewSwitcher/
+						mv /storage/emulated/0/WebviewSwitcher/SystemWebView_"${ARCH}".apk /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 						echo "$VERSION2" > "$VERSIONFILE"
 		    else
 			ui_print "- Downloading webview files please be patient..."
 			# If the file doesn't exist, let's attempt a download anyway
-			dl "${URL2}${ARCH}_SystemWebView.apk" -d /data/media/0/WebviewSwitcher/
-			mv /data/media/0/WebviewSwitcher/SystemWebview_"${ARCH}".apk /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+			dl "${URL2}${ARCH}_SystemWebView.apk" -d /storage/emulated/0/WebviewSwitcher/
+			mv /storage/emulated/0/WebviewSwitcher/SystemWebview_"${ARCH}".apk /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 			echo "$VERSION2" > "$VERSIONFILE"
 		fi
 	fi
@@ -209,14 +213,14 @@ download_browser () {
 	then
 		URL2="$URL/releases/download/${VERSION2}/"
 	fi
-	if test -f /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
+	if test -f /storage/emulated/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
 	then
 		if $VANILLA
 		then
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
 				ui_print "- Downloading browser files please be patient..."
-				dl "${URL2}${ARCH}_ChromePublic.apk" -d /data/media/0/WebviewSwitcher/
+				dl "${URL2}${ARCH}_ChromePublic.apk" -d /storage/emulated/0/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
 				ui_print "- Not a version upgrade! Using existing apk"
@@ -226,7 +230,7 @@ download_browser () {
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt "$(echo "$VERSION2" | tr -d '.')" ]
 			then
 				ui_print "- Downloading browser files please be patient..."
-				dl "${URL2}${ARCH}_ChromePublic.apk" -d /data/media/0/WebviewSwitcher/
+				dl "${URL2}${ARCH}_ChromePublic.apk" -d /storage/emulated/0/WebviewSwitcher/
 				echo "$VERSION2" > "$VERSIONFILE"
 			else
 				ui_print "- Not a version upgrade! Using existing apk"
@@ -236,25 +240,25 @@ download_browser () {
 			if [ "$(< "$VERSIONFILE" tr -d '.')" -lt  "$(echo "$VERSION2" | tr -d '.')" ]
 					then
                     	ui_print "- Downloading browser files please be patient..."
-		        		dl "${URL2}ChromeModernPublic.apk_${ARCH}.apk" -d /data/media/0/WebviewSwitcher/
-						mv /data/media/0/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
+		        		dl "${URL2}ChromeModernPublic.apk_${ARCH}.apk" -d /storage/emulated/0/WebviewSwitcher/
+						mv /storage/emulated/0/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /storage/emulated/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
 						echo "$VERSION2" > "$VERSIONFILE"
 				 fi
 		fi
 	fi
-	if test ! -f /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
+	if test ! -f /storage/emulated/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
 	then
 		if $UNGOOGLED
 			    then
                     	ui_print "- Downloading browser files please be patient..."
-		        		dl "${URL2}ChromeModernPublic_${ARCH}.apk" -d /data/media/0/WebviewSwitcher/
-						mv /data/media/0/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
+		        		dl "${URL2}ChromeModernPublic_${ARCH}.apk" -d /storage/emulated/0/WebviewSwitcher/
+						mv /storage/emulated/0/WebviewSwitcher/ChromeModernPublic_"${ARCH}".apk /storage/emulated/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk
 						echo "$VERSION2" > "$VERSIONFILE"
 		    else
 			ui_print "- Downloading browser files please be patient..."
 			# If the file doesn't exist, let's attempt a download anyway
-			dl "${URL2}${ARCH}_ChromePublic.apk" -d /data/media/0/WebviewSwitcher/
-			# mv /data/media/0/WebviewSwitcher/SystemWebview_${ARCH}.apk /data/media/0/WebviewSwitcher/${ARCH}_SystemWebView.apk
+			dl "${URL2}${ARCH}_ChromePublic.apk" -d /storage/emulated/0/WebviewSwitcher/
+			# mv /storage/emulated/0/WebviewSwitcher/SystemWebview_${ARCH}.apk /storage/emulated/0/WebviewSwitcher/${ARCH}_SystemWebView.apk
 			echo "$VERSION2" > "$VERSIONFILE"
 		fi
 	fi
@@ -264,13 +268,13 @@ verify_webview () {
 	if $VANILLA
 	then
 		wget -qO  "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION2"/chr_"$VERSION2".sha256.txt
-		cd /data/media/0/WebviewSwitcher || return
-		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /data/media/0/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt 
-		sha256sum -sc /data/media/0/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt 
+		cd /storage/emulated/0/WebviewSwitcher || return
+		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /storage/emulated/0/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt 
+		sha256sum -sc /storage/emulated/0/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt 
 		if test $? -ne 0 ;
 		then
 			ui_print " Verification failed, retrying download"
-			rm -f /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+			rm -f /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			if test ${TRY_COUNT} -ge 5;
 			then
@@ -288,13 +292,13 @@ verify_webview () {
 			ui_print "- Verifying Ungoogled Chromium is not implemented!"
 	else
 		wget -qO "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt "$URL"/releases/download/"$VERSION2"/brm_"$VERSION2".sha256.txt
-		cd /data/media/0/WebviewSwitcher || return
-		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /data/media/0/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt 
-		sha256sum -sc /data/media/0/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt 
+		cd /storage/emulated/0/WebviewSwitcher || return
+		grep "$ARCH"_SystemWebView.apk "$TMPDIR"/"$ARCH"_SystemWebView.apk.sha256.txt > /storage/emulated/0/WebviewSwitcher/"$ARCH"_SystemWebView.apk.sha256.txt 
+		sha256sum -sc /storage/emulated/0/WebviewSwitcher/"$ARCH"_SystemWebview.apk.sha256.txt 
 		if test $? -ne 0 ;
 		then
 			ui_print " Verification failed, retrying download"
-			rm -f /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
+			rm -f /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			if test ${TRY_COUNT} -ge 3 ;
 			then
@@ -355,8 +359,8 @@ set_path() {
 }
 extract_apk () {
 	ui_print "- Installing Webview"
-	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
-	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk/webview.apk
+	cp_ch /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"$APKPATH/webview.apk
+	cp_ch /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk/webview.apk
 	touch "$MODPATH"$APKPATH/.replace
 	cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip
 	mkdir "$TMPDIR"/webview -p
@@ -370,8 +374,8 @@ extract_apk () {
 	ui_print "- Installing Browser"
     mkdir -p "$MODPATH"$APKPATH2
     touch "$MODPATH"$APKPATH2/.replace
-    cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"$APKPATH2/Chrome.apk
-	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"/apk/browser.apk
+    cp_ch /storage/emulated/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"$APKPATH2/Chrome.apk
+	cp_ch /storage/emulated/0/WebviewSwitcher/"${ARCH}"_ChromePublic.apk "$MODPATH"/apk/browser.apk
   	touch "$MODPATH"$APKPATH2/.replace
   	cp_ch "$MODPATH"/system/app/Chrome/Chrome.apk "$TMPDIR"/browser.zip
   	mkdir -p "$TMPDIR"/browser
@@ -397,7 +401,7 @@ online_install() {
 	create_overlay ;
 }
 offline_install() {
-if test ! -f /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk ;
+if test ! -f /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk ;
 then
 	it_failed ;
 else
@@ -446,9 +450,9 @@ clean_dalvik () {
 do_cleanup () {
 	ui_print "- Cleaning up..."
 	mkdir -p "$MODPATH"/apk
-	cp_ch /data/media/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk
+	cp_ch /storage/emulated/0/WebviewSwitcher/"${ARCH}"_SystemWebView.apk "$MODPATH"/apk
 	rm -f "$MODPATH"/system/app/placeholder
-	mkdir -p /data/media/0/WebviewSwitcher/logs
+	mkdir -p /storage/emulated/0/WebviewSwitcher/logs
 	rm -f "$MODPATH"/*.md
 	ui_print "- Backing up important stuffs to module directory"
 	mkdir -p "$MODPATH"/backup/
