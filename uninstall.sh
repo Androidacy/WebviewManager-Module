@@ -12,10 +12,10 @@ rm -rf /data/system/package_cache/*
 # Nuke old overlay, should prevent some bootloops
 sed -i "/item packageName=\"${OL}\"/d" $LIST
 echo "# Webview Switcher Cleanup Script
-while test \"$(getprop sys.boot_completed)\" != \"1\"  && test ! -d /data/media/0/Android ;
+while test \"$(getprop sys.boot_completed)\" != \"1\"  && test ! -d /storage/emulated/0/Android ;
 do sleep 30;
 done
-rm -rf /data/media/0/WebviewSwitcher
+rm -rf /storage/emulated/0/WebviewSwitcher
 rm -rf /data/adb/service.d/ws-cleanup.sh
 exit 0" > /data/adb/service.d/ws-cleanup.sh
 chmod 755 /data/adb/service.d/ws-cleanup.sh

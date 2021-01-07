@@ -30,9 +30,9 @@ then
 else
 	echo "Skipping install, as the needed files are not present. This is most likely because they've already been installed"
 fi
-while test "$(getprop sys.boot_completed)" != "1"  && test ! -d /data/media/0/Android ;
+while test "$(getprop sys.boot_completed)" != "1"  && test ! -d /storage/emulated/0/Android ;
 do sleep 30;
 done
-{ echo "SDCARD DIR contains:\n"; find /data/media/0/WebviewSwitcher; echo "\nModule DIR contains:\n"; find "$MODDIR"; } > "$FINDLOG"
+{ echo "SDCARD DIR contains:\n"; find /storage/emulated/0/WebviewSwitcher; echo "\nModule DIR contains:\n"; find "$MODDIR"; } > "$FINDLOG"
 tail -n +1 "$MODDIR"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log > "$MODDIR"/logs/complete.log 
-cp -rf "$MODDIR"/logs /data/media/0/WebviewSwitcher/
+cp -rf "$MODDIR"/logs /storage/emulated/0/WebviewSwitcher/
