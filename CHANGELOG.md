@@ -1,11 +1,17 @@
 
 # Changelog
 
-<h4>7..1</h4>
+<h4>7.3.0</h4>
+
+- Misc code refactoring
+
+<h4>7.1.1</h4>
 (Also applies to 7.1.0)
 
 - Fix several critical bugs in the 7.x release
+
 - Try to fix offline install
+
 - Misc refactoring
 
 <h4>7.0.1</h4>

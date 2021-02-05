@@ -9,5 +9,5 @@ jobs:
     - uses: actions/first-interaction@v1
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: 'Thanks for your contribution! Please keep in mind I will get to this issue when I have a chance and logs and device information are required if you do not want your issue closed'
-        pr-message: 'Thanks for your contribution! All pull requests must be meaningful and follwo general good coding practices. Also keep in mind I do not merge many pull requests!'
+        issue-message: 'Thanks for your contribution! Please keep in mind we will get to this issue when we have a chance. Logs and device information are mandatory if you do not want your issue closed without response.'
+        pr-message: 'Thanks for your contribution! All pull requests must be meaningful and follow general good coding practices. Also keep in mind we do not merge many pull requests!'
