@@ -27,6 +27,7 @@ dl () {
 }
 # Set up working directory
 # Handle version upgrades
+# Although wtaf, they're upgrading from 6.x
 if test -f /storage/emulated/0/bromite
 then
 	ui_print "- Major version upgrade! Performing migration!"
@@ -40,7 +41,6 @@ magiskpolicy --live "allow system_server untrusted_app_25_devpts chr_file { read
 magiskpolicy --live "allow system_server sdcardfs file { read write }"
 magiskpolicy --live "allow zygote adb_data_file file getattr"
 
-# Thanks SKittles9832 for the code I shamelessly copied :)
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
 if [ -f $VEN/build.prop ]
@@ -466,23 +466,20 @@ else
 	do_install
 	do_cleanup
 fi
-ui_print "  VERY IMPORTANT PLEASE READ"
+ui_print "  ===== VERY IMPORTANT PLEASE READ ======"
 ui_print " Reboot immediately after flashing or you may experience some issues! "
 ui_print " Also, if you had any other webview such as Google webview, it's gone"
 ui_print " You can reinstall but beware conflicts"
-sleep 0.5
 ui_print " Enjoy a more private and faster webview, done systemlessly"
-ui_print " Don't forget my links:"
-sleep 0.5
-ui_print " Social platforms:"
-ui_print "	https://t.me/unixandria_dev, https://discord.gg/gTnDxQ6"
-sleep 0.5
-ui_print " Donate at:"
-ui_print "	https://paypal.me/linuxandria"
-ui_print "	https://www.patreon.com/linuxandria_xda"
-ui_print " Website and blog is at https://www.linuxandria.com"
-ui_print " You can support me by checking out my site with adblock disabled."
-sleep 0.5
+ui_print " "
+sleep 0.25
+ui_print " WebviewSwitcher - An Androidacy Project"
+sleep 0.1
+ui_print " Social platforms at	https://t.me/androidacy_announce, https://discord.gg/gTnDxQ6"
+sleep 0.1
+ui_print " Donate at https://www.patreon.com/linuxandria_xda"
+ui_print " Website and blog is at https://www.androidacy.com"
+sleep 2
 ui_print "- All commands ran successfully please reboot"
 ui_print " "
 

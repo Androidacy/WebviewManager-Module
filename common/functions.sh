@@ -81,7 +81,7 @@ cleanup() {
   ui_print " "
   ui_print "    **************************************"
   ui_print "    *   MMT Extended by Zackptg5 @ XDA   *"
-  ui_print "    *      Modified by Alexandria        *"
+  ui_print "    *      Modified by Androidacy        *"
   ui_print "    **************************************"
   ui_print " "
 }
