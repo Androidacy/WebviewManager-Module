@@ -1,3 +1,4 @@
-allow system_server untrusted_app_25_devpts chr_file { read write }
+# The first rule doesn't work on some devices, let's skip it
+# allow system_server untrusted_app_25_devpts chr_file { read write }
 allow system_server sdcardfs file { read write }
 allow zygote adb_data_file file getattr

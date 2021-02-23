@@ -15,7 +15,7 @@
 
 - Blog/Updates: [https://www.androidacy.com/blog/](https://www.androidacy.com/blog/).
 
-<sub>As ironic as us running ads is, by disabling adblock on my website you are supporting us and this project.</sub>
+<sub>As ironic as running ads is, by disabling adblock on my website you are supporting us and this project.</sub>
 	
 	ANY PROBLEMS WITH INSTALLATION SHOULD BE REPORTED WITH LOGS AT OUR TELEGRAM GROUP BELOW
 	
@@ -29,9 +29,9 @@ The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.
 
 ### What is a WebView?
 
-A WebView is like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include Outlook or GoDaddy apps or even sous banking apps. Even the Google app uses a webview. Webview is a shared component between apps to display web content instead of directing to a browser.
+Webview is a shared component between apps to display web content instead of directing to a browser. It's like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include email, wewbview wrapper apps, or even some banking apps. Even the Google app uses a webview.
 
-**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE'S OWN WEBVIEW**. We can't fix that and any issues on it will be closed and ignored. Complain to the app developer, not us.
+**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE'S OWN WEBVIEW**. We can't fix that and any issues on it will be closed and ignored. Complain to the app developer, not us. We're not even sure why this happens or how they check.
 
 ## Credits
 
@@ -60,7 +60,7 @@ If you use F-Droid, you can add the bromite official F-Droid repository to keep 
 
 ## Donations
 
-Donations for us: [here](https://paypal.us/androidacy)
+Donations for us: [here](https://www.androidacy.com/donate/)
 
 Donations for Bromite can be found in the links below 
 
