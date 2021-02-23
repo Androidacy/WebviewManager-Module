@@ -1,6 +1,6 @@
 id=bromitewebview
 name=Webview Switcher
-version=7.3.0
-versionCode=4028
+version=8.0.0_beta1
+versionCode=4033
 author=Androidacy
-description=Switch System WebView and default browser systemless-ly, on any ROM! You can block ads and fingerprinting, increase privacy, and more!
+description=Switch System WebView and default browser systemless-ly, on any ROM! You can block ads and fingerprinting, increase privacy, and more! Website: www.androidacy.com.

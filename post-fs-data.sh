@@ -11,6 +11,16 @@ exec 2>"$MODDIR"/logs/postfsdata-verbose.log
 set -x
 set -euo pipefail
 trap 'exxit $?' EXIT
+. "${MODDIR}"/status.txt
+if $? -ne 0
+then
+	rm "${MODDIR}"/status.txt
+	touch "${MODDIR}"/status.txt
+fi
+if test "$OVERLAY" != 'true'
+then
+	OVERLAY=false
+fi
 FINDLOG="$MODDIR"/logs/find.log
 PROPSLOG="$MODDIR"/logs/props.log
 touch "$FINDLOG"
@@ -35,11 +45,14 @@ else
 fi
 if grep 'com.linuxandria.android.webviewoverlay' /data/system/overlays.xml ;
 then
-	sed -i s|"com.linuxandria.android.webviewoverlay|com.linuxandria.WebviewOverlay|g"
+	sed -i "s|com.linuxandria.android.webviewoverlay|com.linuxandria.WebviewOverlay|g"
 	echo "Overlay needs updated, done"
 fi
-if ! grep 'com.linuxandria.WebviewOverlay' /data/system/overlays.xml ;
+if ! $OVERLAY
 then
 	echo "Forcing the system to register our overlay..."
-	sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${STATE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"998\" /></overlays>|" $LIST
+	sed -i "/item packageName=\"${OL}\"/d" /data/system/overlays.xml
+	sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${STATE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"1\" /></overlays>|" $LIST
+	sed -i "/OVERLAY/d"  "${MODDIR}"/status.txt
+	echo "OVERLAY=true" >> "${MODDIR}"/status.txt
 fi
