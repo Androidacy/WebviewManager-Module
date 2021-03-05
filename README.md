@@ -91,4 +91,4 @@ Here is our [Discord](https://discord.gg/gTnDxQ6)
 ## Other resources
 
 * [Bromite SystemWebView wiki page for reference](https://github.com/bromite/bromite/wiki/Installing-SystemWebView). The information there is not the most effective method but is linked for reference.
-* [Upstream repository](https://github.com/androidacy/WebviewSwitcher). All development is done here until stable release.
+* [Upstream repository](https://github.com/androidacy/WebviewManager). All development is done here until stable release.

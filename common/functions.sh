@@ -1,8 +1,3 @@
-##########################################################################################
-#
-# MMT Extended Utility Functions
-#
-##########################################################################################
 # shellcheck shell=dash
 # Its broken okay?!?!
 # shellcheck disable=SC2155
@@ -205,9 +200,9 @@ fi
 if $DEBUG; then
   ui_print "- Debug mode"
   ui_print "  Module install log will include debug info"
-  ui_print "  It's in /data/media/0/WebviewSwitcher/logs"
-  mkdir -p /data/media/0/WebviewSwitcher/logs/
-  exec 2>/data/media/0/WebviewSwitcher/logs/install.log 
+  ui_print "  It's in /data/media/0/WebviewManager/logs"
+  mkdir -p /data/media/0/WebviewManager/logs/
+  exec 2>/data/media/0/WebviewManager/logs/install.log 
   set -x
 fi
 

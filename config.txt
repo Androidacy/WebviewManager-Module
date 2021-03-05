@@ -1,19 +1,30 @@
 # Config file for Webview Switcher
 # If ivvalid values are found, or this file is missing, then the module falls back to the default in parenthesis
+# DO NOT CHANGE THIS
+CV="5"
 
-# [True/False] Don't do any internet checks. Compatibility is not certain. (default: false)
-# NOTE: For offline installs, save browser and webview APKs in /sdcard/WebviewSwitcher/, with name being [webview or browser]_[choice].apk
-# For instance, for bromite browser it'd be browser_Bromite.apk
-OFFLINE=false
-# [True/False] Install the appropriate browser for the webview chosen below (default: true)
-BROWSER=true
-# [True/False] Install the appropriate webview chosen below (default: true)
-WEBVIEW=true
-# Choice of browser and webview (default: 0)
-# 0 = Bromite
+# Should we do a completely offline install?
+# To use an apk, place in /sdcard/WebviewManager/apks with the appropriate name, eg webview.apk is for webview and browser.apk for browser
+# NOT RECOMMENDED TO CHANGE THIS. Default is 0 for automatic detection
+OFFLINE=0
+
+# What should we install? Some config options below require a certain choice here!
+# 0 = Just the webview (default)
+# 1 = Just the browser
+# 2 = Browser and webview
+INSTALL=0
+
+# Choice of browser (default: 0)
+# 0 = Bromite (default)
 # 1 = Chromium
 # 2 = Ungoogled-Chromium
 # 3 = Ungoogled-Chromium with extensions support
-WHICH=0
+BROWSER=0
+
+# Choice of Webview (default: 0)
+# 0 = Bromite (default)
+# 1 = Chromium
+# 2 = Ungoogled-Chromium
+WEBVIEW=0
 
 
