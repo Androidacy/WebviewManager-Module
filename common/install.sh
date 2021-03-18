@@ -1,23 +1,14 @@
 # shellcheck shell=dash
 # shellcheck disable=SC1091
 # shellcheck disable=SC1090
-mkdir "$MODPATH"/logs
 TRY_COUNT=0
-detect_ext_data() {
-	touch /sdcard/.rw && rm /sdcard/.rw && EXT_DATA="/sdcard"
-	if test -z ${EXT_DATA}; then
-		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && EXT_DATA="/storage/emulated/0"
-	fi
-	if test -z ${EXT_DATA}; then
-		touch /data/media/0/.rw && rm /data/media/0/.rw && EXT_DATA="/data/media/0"
-	fi
-	if test -z ${EXT_DATA}; then
-		ui_print "- Data check failed, bailing out!"
-		it_failed
-	fi
-}
-detect_ext_data
-VERSIONFILE="${EXT_DATA}/WebviewManager/version.txt"
+VF=0
+OLD_WEBVIEW=0
+OLD_BROWSER=0
+AVER=$(resetprop ro.build.version.release)
+ui_print "- Android ${AVER}, API level ${API}, arch ${ARCH} device detected"
+mkdir "$MODPATH"/logs
+VERSIONFILE="$EXT_DATA/WebviewManager/version.txt"
 alias aapt='"$MODPATH"/common/tools/aapt-"$ARCH"'
 alias sign='"$MODPATH"/common/tools/zipsigner'
 chmod -R 0755 "$MODPATH"/common/tools
@@ -38,17 +29,15 @@ dl() {
 	fi
 	"$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
-if test -d ${EXT_DATA}/bromite; then
+if test -d "$EXT_DATA"/bromite; then
 	ui_print "- Major version upgrade! Performing migration!"
-	rm -rf ${EXT_DATA}/bromite
+	rm -rf "$EXT_DATA"/bromite
 fi
-if test -d ${EXT_DATA}/WebviewSwitcher; then
+if test -d "$EXT_DATA"/WebviewSwitcher; then
 	ui_print "- Major version upgrade! Performing migration!"
-	rm -rf ${EXT_DATA}/bromite
+	rm -rf "$EXT_DATA"/bromite
 fi
-if test ! -d ${EXT_DATA}/WebviewManager; then
-	mkdir -p ${EXT_DATA}/WebviewManager
-fi
+# TODO: Reevaluate used sepolicy
 # magiskpolicy --live "allow system_server untrusted_app_25_devpts chr_file { read write }"
 magiskpolicy --live "allow system_server sdcardfs file { read write }"
 magiskpolicy --live "allow zygote adb_data_file file getattr"
@@ -59,58 +48,43 @@ if [ -f $VEN/build.prop ]; then
 else
 	BUILDS="/system/build.prop"
 fi
-ui_print "- $ARCH SDK $API system detected, selecting the appropriate files"
 check_config() {
 	if test "$CV" -ne 5; then
 		ui_print "- Invalid config version! Using defaults"
-		cp "$MODPATH"/config.txt ${EXT_DATA}/WebviewManager
-		. ${EXT_DATA}/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
+		. "$EXT_DATA"/WebviewManager/config.txt
 	fi
 	if test "$INSTALL" -ne 0 && test "$INSTALL" -ne 1 && test "$INSTALL" -ne 2; then
 		ui_print "- Invalid config value for INSTALL! Using defaults"
-		cp "$MODPATH"/config.txt ${EXT_DATA}/WebviewManager
-		. ${EXT_DATA}/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
+		. "$EXT_DATA"/WebviewManager/config.txt
 	elif test "$WEBVIEW" -ne 0 && test "$WEBVIEW" -ne 1 && test "$WEBVIEW" -ne 2; then
 		ui_print "- Invalid config value for INSTALL! Using defaults"
-		cp "$MODPATH"/config.txt ${EXT_DATA}/WebviewManager
-		. ${EXT_DATA}/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
+		. "$EXT_DATA"/WebviewManager/config.txt
 	elif test "$BROWSER" -ne 0 && test "$BROWSER" -ne 1 && test "$BROWSER" -ne 2 && test "$BROWSER" -ne 3; then
 		ui_print "- Invalid config value for INSTALL! Using defaults"
-		cp "$MODPATH"/config.txt ${EXT_DATA}/WebviewManager
-		. ${EXT_DATA}/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
+		. "$EXT_DATA"/WebviewManager/config.txt
 	fi
 }
 set_config() {
 	ui_print "- Setting configs..."
-	if test -f ${EXT_DATA}/WebviewManager/config.txt; then
-		. ${EXT_DATA}/WebviewManager/config.txt
+	if test -f "$EXT_DATA"/WebviewManager/config.txt; then
+		. "$EXT_DATA"/WebviewManager/config.txt
 		if test $? -ne 0; then
 			ui_print "- Invalid config file! Using defaults"
-			cp "$MODPATH"/config.txt ${EXT_DATA}/WebviewManager
-			. ${EXT_DATA}/WebviewManager/config.txt
+			cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
+			. "$EXT_DATA"/WebviewManager/config.txt
 		else
 			check_config
 		fi
 	else
 		ui_print "- No config found, using defaults"
+		ui_print "     -> Only install bromite webview"
 		ui_print "- Make sure if you want/need a custom setup to edit config.txt"
-		cp "$MODPATH"/config.txt ${EXT_DATA}/WebviewManager
-		. ${EXT_DATA}/WebviewManager/config.txt
-	fi
-	if test "$INSTALL" -eq 0; then
-		ui_print "- Webview install selected"
-		download_webview
-		extract_webview
-	elif test "$INSTALL" -eq 1; then
-		ui_print '- Browser install selected'
-		download_browser
-		extract_browser
-	elif test "$INSTALL" -eq 2; then
-		ui_print "- Both webview and browser install selected"
-		download_browser
-		extract_browser
-		download_webview
-		extract_webview
+		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
+		. "$EXT_DATA"/WebviewManager/config.txt
 	fi
 }
 test_connection() {
@@ -165,42 +139,21 @@ do_bromite_browser() {
 }
 old_version() {
 	ui_print "- Checking whether this is a new install...."
-	if test ! -f ${EXT_DATA}/WebviewManager/version.txt; then
-		echo "OLD_BROWSER=0" >$VERSIONFILE
-		echo "OLD_WEBVIEW=0" >>$VERSIONFILE
-		. ${EXT_DATA}/WebviewManager/version.txt
+	if test ! -f "$EXT_DATA"/WebviewManager/version.txt; then
+		echo "OLD_BROWSER=0" >"$VERSIONFILE"
+		echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
+		. "$EXT_DATA"/WebviewManager/version.txt
 	else
-		. ${EXT_DATA}/WebviewManager/version.txt
-		if $? -ne 0; then
-			echo "OLD_BROWSER=0" >$VERSIONFILE
-			echo "OLD_WEBVIEW=0" >>$VERSIONFILE
-			. ${EXT_DATA}/WebviewManager/version.txt
+		. "$EXT_DATA"/WebviewManager/version.txt
+		if test $? -ne 0; then
+			echo "OLD_BROWSER=0" >"$VERSIONFILE"
+			echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
+			. "$EXT_DATA"/WebviewManager/version.txt
 		fi
 	fi
 }
-it_failed() {
-	# File wasn't found and all attempts to download failed
-	ui_print " "
-	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
-	ui_print " "
-	ui_print " Uh-oh, the installer encountered an issue!"
-	ui_print " It's probably one of these reasons:"
-	ui_print "	 1) Installer is corrupt"
-	ui_print "	 2) You didn't follow instructions"
-	ui_print "	 3) You have an unstable internet connection"
-	ui_print "	 4) Your ROM is broken"
-	ui_print "	 5) There's a *tiny* chance we screwed up"
-	ui_print " Please fix any issues and retry."
-	ui_print " If you feel this is a bug or need assistance, head to our telegram"
-	mv ${EXT_DATA}/WebviewManager/logs ${EXT_DATA}
-	rm -rf ${EXT_DATA}/WebviewManager/*
-	mv ${EXT_DATA}/logs ${EXT_DATA}/WebviewManager/
-	ui_print " "
-	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
-	ui_print " "
-	abort
-}
 download_webview() {
+	old_version
 	if test "$WEBVIEW" -eq 0; then
 		do_bromite_webview
 	elif test "$WEBVIEW" -eq 1; then
@@ -208,13 +161,18 @@ download_webview() {
 	else
 		do_ungoogled_webview
 	fi
-	if test -f ${EXT_DATA}/WebviewManager/apks/"$NAME"Webview.apk; then
-		if test "$OLD_WEBVIEW" -lt "$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')"; then
+	if test "$VF" -eq 1; then
+		ui_print "- Downloading ${NAME} webview, please be patient..."
+		dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk
+		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
+		echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+	fi
+	if test -f "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk; then
+		if test "$OLD_WEBVIEW" -lt "$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "- Downloading update for ${NAME} webview, please be patient..."
 			dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
-			verify_webview
 		else
 			ui_print "- Not a version upgrade! Using existing ${NAME} webview apk"
 		fi
@@ -224,10 +182,11 @@ download_webview() {
 		dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
-		verify_webview
 	fi
+	verify_webview
 }
 download_browser() {
+	old_version
 	if test "$BROWSER" -eq 0; then
 		do_bromite_browser
 	elif test "$BROWSER" -eq 1; then
@@ -235,8 +194,8 @@ download_browser() {
 	else
 		do_ungoogled_browser
 	fi
-	if test -f ${EXT_DATA}/WebviewManager/apks/"$NAME"Browser.apk; then
-		if test "$OLD_BROWSER" -lt "$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g')"; then
+	if test -f "$EXT_DATA"/WebviewManager/apks/"$NAME"Browser.apk; then
+		if test "$OLD_BROWSER" -lt "$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "- Downloading update for ${NAME} browser, please be patient..."
 			dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Browser.apk
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
@@ -251,20 +210,22 @@ download_browser() {
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
+	extract_browser
 }
 verify_webview() {
 	ui_print " Verifying ${NAME} webview files..."
 	if test $SUM_PRE != "not_implemented"; then
-		cd "${EXT_DATA}"/WebviewManager/apks || return
+		cd "$EXT_DATA"/WebviewManager/apks || return
 		wget -qO "$ARCH"_SystemWebView.apk.sha256.txt.tmp ${DL_URL}"${WEBVIEW_VER}"/${SUM_PRE}_"${WEBVIEW_VER}".sha256.txt
-		cp ${EXT_DATA}/WebviewManager/apks/"$NAME"Webview.apk "${ARCH}"_SystemWebView.apk
-		grep "$ARCH"_SystemWebView.apk "$ARCH"_SystemWebView.apk.sha256.txt.tmp >"$ARCH"_SystemWebView.apk.sha256.txt
-		sed "s|${ARCH}_SystemWebView|webview|" webview_"$NAME".apk.sha256.txt
-		sha256sum -sc webview_"$NAME".apk.sha256.txt
+		grep "$ARCH"_SystemWebView.apk "$ARCH"_SystemWebView.apk.sha256.txt.tmp >"$NAME"Webview.apk.sha256.txt
+		rm -fr "$ARCH"_SystemWebView.apk.sha256.txt.tmp
+		sed -i s/"$ARCH"_SystemWebView.apk/${NAME}Webview.apk/gi "$NAME"Webview.apk.sha256.txt
+		sha256sum -sc "$NAME"Webview.apk.sha256.txt >/dev/null
 		if test $? -ne 0; then
-			ui_print " Verification failed, retrying download"
-			rm -f ${EXT_DATA}/WebviewManager/apks/*webview*.apk
+			ui_print "- Verification failed, retrying download"
+			rm -f "$EXT_DATA"/WebviewManager/apks/*webview*.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
+			VF=1
 			if test ${TRY_COUNT} -ge 3; then
 				it_failed
 			else
@@ -273,34 +234,32 @@ verify_webview() {
 			fi
 		else
 			ui_print " Verified successfully. Proceeding..."
+			VF=0
+			extract_webview
 		fi
 	else
 		ui_print "- ${NAME} cannot be verified, as they don't publish sha256sums."
 	fi
-	rm "${ARCH}"_SystemWebView.apk* -f
 	cd "$TMPDIR" || return
 }
 create_overlay() {
 	cd "$TMPDIR" || return
+	ui_print "- Fixing system webview whitelist"
 	if test "${API}" -ge "29"; then
-		ui_print "- Android 10 or later detected"
-		aapt p -f -v -M "$MODPATH"/common/overlay10/AndroidManifest.xml \
-			-I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay10/res \
-			-F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
+		aapt p -f -v -M "$MODPATH"/common/overlay10/AndroidManifest.xml -I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay10/res -F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
 	else
-		ui_print "- Android version less than 10 detected"
-		aapt p -f -v -M "$MODPATH"/common/overlay9/AndroidManifest.xml \
-			-I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay9/res \
-			-F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
+		aapt p -f -v -M "$MODPATH"/common/overlay9/AndroidManifest.xml -I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay9/res -F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
 	fi
-	if [ -s "$MODPATH"/unsigned.apk ]; then
+	if test -f "$MODPATH"/unsigned.apk; then
 		sign "$MODPATH"/unsigned.apk "$MODPATH"/signed.apk
 		cp -rf "$MODPATH"/signed.apk "$MODPATH"/common/WebviewOverlay.apk
 		rm -rf "$MODPATH"/signed.apk "$MODPATH"/unsigned.apk
 	else
-		ui_print " Overlay creation has failed! Poorly developed ROMs have this issue"
-		ui_print " Compatibility is unlikely, please report this to your ROM developer"
+		ui_print "- Overlay creation has failed! Poorly developed ROMs have this issue"
+		ui_print "- Compatibility is unlikely, please report this to your ROM developer."
+		ui_print "- Some ROMs need a patch to fix this"
 	fi
+	cp -f "$MODPATH"/logs/aapt.log "$EXT_DATA"/WebviewManager/logs
 	if [ -d /product/overlay ]; then
 		OLP=/system/product/overlay
 	elif [ -d /vendor/overlay ]; then
@@ -313,61 +272,114 @@ create_overlay() {
 	echo "$OLP" >"$MODPATH"/overlay.txt
 }
 set_path() {
-	unset APKPATH
 	paths=$(cmd package dump com.android.webview | grep codePath)
-	APKPATH=${paths##*=}
-	[ -z "${APKPATH}" ] && paths=$(cmd package dump com.google.android.webview | grep codePath)
-	APKPATH=${paths##*=}
-	[ -z "${APKPATH}" ] && APKPATH="/system/app/webview"
+	A=${paths##*=}
+	unset paths
+	if test -z "$A"; then
+		A=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i webview | grep -iv library | grep -iv stub | grep -iv google)
+	fi
+	if test -z "$A"; then
+		A=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i webview | grep -iv library | grep -i stub | grep -iv google)
+	fi
+	paths=$(cmd package dump com.google.android.webview | grep codePath)
+	B=${paths##*=}
+	unset paths
+	if test -z "$B"; then
+		B=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv library | grep -iv stub | grep -iv overlay)
+	fi
+	if test -z "$B"; then
+		B=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv library | grep -i stub | grep -iv overlay)
+	fi
+	WPATH="/system/app/webview"
+	G=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv library | grep -iv stub | grep -i overlay)
 	paths=$(cmd package dump com.android.chrome | grep codePath)
-	APKPATH2=${paths##*=}
-	[ -z "${APKPATH2}" ] && paths=$(cmd package dump com.android.browser | grep codePath)
-	APKPATH2=${paths##*=}
-	[ -z "${APKPATH2}" ] && APKPATH2="/system/app/Chrome"
+	C=${paths##*=}
+	if test -z "$C"; then
+		C=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i chrome | grep -iv library | grep -iv stub)
+	fi
+	if test -z "$F"; then
+		F=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i chrome | grep -iv library | grep -i stub)
+	fi
+	unset paths
+	paths=$(cmd package dump com.android.browser | grep codePath)
+	D=${paths##*=}
+	unset paths
+	paths=$(cmd package dump org.lineageos.jelly | grep codePath)
+	E=${paths##*=}
+	BPATH="/system/app/browser"
 }
 extract_webview() {
 	ui_print "- Installing ${NAME} Webview"
-	cp_ch ${EXT_DATA}/WebviewManager/apks/"$NAME"Webview.apk "$MODPATH"$APKPATH/webview.apk || cp_ch ${EXT_DATA}/WebviewManager/apks/webview.apk "$MODPATH"$APKPATH/webview.apk
-	touch "$MODPATH"$APKPATH/.replace
-	cp "$MODPATH"$APKPATH/webview.apk "$TMPDIR"/webview.zip
+	if test ! -z "$A"; then
+		mktouch "$MODPATH""$A"/.replace
+	fi
+	if test ! -z "$B"; then
+		mktouch "$MODPATH""$B"/.replace
+	fi
+	if test ! -z "$G"; then
+		mktouch "$MODPATH""$G"/.replace
+	fi
+	cp_ch "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk "$MODPATH"$WPATH/webview.apk || cp_ch "$EXT_DATA"/WebviewManager/apks/webview.apk "$MODPATH"$WPATH/webview.apk
+	touch "$MODPATH"$WPATH/.replace
+	cp "$MODPATH"$WPATH/webview.apk "$TMPDIR"/webview.zip
 	mkdir "$TMPDIR"/webview -p
 	unzip -d "$TMPDIR"/webview "$TMPDIR"/webview.zip >/dev/null
-	cp -rf "$TMPDIR"/webview/lib "$MODPATH"$APKPATH/
-	mv "$MODPATH"$APKPATH/lib/arm64-v8a "$MODPATH"$APKPATH/lib/arm64
-	mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH/lib/arm
+	cp -rf "$TMPDIR"/webview/lib "$MODPATH"$WPATH/
+	mv "$MODPATH"$WPATH/lib/arm64-v8a "$MODPATH"$WPATH/lib/arm64
+	mv "$MODPATH"$WPATH/lib/armeabi-v7a "$MODPATH"$WPATH/lib/arm
 	rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.zip
 	create_overlay
 }
 extract_browser() {
 	ui_print "- Installing ${NAME} Browser"
-	mkdir -p "$MODPATH"$APKPATH2
-	touch "$MODPATH"$APKPATH2/.replace
-	cp_ch ${EXT_DATA}/WebviewManager/apks/"$NAME"Browser.apk "$MODPATH"$APKPATH2/browser.apk || cp_ch ${EXT_DATA}/WebviewManager/apks/browser.apk "$MODPATH"$APKPATH2/browser.apk
-	touch "$MODPATH"$APKPATH2/.replace
-	cp_ch "$MODPATH"$APKPATH2/browser.apk "$TMPDIR"/browser.zip
+	if test ! -z "$C"; then
+		mktouch "$MODPATH""$C"/.replace
+	fi
+	if test ! -z "$D"; then
+		mktouch "$MODPATH""$D"/.replace
+	fi
+	if test ! -z "$E"; then
+		mktouch "$MODPATH""$E"/.replace
+	fi
+	if test ! -z "$F"; then
+		mktouch "$MODPATH""$F"/.replace
+	fi
+	mkdir -p "$MODPATH"$BPATH
+	touch "$MODPATH"$BPATH/.replace
+	cp_ch "$EXT_DATA"/WebviewManager/apks/"$NAME"Browser.apk "$MODPATH"$BPATH/browser.apk || cp_ch "$EXT_DATA"/WebviewManager/apks/browser.apk "$MODPATH"$BPATH/browser.apk
+	touch "$MODPATH"$BPATH/.replace
+	cp_ch "$MODPATH"$BPATH/browser.apk "$TMPDIR"/browser.zip
 	mkdir -p "$TMPDIR"/browser
 	unzip -d "$TMPDIR"/browser "$TMPDIR"/browser.zip >/dev/null
-	cp -rf "$TMPDIR"/browser/lib "$MODPATH"$APKPATH2
-	mv "$MODPATH"/system/app/Chrome/lib/arm64-v8a "$MODPATH"$APKPATH2/lib/arm64
-	mv "$MODPATH"$APKPATH/lib/armeabi-v7a "$MODPATH"$APKPATH2/lib/arm
+	cp -rf "$TMPDIR"/browser/lib "$MODPATH"$BPATH
+	mv "$MODPATH"$BPATH/lib/arm64-v8a "$MODPATH"$BPATH/lib/arm64
+	mv "$MODPATH""$BPATH"/lib/armeabi-v7a "$MODPATH"$BPATH/lib/arm
 	rm -rf "$TMPDIR"/browser "$TMPDIR"/browser.zip
-	mv "$MODPATH"/product "$MODPATH"/system/product
 }
 online_install() {
 	ui_print "- Awesome, you have internet"
-	old_version
 	set_path
-	set_config
+	if test "$INSTALL" -eq 0; then
+		ui_print "     -> Webview install selected"
+		download_webview
+	elif test "$INSTALL" -eq 1; then
+		ui_print '     -> Browser install selected'
+		download_browser
+	elif test "$INSTALL" -eq 2; then
+		ui_print "     -> Both webview and browser install selected"
+		download_browser
+		download_webview
+	fi
 }
 offline_install() {
 	set_path
-	if test ! -f ${EXT_DATA}/WebviewManager/apks/webview.apk; then
+	if test ! -f "$EXT_DATA"/WebviewManager/apks/webview.apk; then
 		ui_print "- No webview.apk found!"
 	else
 		ui_print "- Webview.apk found! Using it."
 		extract_webview
 	fi
-	if test ! -f ${EXT_DATA}/WebviewManager/apks/browser.apk; then
+	if test ! -f "$EXT_DATA"/WebviewManager/apks/browser.apk; then
 		ui_print "- No browser.apk found!"
 	else
 		ui_print "- Browser.apk found! Using it"
@@ -407,20 +419,23 @@ clean_dalvik() {
 do_cleanup() {
 	ui_print "- Cleaning up..."
 	rm -f "$MODPATH"/system/app/placeholder
-	mkdir -p ${EXT_DATA}/WebviewManager/logs
+	mkdir -p "$EXT_DATA"/WebviewManager/logs
 	rm -f "$MODPATH"/*.md
 	ui_print "- Backing up important stuffs to module directory"
 	mkdir -p "$MODPATH"/backup/
 	cp /data/system/overlays.xml "$MODPATH"/backup/
+	cp -rf "$MODPATH"/product/* "$MODPATH"/system/product
+	cp -rf "$MODPATH"/system_ext/* "$MODPATH"/system/system_ext
+	rm -fr "$MODPATH"/product "$MODPATH"/system_ext
 	clean_dalvik
 }
-if test ${TRY_COUNT} -ge "5"; then
+if test ${TRY_COUNT} -ge "3"; then
 	it_failed
 else
 	do_install
 fi
 ui_print " "
-ui_print "ℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹ"
+ui_print "ℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹ"
 ui_print " "
 ui_print " Some OEM/Google things were remvoed during install, to avoid conflicts"
 ui_print " You can reinstall them, but do not request support if you do"
@@ -435,7 +450,7 @@ sleep 1
 ui_print " Donate at https://www.androidacy.com/donate/"
 ui_print " Website and blog is at https://www.androidacy.com"
 sleep 3
-ui_print "- Install apparently succeeded, please reboot ASAP"
+ui_print "-> Install apparently succeeded, please reboot ASAP"
 ui_print " "
-ui_print "ℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹ"
+ui_print "ℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹ"
 ui_print " "
