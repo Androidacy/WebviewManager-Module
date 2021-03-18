@@ -1,5 +1,4 @@
 # shellcheck shell=dash
-# Its broken okay?!?!
 # shellcheck disable=SC2155
 # shellcheck disable=SC2034
 # shellcheck disable=SC1090
@@ -18,6 +17,42 @@ abort() {
   exit 1
 }
 
+ it_failed() {
+	ui_print " "
+	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
+	ui_print " "
+	ui_print " Uh-oh, the installer encountered an issue!"
+	ui_print " It's probably one of these reasons:"
+	ui_print "	 1) Installer is corrupt"
+	ui_print "	 2) You didn't follow instructions"
+	ui_print "	 3) You have an unstable internet connection"
+	ui_print "	 4) Your ROM is broken"
+	ui_print "	 5) There's a *tiny* chance we screwed up"
+	ui_print " Please fix any issues and retry."
+	ui_print " If you feel this is a bug or need assistance, head to our telegram"
+	mv ${EXT_DATA}/WebviewManager/logs ${EXT_DATA}
+	rm -rf ${EXT_DATA}/WebviewManager/*
+	mv ${EXT_DATA}/logs ${EXT_DATA}/WebviewManager/
+	ui_print " "
+	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
+	ui_print " "
+	abort
+}
+detect_ext_data() {
+	touch /sdcard/.rw && rm /sdcard/.rw && EXT_DATA="/sdcard"
+	if test -z ${EXT_DATA}; then
+		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && EXT_DATA="/storage/emulated/0"
+	fi
+	if test -z ${EXT_DATA}; then
+		touch /data/media/0/.rw && rm /data/media/0/.rw && EXT_DATA="/data/media/0"
+	fi
+	if test -z ${EXT_DATA}; then
+		ui_print "- Internal storage doesn't seem to be writable!" 
+		it_failed
+	fi
+}
+detect_ext_data
+
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return
   local APEX DEST
@@ -31,13 +66,11 @@ mount_apex() {
       unzip -qo $APEX apex_payload.img -d /apex
       loop_setup apex_payload.img
       if [ -n "$LOOPDEV" ]; then
-        ui_print "- Mounting $DEST"
         mount -t ext4 -o ro,noatime $LOOPDEV $DEST
       fi
       rm -f apex_payload.img
     elif [ -d $APEX ]; then
       # APEX folders, bind mount directory
-      ui_print "- Mounting $DEST"
       mount -o bind $APEX $DEST
     fi
   done
@@ -74,10 +107,10 @@ umount_apex() {
 cleanup() {
   rm -rf $MODPATH/common 2>/dev/null
   ui_print " "
-  ui_print "    **************************************"
-  ui_print "    *   MMT Extended by Zackptg5 @ XDA   *"
-  ui_print "    *      Modified by Androidacy        *"
-  ui_print "    **************************************"
+  ui_print "    ***********************************"
+  ui_print "    *   MMT Extended by Zackptg5    *"
+  ui_print "    *       Modified by Androidacy        *"
+  ui_print "    ***********************************"
   ui_print " "
 }
 
@@ -153,8 +186,6 @@ install_script() {
     -p) shift; local INPATH=$NVBASE/post-fs-data.d;;
     *) local INPATH=$NVBASE/service.d;;
   esac
-  # shellcheck disable=SC2143
-  [ "$(grep "#!/system/bin/sh" $1)" ] || sed -i "1i #!/system/bin/sh" $1
   local i; for i in "MODPATH" "LIBDIR" "MODID" "INFO" "MODDIR"; do
     case $i in
       "MODPATH") sed -i "1a $i=$NVBASE/modules/$MODID" $1;;
@@ -178,8 +209,8 @@ prop_process() {
 }
 
 # Check for min/max api version
-[ -z $MINAPI ] || { [ $API -lt $MINAPI ] && abort "! Your system API of $API is less than the minimum api of $MINAPI! Aborting!"; }
-[ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && abort "! Your system API of $API is greater than the maximum api of $MAXAPI! Aborting!"; }
+[ -z $MINAPI ] || { [ $API -lt $MINAPI ] && ui_print "! Your system API of $API is less than the minimum api of $MINAPI! Aborting!" && it_failed;}
+[ -z $MAXAPI ] || { [ $API -gt $MAXAPI ] && ui_print "! Your system API of $API is greater than the maximum api of $MAXAPI! Aborting!" && it_failed; }
 
 # Set variables
 [ $API -lt 26 ] && DYNLIB=false
@@ -198,11 +229,9 @@ fi
 
 # Debug
 if $DEBUG; then
-  ui_print "- Debug mode"
-  ui_print "  Module install log will include debug info"
-  ui_print "  It's in /data/media/0/WebviewManager/logs"
-  mkdir -p /data/media/0/WebviewManager/logs/
-  exec 2>/data/media/0/WebviewManager/logs/install.log 
+  ui_print "- Logging to [Internal Storage]/WebviewManager/logs"
+  mkdir -p "$EXT_DATA"/WebviewManager/logs/
+  exec 2>"$EXT_DATA"/WebviewManager/logs/install.log 
   set -x
 fi
 
