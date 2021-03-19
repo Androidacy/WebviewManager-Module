@@ -1,7 +1,7 @@
 # Webview Switcher
 ## An Androidacy Project
 
-### Be sure to check out our new module, Fontifier!
+### **Be sure to check out our new module, Fontifier!**
 
 - Downloads are [here](https://dl.androidacy.com/?eeFolder=Magisk-Modules&eeListID=1)
 
@@ -9,25 +9,23 @@
 
 - XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
 
-### Website
+## Website
 
-- Main site: [https://www.androidacy.com/](https://www.androidacy.com/).
+- Main site: [click me](https://www.androidacy.com/).
 
-- Blog/Updates: [https://www.androidacy.com/blog/](https://www.androidacy.com/blog/).
+- Blog/Updates: [right here](https://www.androidacy.com/blog/).
 
-<sub>As ironic as running ads is, by disabling adblock on my website you are supporting us and this project.</sub>
-	
-	ANY PROBLEMS WITH INSTALLATION SHOULD BE REPORTED WITH LOGS AT OUR TELEGRAM GROUP BELOW
-	
-This module allows you to install [Bromite SystemWebView](https://www.bromite.org/system_web_view) systemless-ly by default, or any available in config.txt
+## What is this?
 
-Most useful features of Bromite (the default) are that you can block ads, trackers and resist fingerprinting; see the full features list [here](https://github.com/bromite/bromite/blob/master/README.md#features)
+With this module, you can install several different default browsers and webviews. Take a peak in [config.txt](https://github.com/androidacy/WebviewSwitcher/blob/master/config.txt) for more information!
 
-The module will always download the latest version of the webview and browser (if not disabled), to update it just reflash the module
+Different webviews and browser have additional advantages to the default ones: they are often more up to date, secure, privacy friendly, and better performing!
 
-The latest update should now work on all ROMs Android v7.0+. Any ROM Android v5.1+ should theoretically be compatible (beware issues on 5.x & 6.x ROMs).
+The module will always download the latest version of the webview and/or browser, to update it just reflash the module!
 
-### What is a WebView?
+The latest update should now work on all ROMs Android v7.0+. ROMs versions 5.x to 6.x are not explicitly supported.
+
+## What is a WebView?
 
 Webview is a shared component between apps to display web content instead of directing to a browser. It's like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include email, wewbview wrapper apps, or even some banking apps. Even the Google app uses a webview.
 
@@ -50,9 +48,9 @@ The logging code used was orginally developed and copyright John Fawkes, and mod
 ## ETAs/ Versions
 
 This module downloads the latest browser and/or webview APK every time it is flashed. We will otherwise update when We have time. 
-At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although We recomusnd waiting for us to do a release on https://dl.androidacy.com, click in magisk modules then bromitewebview
+At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although We recomusnd waiting for us to do a release on [the filehost](https://dl.androidacy.com}), click on magisk modules then bromitewebview
 
-If you use F-Droid, you can add the bromite official F-Droid repository to keep the app updated
+In addition, there may be third party ways to update any apps that can be installed with the module. We do not endorse nor create these ways!
 
 ## Changelog
 
@@ -60,35 +58,34 @@ If you use F-Droid, you can add the bromite official F-Droid repository to keep 
 
 ## Donations
 
-Donations for us: [here](https://www.androidacy.com/donate/)
+Donations: [here](https://www.androidacy.com/donate/)
 
-Donations for Bromite can be found in the links below 
-
+We recommend you check out the websites of the developers of the included apps for donation links.
 
 ## Support
 
-Any issues with Bromite itself should be filed in the [Bromite issue tracker](https://github.com/bromite/bromite/issues).
+Any issues with any bundled app should be reported to the respective developer, not us.
 
 Issues with the module should be filed [here](https://github.com/Magisk-Modules-Repo/bromitewebview/issues/).
 
-Our XDA thread is [here](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
+The XDA thread is [here](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
 
-Our telegram is [here](https://t.me/androidacy_announce)
+The telegram channel is [here](https://t.me/androidacy_announce)
 
-Here is our [Discord](https://discord.gg/gTnDxQ6)
+Here is our [Discord](https://discord.gg/gTnDxQ6) [very inactive]
 
 
 ## Compatibility
 
-- Android 5.x to 10.0 (7.x+ recommended). 
-  - Android 11 is not officially supported. Your mileage may vary!
-  - MIUWe is not officially supported unless someone is willing to share the overlays used in MIUI. We have mixed results from testers in how well it works.
-- Magisk v20.1+ recommended
-- **Recomusnded to flash through magisk manager**
-	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the offline install usthod
+- Android 5.x to 11.0 (7.x+ recommended). 
+  - Some heavily customized stock ROMs may have issues. This is especially true on android 11!
+  - MIUI is not officially supported for the aforementioned reason. Some people have had success with debloating the stock bloatware.
+- Magisk v20.1+ required!
+- **Recommended to flash through magisk manager**
+	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the offline install method. Note we do not provide support for this!
 - SELinux enforcing/pernissive
 
 ## Other resources
 
-* [Bromite SystemWebView wiki page for reference](https://github.com/bromite/bromite/wiki/Installing-SystemWebView). The information there is not the most effective method but is linked for reference.
-* [Upstream repository](https://github.com/androidacy/WebviewManager). All development is done here until stable release.
+* [Bromite SystemWebView wiki page for reference](https://github.com/bromite/bromite/wiki/Installing-SystemWebView). **The information there is outdated and has a risk of bricking your device, but is linked for reference.**
+* [Upstream repository](https://github.com/androidacy/WebviewSwitcher). All development is done here until stable release.
