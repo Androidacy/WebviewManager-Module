@@ -19,5 +19,5 @@ rm -rf /storage/emulated/0/WebviewManager
 rm -rf /data/adb/service.d/ws-cleanup.sh
 exit 0" >/data/adb/service.d/ws-cleanup.sh
 chmod 755 /data/adb/service.d/ws-cleanup.sh
-sleep 5
+sleep 1
 reboot
