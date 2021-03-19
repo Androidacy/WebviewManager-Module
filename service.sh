@@ -11,6 +11,7 @@ exec 3>&2 2>"$MODDIR"/logs/service-verbose.log
 set -x 2
 set -euo pipefail
 trap 'exxit $?' EXIT
+# shellcheck disable=SC1090
 . "${MODDIR}"/status.txt
 if test "$INSTALL" != 'true'; then
 	INSTALL=false
@@ -23,8 +24,8 @@ if ! $INSTALL; then
 	while test "$(getprop sys.boot_completed)" != "1" && test ! -d /storage/emulated/0/Android; do
 		sleep 3
 	done
-	pm install -r -g $(find ${MODDIR} | grep webview[.]apk) 2>&3
-	pm install -r -g $(find ${MODDIR} | grep browser[.]apk) 2>&3
+	pm install -r -g "$(find "${MODDIR}" | grep 'webview[.]apk')" 2>&3
+	pm install -r -g "$(find "${MODDIR}" | grep 'browser[.]apk')" 2>&3
 	echo "Installed webview as user app.."
 	if pm list packages -a | grep -q com.android.chrome 2>&3; then
 		pm disable com.android.chrome 2>&3
@@ -42,4 +43,4 @@ fi
 	find "$MODDIR"
 } >"$FINDLOG"
 tail -n +1 "$MODDIR"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/complete.log
-cp -rf "$MODDIR"/logs /storage/emulated/0/WebviewManager/
+cp -rf "$MODDIR"/logs/* /storage/emulated/0/WebviewManager/

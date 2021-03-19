@@ -1,7 +1,7 @@
 # Config file for Webview Switcher
 # If ivvalid values are found, or this file is missing, then the module falls back to the default in parenthesis
-# DO NOT CHANGE THIS
-CV="5"
+
+CV="5" # DO NOT CHANGE THIS
 
 # Should we do a completely offline install?
 # To use an apk, place in /sdcard/WebviewManager/apks with the appropriate name, eg webview.apk is for webview and browser.apk for browser
