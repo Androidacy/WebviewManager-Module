@@ -1,6 +1,19 @@
 
 # Changelog
 
+<h4>8.0.0</h4>
+
+- Huge refactor
+- Support android 11
+- Change default back to only installing bromite webview.
+  - Make sure to edit config.txt appropriately, and place in /sdcard/WebviewManager
+- Code optimization
+- Add support for extensions version of ungoogled-chromium
+- Seperate browser and webview choice
+- Remove most checks in offline mode
+- Add better error handling
+- Fix some events don't properly trigger an install abort
+
 <h4>7.3.0</h4>
 
 - Misc code refactoring
