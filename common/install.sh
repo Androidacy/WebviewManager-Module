@@ -29,14 +29,6 @@ dl() {
 	fi
 	"$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
-if test -d "$EXT_DATA"/bromite; then
-	ui_print "- Major version upgrade! Performing migration!"
-	rm -rf "$EXT_DATA"/bromite
-fi
-if test -d "$EXT_DATA"/WebviewSwitcher; then
-	ui_print "- Major version upgrade! Performing migration!"
-	rm -rf "$EXT_DATA"/bromite
-fi
 # TODO: Reevaluate used sepolicy
 # magiskpolicy --live "allow system_server untrusted_app_25_devpts chr_file { read write }"
 magiskpolicy --live "allow system_server sdcardfs file { read write }"
