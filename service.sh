@@ -11,6 +11,20 @@ exec 3>&2 2>"$MODDIR"/logs/service-verbose.log
 set -x 2
 set -euo pipefail
 trap 'exxit $?' EXIT
+detect_ext_data() {
+	touch /sdcard/.rw && rm /sdcard/.rw && EXT_DATA="/sdcard/WebviewManager"
+	if test -z ${EXT_DATA}; then
+		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && EXT_DATA="/storage/emulated/0/WebviewManager"
+	fi
+	if test -z ${EXT_DATA}; then
+		touch /data/media/0/.rw && rm /data/media/0/.rw && EXT_DATA="/data/media/0/WebviewManager"
+	fi
+	if test -z ${EXT_DATA}; then
+		ui_print "- Internal storage doesn't seem to be writable!"
+		it_failed
+	fi
+}
+detect_ext_data
 # shellcheck disable=SC1090
 . "${MODDIR}"/status.txt
 if test "$INSTALL" != 'true'; then
@@ -43,4 +57,4 @@ fi
 	find "$MODDIR"
 } >"$FINDLOG"
 tail -n +1 "$MODDIR"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/complete.log
-cp -rf "$MODDIR"/logs/* /storage/emulated/0/WebviewManager/
+cp -rf "$MODDIR"/logs/* "$EXT_DATA"

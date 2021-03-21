@@ -23,7 +23,7 @@ fi
 FINDLOG="$MODDIR"/logs/find.log
 PROPSLOG="$MODDIR"/logs/props.log
 touch "$FINDLOG"
-OL="com.linuxandria.WebviewOverlay"
+OL="org.androidacy.WebviewOverlay"
 LIST="/data/system/overlays.xml"
 DR="$(cat "$MODDIR"/overlay)"
 API="$(getprop ro.build.version.sdk)"
@@ -41,14 +41,12 @@ if test "$API" -lt "27"; then
 else
 	STATE="6"
 fi
-if grep 'com.linuxandria.android.webviewoverlay' /data/system/overlays.xml; then
-	sed -i "s|com.linuxandria.android.webviewoverlay|com.linuxandria.WebviewOverlay|g"
-	echo "Overlay needs updated, done"
-fi
+sed -i "/com.linuxandria.WebviewOverlay/d" "$LIST"
+sed -i "/com.linuxandria.android.webviewoverlay/d" "$LIST"
 if ! $OVERLAY; then
 	echo "Forcing the system to register our overlay..."
 	sed -i "/item packageName=\"${OL}\"/d" /data/system/overlays.xml
-	sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${STATE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"1\" /></overlays>|" $LIST
+	sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${STATE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"9999\" /></overlays>|" $LIST
 	sed -i "/OVERLAY/d" "${MODDIR}"/status.txt
 	echo "OVERLAY=true" >>"${MODDIR}"/status.txt
 fi

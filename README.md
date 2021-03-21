@@ -41,16 +41,16 @@ Chromium is created by and copyright [The Chromium Project](http://www.chromium.
 
 All binaries utilized and the original MMT-Extended template are developed by and copyright Zackptg5 excluding BusyBox and the original installer template which is built by and copyright John Wu. The upstream binaries are copyright and developed by the original authors.
 
-Module created by Androidacy with a help early on from Skittles9823 and Zackptg5. The module is licensed under Apache-2.0 effective November 24, 2020, see the LICENSE file. Any versions released before that date were licensed under GPL 2.0.
+Module created by Androidacy with help early on from Skittles9823 and Zackptg5. The module is licensed under Apache-2.0.
 
-The logging code used was orginally developed and copyright John Fawkes, and modified later by Androidacy
+The logging code used was orginally developed by and copyright John Fawkes, and modified later by Androidacy
 
 ## ETAs/ Versions
 
 This module downloads the latest browser and/or webview APK every time it is flashed. We will otherwise update when We have time. 
-At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although We recomusnd waiting for us to do a release on [the filehost](https://dl.androidacy.com}), click on magisk modules then bromitewebview
+At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although you should wait for us to do a release on [the filehost](https://dl.androidacy.com}), click on magisk modules then bromitewebview
 
-In addition, there may be third party ways to update any apps that can be installed with the module. We do not endorse nor create these ways!
+In addition, there may be third party ways to update any apps that can be installed with the module. We do not endorse nor did we create these ways!
 
 ## Changelog
 
