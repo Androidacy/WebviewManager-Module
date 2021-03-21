@@ -34,36 +34,38 @@ it_failed() {
 	ui_print " "
 	exit 1
 }
-EXT_DATA_EXISTS=false
-detect_ext_data() {
-	touch /sdcard/.rw && rm /sdcard/.rw && EXT_DATA="/sdcard/WebviewManager" && EXT_DATA_EXISTS=true
-	if test ! "$EXT_DATA_EXISTS"; then
-		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && EXT_DATA="/storage/emulated/0/WebviewManager" && EXT_DATA_EXISTS=true
-	fi
-	if test ! "$EXT_DATA_EXISTS"; then
-		touch /data/media/0/.rw && rm /data/media/0/.rw && EXT_DATA="/data/media/0/WebviewManager" && EXT_DATA_EXISTS=true
-	fi
-	if test ! "$EXT_DATA_EXISTS"; then
-		ui_print "- Internal storage doesn't seem to be writable!"
-		it_failed
-	fi
-}
-detect_ext_data
+INSTALL=false
 # shellcheck disable=SC1090
 . "${MODDIR}"/status.txt
-if test "$INSTALL" != 'true'; then
-	INSTALL=false
-fi
 FINDLOG=$MODDIR/logs/find.log
 VERBOSELOG=$MODDIR/logs/service-verbose.log
 touch "$VERBOSELOG"
 echo "Started at $(date)"
+while test ! -d /storage/emulated/0/Android; do
+	sleep 1
+done
+EXT_DATA_EXISTS=false
+detect_ext_data() {
+	touch /sdcard/.rw && rm /sdcard/.rw && EXT_DATA="/sdcard/WebviewManager" EXT_DATA_EXISTS=true
+	if test ! "$EXT_DATA_EXISTS"; then
+		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && EXT_DATA="/storage/emulated/0/WebviewManager" EXT_DATA_EXISTS=true
+	fi
+	if test ! "$EXT_DATA_EXISTS"; then
+		touch /data/media/0/.rw && rm /data/media/0/.rw && EXT_DATA="/data/media/0/WebviewManager" EXT_DATA_EXISTS=true
+	fi
+	if test ! "$EXT_DATA_EXISTS"; then
+		echo "- Internal storage doesn't may not be writable!"
+		EXT_DATA="/storage/emulated/0/WebviewManager"
+	fi
+}
+detect_ext_data
 if ! $INSTALL; then
-	while test "$(getprop sys.boot_completed)" != "1" && test ! -d /storage/emulated/0/Android; do
-		sleep 3
-	done
-	pm install -r -g "$(find "${MODDIR}" | grep 'webview[.]apk')" 2>&3
-	pm install -r -g "$(find "${MODDIR}" | grep 'browser[.]apk')" 2>&3
+	if find "${MODDIR}" | grep -i 'webview[.]apk'; then
+		pm install -r -g "$(find "${MODDIR}" | grep -i 'webview[.]apk')" 2>&3
+	fi
+	if find "${MODDIR}" | grep -i 'browser[.]apk'; then
+		pm install -r -g "$(find "${MODDIR}" | grep -i 'browser[.]apk')" 2>&3
+	fi
 	echo "Installed webview as user app.."
 	if pm list packages -a | grep -q com.android.chrome 2>&3; then
 		pm uninstall com.android.chrome 2>&3
@@ -77,11 +79,12 @@ if ! $INSTALL; then
 else
 	echo "Skipping install, as the needed files are not present. This is most likely because they've already been installed"
 fi
+touch "$FINDLOG"
 {
-	echo "SDCARD DIR contains:\n"
-	find /storage/emulated/0/WebviewManager
-	echo "\nModule DIR contains:\n"
+	echo -n "SDCARD DIR contains:"
+	find "$EXT_DATA"
+	echo -n "Module DIR contains:"
 	find "$MODDIR"
 } >"$FINDLOG"
-tail -n +1 "$MODDIR"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/complete.log
-cp -rf "$MODDIR"/logs/* "$EXT_DATA"
+tail -n +1 "$EXT_DATA"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/full.log
+cp -rf "$MODDIR"/logs/full.log "$EXT_DATA"/logs

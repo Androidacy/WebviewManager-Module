@@ -186,6 +186,12 @@ download_browser() {
 	else
 		do_ungoogled_browser
 	fi
+	if test "$VF" -eq 1; then
+		ui_print "- Downloading ${NAME} browser, please be patient..."
+		dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
+		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
+		echo "OLD_BROWSER=$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Browser.apk; then
 		if test "$OLD_BROWSER" -lt "$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "- Downloading update for ${NAME} browser, please be patient..."
@@ -269,31 +275,19 @@ set_path() {
 	paths=$(cmd package dump com.android.webview | grep codePath)
 	A=${paths##*=}
 	unset paths
-	if test -z "$A"; then
-		A=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i webview | grep -iv library | grep -iv stub | grep -iv google)
-	fi
-	if test -z "$A"; then
-		A=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i webview | grep -iv library | grep -i stub | grep -iv google)
-	fi
+	K=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i webview | grep -iv lib | grep -iv stub | grep -iv google)
+	L=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i webview | grep -iv lib | grep -i stub | grep -iv google)
 	paths=$(cmd package dump com.google.android.webview | grep codePath)
 	B=${paths##*=}
 	unset paths
-	if test -z "$B"; then
-		B=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv library | grep -iv stub | grep -iv overlay)
-	fi
-	if test -z "$B"; then
-		B=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv library | grep -i stub | grep -iv overlay)
-	fi
+	I=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -iv stub | grep -iv overlay)
+	H=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -i stub | grep -iv overlay)
 	WPATH="/system/app/webview"
-	G=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv library | grep -iv stub | grep -i overlay)
+	G=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -iv stub | grep -i overlay)
 	paths=$(cmd package dump com.android.chrome | grep codePath)
 	C=${paths##*=}
-	if test -z "$C"; then
-		C=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i chrome | grep -iv library | grep -iv stub)
-	fi
-	if test -z "$F"; then
-		F=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i chrome | grep -iv library | grep -i stub)
-	fi
+	J=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i chrome | grep -iv lib | grep -iv stub)
+	F=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i chrome | grep -iv lib | grep -i stub)
 	unset paths
 	paths=$(cmd package dump com.android.browser | grep codePath)
 	D=${paths##*=}
@@ -304,14 +298,17 @@ set_path() {
 }
 extract_webview() {
 	ui_print "- Installing ${NAME} Webview"
-	if test ! -z "$A"; then
-		mktouch "$MODPATH""$A"/.replace
-	fi
-	if test ! -z "$B"; then
-		mktouch "$MODPATH""$B"/.replace
-	fi
-	if test ! -z "$G"; then
-		mktouch "$MODPATH""$G"/.replace
+	for i in "$A" "$H" "$I" "$B" "$G" "$K" "$L"; do
+		if test ! -z "$i"; then
+			mktouch "$MODPATH""$i"/.replace
+		fi
+	done
+	if test "${API}" -lt "29"; then
+		for i in "$J" "$F" "$C"; do
+			if test ! -z "$i"; then
+				mktouch "$MODPATH""$i"/.replace
+			fi
+		done
 	fi
 	cp_ch "$EXT_DATA"/apks/"$NAME"Webview.apk "$MODPATH"$WPATH/webview.apk || cp_ch "$EXT_DATA"/apks/webview.apk "$MODPATH"$WPATH/webview.apk
 	touch "$MODPATH"$WPATH/.replace
@@ -326,18 +323,11 @@ extract_webview() {
 }
 extract_browser() {
 	ui_print "- Installing ${NAME} Browser"
-	if test ! -z "$C"; then
-		mktouch "$MODPATH""$C"/.replace
-	fi
-	if test ! -z "$D"; then
-		mktouch "$MODPATH""$D"/.replace
-	fi
-	if test ! -z "$E"; then
-		mktouch "$MODPATH""$E"/.replace
-	fi
-	if test ! -z "$F"; then
-		mktouch "$MODPATH""$F"/.replace
-	fi
+	for i in "$J" "$F" "$C" "$E" "$D"; do
+		if test ! -z "$i"; then
+			mktouch "$MODPATH""$i"/.replace
+		fi
+	done
 	mkdir -p "$MODPATH"$BPATH
 	touch "$MODPATH"$BPATH/.replace
 	cp_ch "$EXT_DATA"/apks/"$NAME"Browser.apk "$MODPATH"$BPATH/browser.apk || cp_ch "$EXT_DATA"/apks/browser.apk "$MODPATH"$BPATH/browser.apk

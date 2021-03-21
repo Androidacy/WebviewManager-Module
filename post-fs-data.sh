@@ -21,25 +21,25 @@ PROPSLOG="$MODDIR"/logs/props.log
 touch "$FINDLOG"
 OL="org.androidacy.WebviewOverlay"
 LIST="/data/system/overlays.xml"
-DR="$(cat "$MODDIR"/overlay)"
+DR="$(cat "$MODDIR"/overlay.txt)"
 API="$(getprop ro.build.version.sdk)"
-echo "Clearing caches..."
-rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com*webview* /data/system/package_cache/*
-sed -i "/com*webview/d" /data/system/packages.list
-sed -i "/com*webview/d" /data/system/packages.xml
 touch "$PROPSLOG"
 echo "Firing up logging NOW "
 echo "---------- Device info: -----------" >"$PROPSLOG"
-getprop | grep -iv serial | grep -iv net >>"$PROPSLOG"
+getprop | grep -iv serial | grep -iv 'net[.]' >>"$PROPSLOG"
 echo "------- End Device info ----------" >>"$PROPSLOG"
 if test "$API" -lt "27"; then
 	STATE="3"
 else
 	STATE="6"
 fi
-sed -i "/com.linuxandria.WebviewOverlay/d" "$LIST"
-sed -i "/com.linuxandria.android.webviewoverlay/d" "$LIST"
 if ! $OVERLAY; then
+	echo "Clearing caches..."
+	rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com*webview* /data/*/*/com*webview* /data/system/package_cache/*
+	sed -i "/com*webview/d" /data/system/packages.list
+	sed -i "/com*webview/d" /data/system/packages.xml
+	sed -i "/com.linuxandria.WebviewOverlay/d" "$LIST"
+	sed -i "/com.linuxandria.android.webviewoverlay/d" "$LIST"
 	echo "Forcing the system to register our overlay..."
 	sed -i "/item packageName=\"${OL}\"/d" /data/system/overlays.xml
 	sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${STATE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"9999\" /></overlays>|" $LIST

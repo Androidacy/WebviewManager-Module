@@ -239,7 +239,7 @@ fi
 
 # Debug
 if $DEBUG; then
-  ui_print "- Logging verbosely to ${EXT_DATA}/WebviewManager/logs"
+  ui_print "- Logging verbosely to ${EXT_DATA}/logs"
   mkdir -p "$EXT_DATA"/logs/
   mkdir -p "$EXT_DATA"/apks/
   exec 2>"$EXT_DATA"/logs/install.log
