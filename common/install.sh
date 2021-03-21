@@ -8,7 +8,7 @@ OLD_BROWSER=0
 AVER=$(resetprop ro.build.version.release)
 ui_print "- Android ${AVER}, API level ${API}, arch ${ARCH} device detected"
 mkdir "$MODPATH"/logs
-VERSIONFILE="$EXT_DATA/WebviewManager/version.txt"
+VERSIONFILE="$EXT_DATA/version.txt"
 alias aapt='"$MODPATH"/common/tools/aapt-"$ARCH"'
 alias sign='"$MODPATH"/common/tools/zipsigner'
 chmod -R 0755 "$MODPATH"/common/tools
@@ -51,31 +51,31 @@ fi
 check_config() {
 	if test "$CV" -ne 5; then
 		ui_print "- Invalid config version! Using defaults"
-		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
-		. "$EXT_DATA"/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"
+		. "$EXT_DATA"/config.txt
 	fi
 	if test "$INSTALL" -ne 0 && test "$INSTALL" -ne 1 && test "$INSTALL" -ne 2; then
 		ui_print "- Invalid config value for INSTALL! Using defaults"
-		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
-		. "$EXT_DATA"/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"
+		. "$EXT_DATA"/config.txt
 	elif test "$WEBVIEW" -ne 0 && test "$WEBVIEW" -ne 1 && test "$WEBVIEW" -ne 2; then
 		ui_print "- Invalid config value for INSTALL! Using defaults"
-		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
-		. "$EXT_DATA"/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"
+		. "$EXT_DATA"/config.txt
 	elif test "$BROWSER" -ne 0 && test "$BROWSER" -ne 1 && test "$BROWSER" -ne 2 && test "$BROWSER" -ne 3; then
 		ui_print "- Invalid config value for INSTALL! Using defaults"
-		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
-		. "$EXT_DATA"/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"
+		. "$EXT_DATA"/config.txt
 	fi
 }
 set_config() {
 	ui_print "- Setting configs..."
-	if test -f "$EXT_DATA"/WebviewManager/config.txt; then
-		. "$EXT_DATA"/WebviewManager/config.txt
+	if test -f "$EXT_DATA"/config.txt; then
+		. "$EXT_DATA"/config.txt
 		if test $? -ne 0; then
 			ui_print "- Invalid config file! Using defaults"
-			cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
-			. "$EXT_DATA"/WebviewManager/config.txt
+			cp "$MODPATH"/config.txt "$EXT_DATA"
+			. "$EXT_DATA"/config.txt
 		else
 			check_config
 		fi
@@ -83,8 +83,8 @@ set_config() {
 		ui_print "- No config found, using defaults"
 		ui_print "     -> Only install bromite webview"
 		ui_print "- Make sure if you want/need a custom setup to edit config.txt"
-		cp "$MODPATH"/config.txt "$EXT_DATA"/WebviewManager
-		. "$EXT_DATA"/WebviewManager/config.txt
+		cp "$MODPATH"/config.txt "$EXT_DATA"
+		. "$EXT_DATA"/config.txt
 	fi
 }
 test_connection() {
@@ -139,16 +139,16 @@ do_bromite_browser() {
 }
 old_version() {
 	ui_print "- Checking whether this is a new install...."
-	if test ! -f "$EXT_DATA"/WebviewManager/version.txt; then
+	if test ! -f "$EXT_DATA"/version.txt; then
 		echo "OLD_BROWSER=0" >"$VERSIONFILE"
 		echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
-		. "$EXT_DATA"/WebviewManager/version.txt
+		. "$EXT_DATA"/version.txt
 	else
-		. "$EXT_DATA"/WebviewManager/version.txt
+		. "$EXT_DATA"/version.txt
 		if test $? -ne 0; then
 			echo "OLD_BROWSER=0" >"$VERSIONFILE"
 			echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
-			. "$EXT_DATA"/WebviewManager/version.txt
+			. "$EXT_DATA"/version.txt
 		fi
 	fi
 }
@@ -163,14 +163,14 @@ download_webview() {
 	fi
 	if test "$VF" -eq 1; then
 		ui_print "- Downloading ${NAME} webview, please be patient..."
-		dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk
+		dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
-	if test -f "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk; then
+	if test -f "$EXT_DATA"/apks/"$NAME"Webview.apk; then
 		if test "$OLD_WEBVIEW" -lt "$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "- Downloading update for ${NAME} webview, please be patient..."
-			dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk
+			dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -179,7 +179,7 @@ download_webview() {
 	else
 		ui_print "- No existing apk found for ${NAME} webview!"
 		ui_print "- Downloading ${NAME} webview, please be patient..."
-		dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk
+		dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -194,10 +194,10 @@ download_browser() {
 	else
 		do_ungoogled_browser
 	fi
-	if test -f "$EXT_DATA"/WebviewManager/apks/"$NAME"Browser.apk; then
+	if test -f "$EXT_DATA"/apks/"$NAME"Browser.apk; then
 		if test "$OLD_BROWSER" -lt "$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "- Downloading update for ${NAME} browser, please be patient..."
-			dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Browser.apk
+			dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 			echo "OLD_BROWSER=$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -206,7 +206,7 @@ download_browser() {
 	else
 		ui_print "- No existing apk found for ${NAME} browser!"
 		ui_print "- Downloading ${NAME} browser, please be patient..."
-		dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/WebviewManager/apks/"$NAME"Browser.apk
+		dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -215,7 +215,7 @@ download_browser() {
 verify_webview() {
 	ui_print " Verifying ${NAME} webview files..."
 	if test $SUM_PRE != "not_implemented"; then
-		cd "$EXT_DATA"/WebviewManager/apks || return
+		cd "$EXT_DATA"/apks || return
 		wget -qO "$ARCH"_SystemWebView.apk.sha256.txt.tmp ${DL_URL}"${WEBVIEW_VER}"/${SUM_PRE}_"${WEBVIEW_VER}".sha256.txt
 		grep "$ARCH"_SystemWebView.apk "$ARCH"_SystemWebView.apk.sha256.txt.tmp >"$NAME"Webview.apk.sha256.txt
 		rm -fr "$ARCH"_SystemWebView.apk.sha256.txt.tmp
@@ -223,7 +223,7 @@ verify_webview() {
 		sha256sum -sc "$NAME"Webview.apk.sha256.txt >/dev/null
 		if test $? -ne 0; then
 			ui_print "- Verification failed, retrying download"
-			rm -f "$EXT_DATA"/WebviewManager/apks/*webview*.apk
+			rm -f "$EXT_DATA"/apks/*webview*.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			VF=1
 			if test ${TRY_COUNT} -ge 3; then
@@ -257,10 +257,12 @@ create_overlay() {
 	else
 		ui_print "- Overlay creation has failed! Poorly developed ROMs have this issue"
 		ui_print "- Compatibility is unlikely, please report this to your ROM developer."
-		ui_print "- Some ROMs need a patch to fix this"
+		ui_print "- Some ROMs need a patch to fix this."
 	fi
-	cp -f "$MODPATH"/logs/aapt.log "$EXT_DATA"/WebviewManager/logs
-	if [ -d /product/overlay ]; then
+	cp -f "$MODPATH"/logs/aapt.log "$EXT_DATA"/logs
+	if [ -d /system_ext/overlay ]; then
+		OLP=/system/system_ext/overlay
+	elif [ -d /product/overlay ]; then
 		OLP=/system/product/overlay
 	elif [ -d /vendor/overlay ]; then
 		OLP=/system/vendor/overlay
@@ -319,7 +321,7 @@ extract_webview() {
 	if test ! -z "$G"; then
 		mktouch "$MODPATH""$G"/.replace
 	fi
-	cp_ch "$EXT_DATA"/WebviewManager/apks/"$NAME"Webview.apk "$MODPATH"$WPATH/webview.apk || cp_ch "$EXT_DATA"/WebviewManager/apks/webview.apk "$MODPATH"$WPATH/webview.apk
+	cp_ch "$EXT_DATA"/apks/"$NAME"Webview.apk "$MODPATH"$WPATH/webview.apk || cp_ch "$EXT_DATA"/apks/webview.apk "$MODPATH"$WPATH/webview.apk
 	touch "$MODPATH"$WPATH/.replace
 	cp "$MODPATH"$WPATH/webview.apk "$TMPDIR"/webview.zip
 	mkdir "$TMPDIR"/webview -p
@@ -346,7 +348,7 @@ extract_browser() {
 	fi
 	mkdir -p "$MODPATH"$BPATH
 	touch "$MODPATH"$BPATH/.replace
-	cp_ch "$EXT_DATA"/WebviewManager/apks/"$NAME"Browser.apk "$MODPATH"$BPATH/browser.apk || cp_ch "$EXT_DATA"/WebviewManager/apks/browser.apk "$MODPATH"$BPATH/browser.apk
+	cp_ch "$EXT_DATA"/apks/"$NAME"Browser.apk "$MODPATH"$BPATH/browser.apk || cp_ch "$EXT_DATA"/apks/browser.apk "$MODPATH"$BPATH/browser.apk
 	touch "$MODPATH"$BPATH/.replace
 	cp_ch "$MODPATH"$BPATH/browser.apk "$TMPDIR"/browser.zip
 	mkdir -p "$TMPDIR"/browser
@@ -373,13 +375,13 @@ online_install() {
 }
 offline_install() {
 	set_path
-	if test ! -f "$EXT_DATA"/WebviewManager/apks/webview.apk; then
+	if test ! -f "$EXT_DATA"/apks/webview.apk; then
 		ui_print "- No webview.apk found!"
 	else
 		ui_print "- Webview.apk found! Using it."
 		extract_webview
 	fi
-	if test ! -f "$EXT_DATA"/WebviewManager/apks/browser.apk; then
+	if test ! -f "$EXT_DATA"/apks/browser.apk; then
 		ui_print "- No browser.apk found!"
 	else
 		ui_print "- Browser.apk found! Using it"
@@ -419,7 +421,6 @@ clean_dalvik() {
 do_cleanup() {
 	ui_print "- Cleaning up..."
 	rm -f "$MODPATH"/system/app/placeholder
-	mkdir -p "$EXT_DATA"/WebviewManager/logs
 	rm -f "$MODPATH"/*.md
 	ui_print "- Backing up important stuffs to module directory"
 	mkdir -p "$MODPATH"/backup/
