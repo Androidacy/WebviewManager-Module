@@ -7,7 +7,7 @@ OLD_WEBVIEW=0
 OLD_BROWSER=0
 AVER=$(resetprop ro.build.version.release)
 ui_print "- Android ${AVER}, API level ${API}, arch ${ARCH} device detected"
-mkdir "$MODPATH"/logs
+mkdir "$MODPATH"/logs/
 VERSIONFILE="$EXT_DATA/version.txt"
 alias aapt='"$MODPATH"/common/tools/aapt-"$ARCH"'
 alias sign='"$MODPATH"/common/tools/zipsigner'

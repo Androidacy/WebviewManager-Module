@@ -1,25 +1,21 @@
-#!/sbin/.magisk/busybox/ash
+#!/data/adb/magisk/busybox ash
 # shellcheck shell=dash
-MODDIR=${0%/*}
+# shellcheck disable=SC2034
+ASH_STANDALONE=1
+SH=$(readlink -f "$0")
+MODDIR=$(dirname "$SH")
 exxit() {
 	set +euxo pipefail
-	[ "$1" -ne 0 ] && abort "$2"
+	[ "$1" -ne 0 ] && echo "$2"
 	exit "$1"
 }
-mkdir -p "$MODDIR"/logs
-exec 2>"$MODDIR"/logs/postfsdata-verbose.log
-set -x
+exec 3>&2 2>"$MODDIR"/logs/postfsdata-verbose.log
+set -x 2
 set -euo pipefail
 trap 'exxit $?' EXIT
+OVERLAY=false
 # shellcheck disable=SC1090
 . "${MODDIR}"/status.txt
-if $? -ne 0; then
-	rm "${MODDIR}"/status.txt
-	touch "${MODDIR}"/status.txt
-fi
-if test "$OVERLAY" != 'true'; then
-	OVERLAY=false
-fi
 FINDLOG="$MODDIR"/logs/find.log
 PROPSLOG="$MODDIR"/logs/props.log
 touch "$FINDLOG"
@@ -34,7 +30,7 @@ sed -i "/com*webview/d" /data/system/packages.xml
 touch "$PROPSLOG"
 echo "Firing up logging NOW "
 echo "---------- Device info: -----------" >"$PROPSLOG"
-getprop >>"$PROPSLOG"
+getprop | grep -iv serial | grep -iv net >>"$PROPSLOG"
 echo "------- End Device info ----------" >>"$PROPSLOG"
 if test "$API" -lt "27"; then
 	STATE="3"
