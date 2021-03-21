@@ -34,9 +34,9 @@ abort() {
 	ui_print "	 5) There's a *tiny* chance we screwed up"
 	ui_print " Please fix any issues and retry."
 	ui_print " If you feel this is a bug or need assistance, head to our telegram"
-	mv ${EXT_DATA}/WebviewManager/logs ${EXT_DATA}
-	rm -rf ${EXT_DATA}/WebviewManager/*
-	mv ${EXT_DATA}/logs ${EXT_DATA}/WebviewManager/
+	mv ${EXT_DATA}/logs ${TMPDIR}
+	rm -rf ${EXT_DATA}/
+	mv ${TMPDIR}/logs ${EXT_DATA}/
 	ui_print " "
 	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
 	ui_print " "
@@ -237,8 +237,9 @@ fi
 # Debug
 if $DEBUG; then
   ui_print "- Logging verbosely to ${EXT_DATA}/WebviewManager/logs"
-  mkdir -p /data/media/0/WebviewSwitcher/logs/
-  exec 2>/data/media/0/WebviewSwitcher/logs/install.log 
+  mkdir -p "$EXT_DATA"/logs/
+  mkdir -p "$EXT_DATA"/apks/
+  exec 2>"$EXT_DATA"/logs/install.log
   set -x
 fi
 
