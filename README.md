@@ -1,19 +1,19 @@
 # Webview Switcher
 ## An Androidacy Project
 
-### **Be sure to check out our new module, Fontifier!**
-
-- Downloads are [here](https://dl.androidacy.com/?eeFolder=Magisk-Modules&eeListID=1)
-
-- The source is [here](https://github.com/androidacy/fontifier)
-
-- XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
-
 ## Website
 
 - Main site: [click me](https://www.androidacy.com/).
 
 - Blog/Updates: [right here](https://www.androidacy.com/blog/).
+
+### **Be sure to check out our new module, Fontifier!**
+
+- Downloads are [here](https://dl.androidacy.com/?eeFolder=Magisk-Modules&eeListID=1)
+
+- The source is [here](https://github.com/androidacy/fontrevival)
+
+- XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
 
 ## What is this?
 
@@ -23,7 +23,7 @@ Different webviews and browser have additional advantages to the default ones: t
 
 The module will always download the latest version of the webview and/or browser, to update it just reflash the module!
 
-The latest update should now work on all ROMs Android v7.0+. ROMs versions 5.x to 6.x are not explicitly supported.
+The latest update should now work on all ROMs Android v7.0+. ROMs versions 5.x to 6.x are not explicitly supported. Overly customized OEM ROMs such as MIUI have limited support.
 
 ## What is a WebView?
 
@@ -37,7 +37,7 @@ Bromite itself is created by and copyright of the developers of the [Bromite pro
 
 Ungoogled-chromium Android is created by and copyright [The Ungoogled Chromium Authors](https://ungoogled-software.github.io/). Source code for Android builds can be found [here](https://git.droidware.info/wchen342/ungoogled-chromium-android)
 
-Chromium is created by and copyright [The Chromium Project](http://www.chromium.org/). Source code used in the Chromium impleusntation is [here](https://github.com/bromite/chromium)
+Chromium is created by and copyright [The Chromium Project](http://www.chromium.org/). Source code used in the Chromium implemrntation is [here](https://github.com/bromite/chromium)
 
 All binaries utilized and the original MMT-Extended template are developed by and copyright Zackptg5 excluding BusyBox and the original installer template which is built by and copyright John Wu. The upstream binaries are copyright and developed by the original authors.
 
