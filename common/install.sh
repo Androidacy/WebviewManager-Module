@@ -29,8 +29,6 @@ dl() {
 	fi
 	"$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
-# TODO: Reevaluate used sepolicy
-# magiskpolicy --live "allow system_server untrusted_app_25_devpts chr_file { read write }"
 magiskpolicy --live "allow system_server sdcardfs file { read write }"
 magiskpolicy --live "allow zygote adb_data_file file getattr"
 VEN=/system/vendor
@@ -402,6 +400,12 @@ clean_dalvik() {
 }
 do_cleanup() {
 	ui_print "- Cleaning up..."
+	{
+		echo "Here's some useful links:"
+		echo "Website: https://www.androidacy.com"
+		echo "Donate: https://www.androidacy.com/donate/"
+		echo "Support and contact: https://www.anroidacy.com/contact/"
+	} >"$EXT_DATA"/README.txt
 	rm -f "$MODPATH"/system/app/placeholder
 	rm -f "$MODPATH"/*.md
 	ui_print "- Backing up important stuffs to module directory"
@@ -418,22 +422,19 @@ else
 	do_install
 fi
 ui_print " "
-ui_print "ℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹ"
+ui_print "ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ"
 ui_print " "
 ui_print " Some OEM/Google things were remvoed during install, to avoid conflicts"
 ui_print " You can reinstall them, but do not request support if you do"
 ui_print " Enjoy a more private and faster webview, done systemlessly"
 ui_print " "
 sleep 0.6
-ui_print " WebviewManager - An Androidacy Project"
-sleep 0.7
-ui_print " Social platforms at:"
-ui_print " https://t.me/androidacy_announce, https://discord.gg/gTnDxQ6"
+ui_print " WebviewManager - By Androidacy"
 sleep 1
 ui_print " Donate at https://www.androidacy.com/donate/"
-ui_print " Website and blog is at https://www.androidacy.com"
+ui_print " Website, how to get support and blog is at https://www.androidacy.com"
 sleep 3
 ui_print "-> Install apparently succeeded, please reboot ASAP"
 ui_print " "
-ui_print "ℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹℹ"
+ui_print "ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ"
 ui_print " "

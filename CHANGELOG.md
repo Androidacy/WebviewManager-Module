@@ -1,7 +1,7 @@
 
 # Changelog
 
-<h4>8.0.0</h4>
+<h4>8.0.1</h4>
 
 - Huge refactor
 - Support android 11
