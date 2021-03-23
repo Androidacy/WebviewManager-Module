@@ -1,13 +1,14 @@
 # shellcheck shell=dash
 # shellcheck disable=SC1091
 # shellcheck disable=SC1090
-TRY_COUNT=0
+TRY_COUNT=1
 VF=0
 OLD_WEBVIEW=0
 OLD_BROWSER=0
 AVER=$(resetprop ro.build.version.release)
 ui_print "- Android ${AVER}, API level ${API}, arch ${ARCH} device detected"
 mkdir "$MODPATH"/logs/
+mkdir "$EXT_DATA"/apks/
 VERSIONFILE="$EXT_DATA/version.txt"
 alias aapt='"$MODPATH"/common/tools/aapt-"$ARCH"'
 alias sign='"$MODPATH"/common/tools/zipsigner'
@@ -84,48 +85,49 @@ test_connection() {
 do_ungoogled_webview() {
 	NAME="Ungoogled-Chromium"
 	SUM_PRE="not_implemented"
-	WEBVIEW_FILE="/SystemWebView_${ARCH}.apk"
-	WEBVIEW_VER="$(wget -qO- https://api.github.com/repos/ungoogled-software/ungoogled-chromium-android/releases | grep webview | grep '"tag_name"' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')"
-	DL_URL="https://github.com/ungoogled-software/ungoogled-chromium-android/releases/download/"
+	W_FILE="/SystemWebView_${ARCH}.apk"
+	W_VER="$(wget -qO- https://api.github.com/repos/ungoogled-software/ungoogled-chromium-android/releases | grep webview | grep '"tag_name"' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')"
+	W_URL="https://github.com/ungoogled-software/ungoogled-chromium-android/releases/download/"
 }
 do_ungoogled_browser() {
 	NAME="Ungoogled-Chromium"
 	SUM_PRE="not_implemented"
 	if test "$BROWSER" -eq 3; then
-		BROWSER_VER="$(wget -qO- https://api.github.com/repos/ungoogled-software/ungoogled-chromium-android/releases | grep -v webview | grep extensions | grep '"tag_name"' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')"
+		B_VER="$(wget -qO- https://api.github.com/repos/ungoogled-software/ungoogled-chromium-android/releases | grep -v webview | grep -i extensions | grep '"tag_name"' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')"
+		B_FILE="/Extensions_ChromeModernPublic_${ARCH}.apk"
 	else
-		BROWSER_VER="$(wget -qO- https://api.github.com/repos/ungoogled-software/ungoogled-chromium-android/releases | grep -v webview | grep -v extensions | grep '"tag_name"' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')"
+		B_VER="$(wget -qO- https://api.github.com/repos/ungoogled-software/ungoogled-chromium-android/releases | grep -v webview | grep -iv extensions | grep '"tag_name"' | head -1 | sed -E 's/.*"([^"]+)".*/\1/')"
+		B_FILE="/ChromeModernPublic_${ARCH}.apk"
 	fi
-	BROWSER_FILE="/ChromeModernPublic_${ARCH}.apk"
-	DL_URL="https://github.com/ungoogled-software/ungoogled-chromium-android/releases/download/"
+	B_URL="https://github.com/ungoogled-software/ungoogled-chromium-android/releases/download/"
 }
 do_vanilla_webview() {
 	NAME="Chromium"
 	SUM_PRE="chrm"
-	WEBVIEW_VER="$(wget -qO- https://api.github.com/repos/bromite/chromium/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
-	WEBVIEW_FILE="/${ARCH}_SystemWebView.apk"
-	DL_URL="https://github.com/bromite/chromium/releases/download/"
+	W_VER="$(wget -qO- https://api.github.com/repos/bromite/chromium/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
+	W_FILE="/${ARCH}_SystemWebView.apk"
+	W_URL="https://github.com/bromite/chromium/releases/download/"
 }
 do_vanilla_browser() {
 	NAME="Chromium"
 	SUM_PRE="chrm"
-	BROWSER_VER="$(wget -qO- https://api.github.com/repos/bromite/chromium/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
-	BROWSER_FILE="/${ARCH}_ChromePublic.apk"
-	DL_URL="https://github.com/bromite/chromium/releases/download/"
+	B_VER="$(wget -qO- https://api.github.com/repos/bromite/chromium/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
+	B_FILE="/${ARCH}_ChromePublic.apk"
+	B_URL="https://github.com/bromite/chromium/releases/download/"
 }
 do_bromite_webview() {
 	NAME="Bromite"
 	SUM_PRE="brm"
-	WEBVIEW_VER="$(wget -qO- https://api.github.com/repos/bromite/bromite/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
-	WEBVIEW_FILE="/${ARCH}_SystemWebView.apk"
-	DL_URL="https://github.com/bromite/bromite/releases/download/"
+	W_VER="$(wget -qO- https://api.github.com/repos/bromite/bromite/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
+	W_FILE="/${ARCH}_SystemWebView.apk"
+	W_URL="https://github.com/bromite/bromite/releases/download/"
 }
 do_bromite_browser() {
 	NAME="Bromite"
 	SUM_PRE="brm"
-	BROWSER_VER="$(wget -qO- https://api.github.com/repos/bromite/bromite/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
-	BROWSER_FILE="/${ARCH}_ChromePublic.apk"
-	DL_URL="https://github.com/bromite/bromite/releases/download/"
+	B_VER="$(wget -qO- https://api.github.com/repos/bromite/bromite/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
+	B_FILE="/${ARCH}_ChromePublic.apk"
+	B_URL="https://github.com/bromite/bromite/releases/download/"
 }
 old_version() {
 	ui_print "- Checking whether this is a new install...."
@@ -152,26 +154,26 @@ download_webview() {
 		do_ungoogled_webview
 	fi
 	if test "$VF" -eq 1; then
-		ui_print "- Downloading ${NAME} webview, please be patient..."
-		dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
+		ui_print "- Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
+		dl "$W_URL""$W_VER""$W_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
-		echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Webview.apk; then
-		if test "$OLD_WEBVIEW" -lt "$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
+		if test "$OLD_WEBVIEW" -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "- Downloading update for ${NAME} webview, please be patient..."
-			dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
+			dl "$W_URL""$W_VER""$W_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
-			echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
 			ui_print "- Not a version upgrade! Using existing ${NAME} webview apk"
 		fi
 	else
 		ui_print "- No existing apk found for ${NAME} webview!"
 		ui_print "- Downloading ${NAME} webview, please be patient..."
-		dl $DL_URL"$WEBVIEW_VER""$WEBVIEW_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
+		dl "$W_URL""$W_VER""$W_FILE" -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
-		echo "OLD_WEBVIEW=$(echo "$WEBVIEW_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	verify_webview
 }
@@ -185,26 +187,26 @@ download_browser() {
 		do_ungoogled_browser
 	fi
 	if test "$VF" -eq 1; then
-		ui_print "- Downloading ${NAME} browser, please be patient..."
-		dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
+		ui_print "- Redownloading ${NAME} browser, please be patient..."
+		dl "$B_URL""$B_VER""$B_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
-		echo "OLD_BROWSER=$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Browser.apk; then
-		if test "$OLD_BROWSER" -lt "$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
+		if test "$OLD_BROWSER" -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "- Downloading update for ${NAME} browser, please be patient..."
-			dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
+			dl "$B_URL""$B_VER""$B_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
-			echo "OLD_BROWSER=$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
 			ui_print "- Not a version upgrade! Using existing ${NAME} browser apk"
 		fi
 	else
 		ui_print "- No existing apk found for ${NAME} browser!"
 		ui_print "- Downloading ${NAME} browser, please be patient..."
-		dl $DL_URL"$BROWSER_VER""$BROWSER_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
+		dl "$B_URL""$B_VER""$B_FILE" -o "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
-		echo "OLD_BROWSER=$(echo "$BROWSER_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	extract_browser
 }
@@ -212,14 +214,14 @@ verify_webview() {
 	ui_print " Verifying ${NAME} webview files..."
 	if test $SUM_PRE != "not_implemented"; then
 		cd "$EXT_DATA"/apks || return
-		wget -qO "$ARCH"_SystemWebView.apk.sha256.txt.tmp ${DL_URL}"${WEBVIEW_VER}"/${SUM_PRE}_"${WEBVIEW_VER}".sha256.txt
+		wget -qO "$ARCH"_SystemWebView.apk.sha256.txt.tmp "$W_URL""${W_VER}"/${SUM_PRE}_"${W_VER}".sha256.txt
 		grep "$ARCH"_SystemWebView.apk "$ARCH"_SystemWebView.apk.sha256.txt.tmp >"$NAME"Webview.apk.sha256.txt
 		rm -fr "$ARCH"_SystemWebView.apk.sha256.txt.tmp
 		sed -i s/"$ARCH"_SystemWebView.apk/${NAME}Webview.apk/gi "$NAME"Webview.apk.sha256.txt
 		sha256sum -sc "$NAME"Webview.apk.sha256.txt >/dev/null
 		if test $? -ne 0; then
 			ui_print "- Verification failed, retrying download"
-			rm -f "$EXT_DATA"/apks/*webview*.apk
+			rm -f "$EXT_DATA"/apks/*Webview.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			VF=1
 			if test ${TRY_COUNT} -ge 3; then
@@ -422,7 +424,7 @@ else
 	do_install
 fi
 ui_print " "
-ui_print "ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ"
+ui_print "ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ"
 ui_print " "
 ui_print " Some OEM/Google things were remvoed during install, to avoid conflicts"
 ui_print " You can reinstall them, but do not request support if you do"
@@ -436,5 +438,5 @@ ui_print " Website, how to get support and blog is at https://www.androidacy.com
 sleep 3
 ui_print "-> Install apparently succeeded, please reboot ASAP"
 ui_print " "
-ui_print "ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ"
+ui_print "ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ"
 ui_print " "

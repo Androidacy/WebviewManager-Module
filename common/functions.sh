@@ -34,9 +34,7 @@ abort() {
 	ui_print "	 5) There's a *tiny* chance we screwed up"
 	ui_print " Please fix any issues and retry."
 	ui_print " If you feel this is a bug or need assistance, head to our telegram"
-	mv "$EXT_DATA"/logs "$TMPDIR"
-	rm -rf "${EXT_DATA:?}"/
-	mv "$TMPDIR"/logs "$EXT_DATA"
+	rm -rf "${EXT_DATA}"/apks "$EXT_DATA"/*.txt
 	ui_print " "
 	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
 	ui_print " "
@@ -45,12 +43,12 @@ abort() {
 
 EXT_DATA_EXISTS=false
 detect_ext_data() {
-	touch /sdcard/.rw && rm /sdcard/.rw && EXT_DATA="/sdcard/WebviewManager" && EXT_DATA_EXISTS=true
+	touch /sdcard/.rw && rm /sdcard/.rw && export EXT_DATA="/sdcard/WebviewManager" && EXT_DATA_EXISTS=true
 	if test ! "$EXT_DATA_EXISTS"; then
-		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && EXT_DATA="/storage/emulated/0/WebviewManager" && EXT_DATA_EXISTS=true
+		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && export EXT_DATA="/storage/emulated/0/WebviewManager" && EXT_DATA_EXISTS=true
 	fi
 	if test ! "$EXT_DATA_EXISTS"; then
-		touch /data/media/0/.rw && rm /data/media/0/.rw && EXT_DATA="/data/media/0/WebviewManager" && EXT_DATA_EXISTS=true
+		touch /data/media/0/.rw && rm /data/media/0/.rw && export EXT_DATA="/data/media/0/WebviewManager" && EXT_DATA_EXISTS=true
 	fi
 	if test ! "$EXT_DATA_EXISTS"; then
 		ui_print "- Internal storage doesn't seem to be writable!"

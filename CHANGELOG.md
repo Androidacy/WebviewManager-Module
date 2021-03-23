@@ -1,6 +1,11 @@
 
 # Changelog
 
+<h4>8.0.2</h4 
+
+- Fix files not getting downloaded to the right location for some users
+- Fix ungoogled chromium extensions download
+
 <h4>8.0.1</h4>
 
 - Huge refactor
