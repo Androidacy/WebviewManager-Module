@@ -21,40 +21,42 @@ abort() {
   rm -rf $TMPDIR 2>/dev/null
   exit 1
 }
- it_failed() {
-	ui_print " "
-	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
-	ui_print " "
-	ui_print " Uh-oh, the installer encountered an issue!"
-	ui_print " It's probably one of these reasons:"
-	ui_print "	 1) Installer is corrupt"
-	ui_print "	 2) You didn't follow instructions"
-	ui_print "	 3) You have an unstable internet connection"
-	ui_print "	 4) Your ROM is broken"
-	ui_print "	 5) There's a *tiny* chance we screwed up"
-	ui_print " Please fix any issues and retry."
-	ui_print " If you feel this is a bug or need assistance, head to our telegram"
-	rm -rf "${EXT_DATA}"/apks "$EXT_DATA"/*.txt
-	ui_print " "
-	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
-	ui_print " "
-	abort
+it_failed() {
+  ui_print " "
+  ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
+  ui_print " "
+  ui_print " Uh-oh, the installer encountered an issue!"
+  ui_print " It's probably one of these reasons:"
+  ui_print "	 1) Installer is corrupt"
+  ui_print "	 2) You didn't follow instructions"
+  ui_print "	 3) You have an unstable internet connection"
+  ui_print "	 4) Your ROM is broken"
+  ui_print "	 5) There's a *tiny* chance we screwed up"
+  ui_print " Please fix any issues and retry."
+  ui_print " If you feel this is a bug or need assistance, head to our telegram"
+  rm -rf "${EXT_DATA}"/apks "$EXT_DATA"/*.txt
+  ui_print " "
+  ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
+  ui_print " "
+  abort
 }
 
-EXT_DATA_EXISTS=false
 detect_ext_data() {
-	touch /sdcard/.rw && rm /sdcard/.rw && export EXT_DATA="/sdcard/WebviewManager" && EXT_DATA_EXISTS=true
-	if test ! "$EXT_DATA_EXISTS"; then
-		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && export EXT_DATA="/storage/emulated/0/WebviewManager" && EXT_DATA_EXISTS=true
-	fi
-	if test ! "$EXT_DATA_EXISTS"; then
-		touch /data/media/0/.rw && rm /data/media/0/.rw && export EXT_DATA="/data/media/0/WebviewManager" && EXT_DATA_EXISTS=true
-	fi
-	if test ! "$EXT_DATA_EXISTS"; then
-		ui_print "- Internal storage doesn't seem to be writable!"
-		it_failed
-	fi
+  if touch /sdcard/.rw && rm /sdcard/.rw; then
+    export EXT_DATA="/sdcard/WebviewManager"
+    mkdir -p "$EXT_DATA"/apks "$EXT_DATA"/logs
+  elif touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw; then
+    export EXT_DATA="/storage/emulated/0/WebviewManager"
+    mkdir -p "$EXT_DATA"/apks "$EXT_DATA"/logs
+  elif touch /data/media/0/.rw && rm /data/media/0/.rw; then
+    export EXT_DATA="/data/media/0/WebviewManager"
+    mkdir -p "$EXT_DATA"/apks "$EXT_DATA"/logs
+  else
+    EXT_DATA='/storage/emulated/0/WebviewManager'
+    mkdir -p "$EXT_DATA"/apks "$EXT_DATA"/logs
+  fi
 }
+
 detect_ext_data
 
 mount_apex() {
@@ -84,13 +86,7 @@ mount_apex() {
   export ANDROID_TZDATA_ROOT=/apex/com.android.tzdata
   local APEXRJPATH=/apex/com.android.runtime/javalib
   local SYSFRAME=/system/framework
-  export BOOTCLASSPATH=\
-$APEXRJPATH/core-oj.jar:$APEXRJPATH/core-libart.jar:$APEXRJPATH/okhttp.jar:\
-$APEXRJPATH/bouncycastle.jar:$APEXRJPATH/apache-xml.jar:$SYSFRAME/framework.jar:\
-$SYSFRAME/ext.jar:$SYSFRAME/telephony-common.jar:$SYSFRAME/voip-common.jar:\
-$SYSFRAME/ims-common.jar:$SYSFRAME/android.test.base.jar:$SYSFRAME/telephony-ext.jar:\
-/apex/com.android.conscrypt/javalib/conscrypt.jar:\
-/apex/com.android.media/javalib/updatable-media.jar
+  export BOOTCLASSPATH="$APEXRJPATH/core-oj.jar:$APEXRJPATH/core-libart.jar:$APEXRJPATH/okhttp.jar:$APEXRJPATH/bouncycastle.jar:$APEXRJPATH/apache-xml.jar:$SYSFRAME/framework.jar:$SYSFRAME/ext.jar:$SYSFRAME/telephony-common.jar:$SYSFRAME/voip-common.jar:$SYSFRAME/ims-common.jar:$SYSFRAME/android.test.base.jar:$SYSFRAME/telephony-ext.jar:/apex/com.android.conscrypt/javalib/conscrypt.jar:/apex/com.android.media/javalib/updatable-media.jar"
 }
 
 umount_apex() {
@@ -109,7 +105,6 @@ umount_apex() {
   unset BOOTCLASSPATH
 }
 
-
 cleanup() {
   rm -rf $MODPATH/common 2>/dev/null
   ui_print " "
@@ -125,10 +120,19 @@ device_check() {
   eval set -- "$opt"
   while true; do
     case "$1" in
-      -d) local type=device; shift;;
-      -m) local type=manufacturer; shift;;
-      --) shift; break;;
-      *) abort "Invalid device_check argument $1! Aborting!";;
+    -d)
+      local type=device
+      shift
+      ;;
+    -m)
+      local type=manufacturer
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *) abort "Invalid device_check argument $1! Aborting!" ;;
     esac
   done
   local prop=$(echo "$1" | tr '[:upper:]' '[:lower:]')
@@ -147,17 +151,26 @@ cp_ch() {
   eval set -- "$opt"
   while true; do
     case "$1" in
-      -n) UBAK=false; shift;;
-      -r) FOL=true; shift;;
-      --) shift; break;;
-      *) abort "Invalid cp_ch argument $1! Aborting!";;
+    -n)
+      UBAK=false
+      shift
+      ;;
+    -r)
+      FOL=true
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *) abort "Invalid cp_ch argument $1! Aborting!" ;;
     esac
   done
   local SRC="$1" DEST="$2" OFILES="$1"
   $FOL && local OFILES=$(find $SRC -type f 2>/dev/null)
   [ -z $3 ] && PERM=0644 || PERM=$3
   case "$DEST" in
-    $TMPDIR/*|$MODULEROOT/*|$NVBASE/modules/$MODID/*) BAK=false;;
+  $TMPDIR/* | $MODULEROOT/* | $NVBASE/modules/$MODID/*) BAK=false ;;
   esac
   for OFILE in ${OFILES}; do
     if $FOL; then
@@ -167,20 +180,22 @@ cp_ch() {
         local FILE=$(echo $OFILE | sed "s|$SRC|$DEST/$(basename $SRC)|")
       fi
     else
-      if [[ -d "$DEST" ]]
-      then
+      if [[ -d "$DEST" ]]; then
         local FILE="$DEST/$(basename $SRC)"
       else
         local FILE="$DEST"
       fi
     fi
     if $BAK && $UBAK; then
-    # shellcheck disable=SC2143
-      [ ! "$(grep "$FILE$" $INFO 2>/dev/null)" ] && echo "$FILE" >> $INFO
-      [ -f "$FILE" -a ! -f "$FILE~" ] && { mv -f $FILE $FILE~; echo "$FILE~" >> $INFO; }
+      # shellcheck disable=SC2143
+      [ ! "$(grep "$FILE$" $INFO 2>/dev/null)" ] && echo "$FILE" >>$INFO
+      [ -f "$FILE" -a ! -f "$FILE~" ] && {
+        mv -f $FILE $FILE~
+        echo "$FILE~" >>$INFO
+      }
     elif $BAK; then
       # shellcheck disable=SC2143
-      [ ! "$(grep "$FILE$" $INFO 2>/dev/null)" ] && echo "$FILE" >> $INFO
+      [ ! "$(grep "$FILE$" $INFO 2>/dev/null)" ] && echo "$FILE" >>$INFO
     fi
     install -D -m $PERM "$OFILE" "$FILE"
   done
@@ -188,23 +203,30 @@ cp_ch() {
 
 install_script() {
   case "$1" in
-    -l) shift; local INPATH=$NVBASE/service.d;;
-    -p) shift; local INPATH=$NVBASE/post-fs-data.d;;
-    *) local INPATH=$NVBASE/service.d;;
+  -l)
+    shift
+    local INPATH=$NVBASE/service.d
+    ;;
+  -p)
+    shift
+    local INPATH=$NVBASE/post-fs-data.d
+    ;;
+  *) local INPATH=$NVBASE/service.d ;;
   esac
   # shellcheck disable=SC2143
   [ "$(grep "#!/system/bin/sh" $1)" ] || sed -i "1i #!/system/bin/sh" $1
-  local i; for i in "MODPATH" "LIBDIR" "MODID" "INFO" "MODDIR"; do
+  local i
+  for i in "MODPATH" "LIBDIR" "MODID" "INFO" "MODDIR"; do
     case $i in
-      "MODPATH") sed -i "1a $i=$NVBASE/modules/$MODID" $1;;
-      "MODDIR") sed -i "1a $i=\${0%/*}" $1;;
-      *) sed -i "1a $i=$(eval echo \$$i)" $1;;
+    "MODPATH") sed -i "1a $i=$NVBASE/modules/$MODID" $1 ;;
+    "MODDIR") sed -i "1a $i=\${0%/*}" $1 ;;
+    *) sed -i "1a $i=$(eval echo \$$i)" $1 ;;
     esac
   done
   [ "$1" == "$MODPATH/uninstall.sh" ] && return 0
   case $(basename $1) in
-    post-fs-data.sh|service.sh) ;;
-    *) cp_ch -n $1 $INPATH/$(basename $1) 0755;;
+  post-fs-data.sh | service.sh) ;;
+  *) cp_ch -n $1 $INPATH/$(basename $1) 0755 ;;
   esac
 }
 
@@ -212,8 +234,8 @@ prop_process() {
   sed -i -e "/^#/d" -e "/^ *$/d" $1
   [ -f $MODPATH/system.prop ] || mktouch $MODPATH/system.prop
   while read -r LINE; do
-    echo "$LINE" >> $MODPATH/system.prop
-  done < $1
+    echo "$LINE" >>$MODPATH/system.prop
+  done <$1
 }
 
 # Check for min/max api version
@@ -236,13 +258,9 @@ else
 fi
 
 # Debug
-if $DEBUG; then
-  ui_print "- Logging verbosely to ${EXT_DATA}/logs"
-  mkdir -p "$EXT_DATA"/logs/
-  mkdir -p "$EXT_DATA"/apks/
-  exec 2>"$EXT_DATA"/logs/install.log
-  set -x
-fi
+ui_print "- Logging verbosely to ${EXT_DATA}/logs"
+set -x
+exec 2>"$EXT_DATA"/logs/install.log
 
 # Extract files
 ui_print "- Extracting module files"
@@ -251,7 +269,8 @@ unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
-  ui_print " "; ui_print "- Running Addons -"
+  ui_print " "
+  ui_print "- Running Addons -"
   for i in "$MODPATH"/common/addon/*/install.sh; do
     ui_print "  Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
     . $i
@@ -271,15 +290,14 @@ if [ -f $INFO ]; then
       rm -f $LINE
       while true; do
         LINE=$(dirname $LINE)
-        if [[ "$(ls -A $LINE 2>/dev/null)" ]]
-        then
+        if [[ "$(ls -A $LINE 2>/dev/null)" ]]; then
           break 1
         else
           rm -rf $LINE
         fi
       done
     fi
-  done < $INFO
+  done <$INFO
   rm -f $INFO
 fi
 
@@ -290,31 +308,33 @@ ui_print "- Installing"
 
 # Remove comments from files and place them, add blank line to end if not already present
 for i in $(find $MODPATH -type f -name "*.sh" -o -name "*.prop" -o -name "*.rule"); do
-  if [[ -f $i ]]
-  then
-    { sed -i -e "/^#/d" -e "/^ *$/d" $i; [ "$(tail -1 $i)" ] && echo "" >> $i; }
+  if [[ -f $i ]]; then
+    {
+      sed -i -e "/^#/d" -e "/^ *$/d" $i
+      [ "$(tail -1 $i)" ] && echo "" >>$i
+    }
   else
     continue
   fi
   case $i in
-    "$MODPATH/service.sh") install_script -l $i;;
-    "$MODPATH/post-fs-data.sh") install_script -p $i;;
-    "$MODPATH/uninstall.sh") if [ -s $INFO ] || [ "$(head -n1 $MODPATH/uninstall.sh)" != "# Don't modify anything after this" ]; then
-                               install_script $MODPATH/uninstall.sh
-                             else
-                               rm -f $INFO $MODPATH/uninstall.sh
-                             fi;;
+  "$MODPATH/service.sh") install_script -l $i ;;
+  "$MODPATH/post-fs-data.sh") install_script -p $i ;;
+  "$MODPATH/uninstall.sh") if [ -s $INFO ] || [ "$(head -n1 $MODPATH/uninstall.sh)" != "# Don't modify anything after this" ]; then
+    install_script $MODPATH/uninstall.sh
+  else
+    rm -f $INFO $MODPATH/uninstall.sh
+  fi ;;
   esac
 done
 
-$IS64BIT || for i in $(find $MODPATH/system -type d -name "lib64"); do rm -rf $i 2>/dev/null; done  
+$IS64BIT || for i in $(find $MODPATH/system -type d -name "lib64"); do rm -rf $i 2>/dev/null; done
 [ -d "/system/priv-app" ] || mv -f $MODPATH/system/priv-app $MODPATH/system/app 2>/dev/null
 [ -d "/system/xbin" ] || mv -f $MODPATH/system/xbin $MODPATH/system/bin 2>/dev/null
 if $DYNLIB; then
   for FILE in $(find $MODPATH/system/lib* -type f 2>/dev/null | sed "s|$MODPATH/system/||"); do
     [ -s $MODPATH/system/$FILE ] || continue
     case $FILE in
-      lib*/modules/*) continue;;
+    lib*/modules/*) continue ;;
     esac
     mkdir -p "$(dirname $MODPATH/system/vendor/$FILE)"
     mv -f $MODPATH/system/$FILE $MODPATH/system/vendor/$FILE

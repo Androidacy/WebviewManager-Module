@@ -44,18 +44,15 @@ echo "Started at $(date)"
 while test ! -d /storage/emulated/0/Android; do
 	sleep 1
 done
-EXT_DATA_EXISTS=false
 detect_ext_data() {
-	touch /sdcard/.rw && rm /sdcard/.rw && EXT_DATA="/sdcard/WebviewManager" EXT_DATA_EXISTS=true
-	if test ! "$EXT_DATA_EXISTS"; then
-		touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw && EXT_DATA="/storage/emulated/0/WebviewManager" EXT_DATA_EXISTS=true
-	fi
-	if test ! "$EXT_DATA_EXISTS"; then
-		touch /data/media/0/.rw && rm /data/media/0/.rw && EXT_DATA="/data/media/0/WebviewManager" EXT_DATA_EXISTS=true
-	fi
-	if test ! "$EXT_DATA_EXISTS"; then
-		echo "- Internal storage doesn't may not be writable!"
-		EXT_DATA="/storage/emulated/0/WebviewManager"
+	if touch /sdcard/.rw && rm /sdcard/.rw; then
+		export EXT_DATA="/sdcard/WebviewManager"
+	elif touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw; then
+		export EXT_DATA="/storage/emulated/0/WebviewManager"
+	elif touch /data/media/0/.rw && rm /data/media/0/.rw; then
+		export EXT_DATA="/data/media/0/WebviewManager"
+	else
+		EXT_DATA='/storage/emulated/0/WebviewManager'
 	fi
 }
 detect_ext_data
