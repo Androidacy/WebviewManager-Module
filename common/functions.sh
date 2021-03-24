@@ -23,7 +23,7 @@ abort() {
 }
 it_failed() {
   ui_print " "
-  ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
+  ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
   ui_print " Uh-oh, the installer encountered an issue!"
   ui_print " It's probably one of these reasons:"
@@ -36,7 +36,7 @@ it_failed() {
   ui_print " If you feel this is a bug or need assistance, head to our telegram"
   rm -rf "${EXT_DATA}"/apks "$EXT_DATA"/*.txt
   ui_print " "
-  ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
+  ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
   abort
 }
