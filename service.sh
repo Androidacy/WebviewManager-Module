@@ -1,9 +1,6 @@
 #!/data/adb/magisk/busybox ash
 # shellcheck shell=dash
 # shellcheck disable=SC2034
-if "$(getenforce)" == "Enforcing" || "$(getenforce)" == "enforcing"; then
-	setenforce 0 && SELINUX_R=true
-fi
 ASH_STANDALONE=1
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
@@ -88,6 +85,3 @@ touch "$FINDLOG"
 } >"$FINDLOG"
 tail -n +1 "$EXT_DATA"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/full.log
 cp -rf "$MODDIR"/logs/full.log "$EXT_DATA"/logs
-if $SELINUX_R; then
-	setenforce 1
-fi
