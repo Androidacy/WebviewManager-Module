@@ -13,7 +13,9 @@
 # shellcheck disable=SC2044
 # shellcheck disable=SC2166
 # shellcheck disable=SC2061
-
+if "$(getenforce)" == "Enforcing" || "$(getenforce)" == "enforcing"; then
+	setenforce 0 && SELINUX_R=true
+fi
 abort() {
   ui_print "$1"
   rm -rf $MODPATH 2>/dev/null
@@ -361,3 +363,6 @@ set_permissions
 
 # Complete install
 cleanup
+if $SELINUX_R; then
+	setenforce 1
+fi
