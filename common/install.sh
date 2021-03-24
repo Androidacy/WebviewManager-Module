@@ -6,7 +6,7 @@ VF=0
 OLD_WEBVIEW=0
 OLD_BROWSER=0
 AVER=$(resetprop ro.build.version.release)
-ui_print "- Android ${AVER}, API level ${API}, arch ${ARCH} device detected"
+ui_print "ⓘ Android ${AVER}, API level ${API}, arch ${ARCH} device detected"
 mkdir "$MODPATH"/logs/
 mkdir "$EXT_DATA"/apks/
 VERSIONFILE="$EXT_DATA/version.txt"
@@ -41,89 +41,83 @@ else
 fi
 check_config() {
 	if test "$CV" -ne 5; then
-		ui_print "- Invalid config version! Using defaults"
+		ui_print "⚠ Invalid config version! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
 	fi
 	if test "$INSTALL" -ne 0 && test "$INSTALL" -ne 1 && test "$INSTALL" -ne 2; then
-		ui_print "- Invalid config value for INSTALL! Using defaults"
+		ui_print "⚠ Invalid config value for INSTALL! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
 	elif test "$WEBVIEW" -ne 0 && test "$WEBVIEW" -ne 1 && test "$WEBVIEW" -ne 2; then
-		ui_print "- Invalid config value for INSTALL! Using defaults"
+		ui_print "⚠ Invalid config value for INSTALL! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
 	elif test "$BROWSER" -ne 0 && test "$BROWSER" -ne 1 && test "$BROWSER" -ne 2 && test "$BROWSER" -ne 3; then
-		ui_print "- Invalid config value for INSTALL! Using defaults"
+		ui_print "⚠ Invalid config value for INSTALL! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
 	fi
 }
 set_config() {
-	ui_print "- Setting configs..."
+	ui_print "ⓘ Setting configs..."
 	if test -f "$EXT_DATA"/config.txt; then
 		. "$EXT_DATA"/config.txt
 		if test $? -ne 0; then
-			ui_print "- Invalid config file! Using defaults"
+			ui_print "⚠ Invalid config file! Using defaults"
 			cp "$MODPATH"/config.txt "$EXT_DATA"
 			. "$EXT_DATA"/config.txt
 		else
 			check_config
 		fi
 	else
-		ui_print "- No config found, using defaults"
-		ui_print "     -> Only install bromite webview"
-		ui_print "- Make sure if you want/need a custom setup to edit config.txt"
+		ui_print "ⓘ No config found, using defaults"
+		ui_print "     (Only install bromite webview)"
+		ui_print "ⓘ Make sure if you want/need a custom setup to edit config.txt"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
 	fi
 }
 test_connection() {
-	ui_print "- Testing internet connectivity"
+	ui_print "ⓘ Testing internet connectivity"
 	(ping -q -c 2 -W 1 www.androidacy.com >/dev/null 2>&1) && return 0 || return 1
 }
 do_ungoogled_webview() {
 	NAME="Ungoogled-Chromium"
-	VFS=false
 	DIR=ugc
-	W_VER="$(curl "$URL"/${DIR}/version-webview)"
+	W_VER="$(curl -kL "$URL"/${DIR}/version-webview)"
 }
 do_ungoogled_browser() {
 	NAME="Ungoogled-Chromium"
-	VFS=false
 	DIR=ugc
-	B_VER="$(curl "$URL"/${DIR}/version-browser)"
+	B_VER="$(curl -kL "$URL"/${DIR}/version-browser)"
 	if test "$BROWSER" -eq 3; then
 		EXT="-ext"
-		B_VER="$(curl "$URL"/${DIR}/version-ext)"
+		B_VER="$(curl -kL "$URL"/${DIR}/version-ext)"
 	fi
 }
 do_vanilla_webview() {
 	NAME="Chromium"
-	VFS=true
 	DIR=chrm
-	W_VER="$(curl "$URL"/${DIR}/version)"
+	W_VER="$(curl -kL "$URL"/${DIR}/version)"
 }
 do_vanilla_browser() {
 	NAME="Chromium"
-	VFS=true
 	DIR=chrm
-	B_VER="$(curl "$URL"/${DIR}/version)"
+	B_VER="$(curl -kL "$URL"/${DIR}/version)"
 }
 do_bromite_webview() {
 	NAME="Bromite"
-	VFS=true
 	DIR=brm
-	W_VER="$(curl "$URL"/${DIR}/version)"
+	W_VER="$(curl -kL "$URL"/${DIR}/version)"
 }
 do_bromite_browser() {
 	NAME="Bromite"
-	VFS=true
 	DIR=brm
-	B_VER="$(curl "$URL"/${DIR}/version)"
+	B_VER="$(curl -kL "$URL"/${DIR}/version)"
 }
 old_version() {
-	ui_print "- Checking whether this is a new install...."
+	ui_print "ⓘ Checking whether this is a new install...."
 	if test ! -f "$EXT_DATA"/version.txt; then
 		echo "OLD_BROWSER=0" >"$VERSIONFILE"
 		echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
@@ -147,23 +141,23 @@ download_webview() {
 		do_ungoogled_webview
 	fi
 	if test "$VF" -eq 1; then
-		ui_print "- Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
+		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
 		dl "$URL"/"$DIR"/webview-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Webview.apk; then
 		if test "$OLD_WEBVIEW" -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
-			ui_print "- Downloading update for ${NAME} webview, please be patient..."
+			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
 			dl "$URL"/"$DIR"/webview-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
-			ui_print "- Not a version upgrade! Using existing ${NAME} webview apk"
+			ui_print "☑ Not a version upgrade! Using existing ${NAME} webview apk"
 		fi
 	else
-		ui_print "- No existing apk found for ${NAME} webview!"
-		ui_print "- Downloading ${NAME} webview, please be patient..."
+		ui_print "ⓘ No existing apk found for ${NAME} webview!"
+		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
 		dl "$URL"/"$DIR"/webview-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
@@ -180,40 +174,40 @@ download_browser() {
 		do_ungoogled_browser
 	fi
 	if test "$VF" -eq 1; then
-		ui_print "- Redownloading ${NAME} browser, please be patient..."
-		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
+		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
+		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Browser.apk; then
 		if test "$OLD_BROWSER" -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
-			ui_print "- Downloading update for ${NAME} browser, please be patient..."
-			dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
+			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
+			dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Browser.apk
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
-			ui_print "- Not a version upgrade! Using existing ${NAME} browser apk"
+			ui_print "☑ Not a version upgrade! Using existing ${NAME} browser apk"
 		fi
 	else
-		ui_print "- No existing apk found for ${NAME} browser!"
-		ui_print "- Downloading ${NAME} browser, please be patient..."
-		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
+		ui_print "ⓘ No existing apk found for ${NAME} browser!"
+		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
+		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	extract_browser
 }
 verify_webview() {
-	ui_print " Verifying ${NAME} webview files..."
-	if ! "$VFS"; then
+	ui_print "ⓘ Verifying ${NAME} webview files..."
+	if test "$DIR" != 'ugc';  then
 		cd "$EXT_DATA"/apks || return
 		wget -q "$URL"/"$DIR"/sha256sums.txt -O sha256sums.txt.tmp
 		grep "$ARCH"_SystemWebView.apk sha256sums.txt.tmp >"$EXT_DATA"/apks/"$NAME"Webview.apk.sha256.txt
-		rm -fr "$ARCH"_SystemWebView.apk.sha256.txt.tmp
+		rm -fr sha256sums.txt.tmp
 		sed -i s/"$ARCH"_SystemWebView.apk/${NAME}Webview.apk/gi "$NAME"Webview.apk.sha256.txt
 		sha256sum -sc "$NAME"Webview.apk.sha256.txt >/dev/null
 		if test $? -ne 0; then
-			ui_print "- Verification failed, retrying download"
+			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			VF=1
@@ -224,18 +218,18 @@ verify_webview() {
 				download_webview
 			fi
 		else
-			ui_print " Verified successfully. Proceeding..."
+			ui_print "☑ Verified successfully. Proceeding..."
 			VF=0
 			extract_webview
 		fi
 	else
-		ui_print "- ${NAME} cannot be verified, as they don't publish sha256sums."
+		ui_print "⚠ ${NAME} cannot be verified, as they don't publish sha256sums."
 	fi
 	cd "$TMPDIR" || return
 }
 create_overlay() {
 	cd "$TMPDIR" || return
-	ui_print "- Fixing system webview whitelist"
+	ui_print "ⓘ Fixing system webview whitelist"
 	if test "${API}" -ge "29"; then
 		aapt p -f -v -M "$MODPATH"/common/overlay10/AndroidManifest.xml -I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay10/res -F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
 	else
@@ -246,9 +240,9 @@ create_overlay() {
 		cp -rf "$MODPATH"/signed.apk "$MODPATH"/common/WebviewOverlay.apk
 		rm -rf "$MODPATH"/signed.apk "$MODPATH"/unsigned.apk
 	else
-		ui_print "- Overlay creation has failed! Poorly developed ROMs have this issue"
-		ui_print "- Compatibility is unlikely, please report this to your ROM developer."
-		ui_print "- Some ROMs need a patch to fix this."
+		ui_print "⚠ Overlay creation has failed! Poorly developed ROMs have this issue"
+		ui_print "⚠ Compatibility is unlikely, please report this to your ROM developer."
+		ui_print "⚠ Some ROMs need a patch to fix this."
 	fi
 	cp -f "$MODPATH"/logs/aapt.log "$EXT_DATA"/logs
 	if [ -d /system_ext/overlay ]; then
@@ -290,7 +284,7 @@ set_path() {
 	BPATH="/system/app/browser"
 }
 extract_webview() {
-	ui_print "- Installing ${NAME} Webview"
+	ui_print "ⓘ Installing ${NAME} Webview"
 	for i in "$A" "$H" "$I" "$B" "$G" "$K" "$L"; do
 		if test ! -z "$i"; then
 			mktouch "$MODPATH""$i"/.replace
@@ -315,7 +309,7 @@ extract_webview() {
 	create_overlay
 }
 extract_browser() {
-	ui_print "- Installing ${NAME} Browser"
+	ui_print "ⓘ Installing ${NAME} Browser"
 	for i in "$J" "$F" "$C" "$E" "$D"; do
 		if test ! -z "$i"; then
 			mktouch "$MODPATH""$i"/.replace
@@ -334,17 +328,17 @@ extract_browser() {
 	rm -rf "$TMPDIR"/browser "$TMPDIR"/browser.zip
 }
 online_install() {
-	ui_print "- Awesome, you have internet"
+	ui_print "☑ Awesome, you have internet"
 	URL="https://dl.androidacy.com/downloads/webview-files/"
 	set_path
 	if test "$INSTALL" -eq 0; then
-		ui_print "     -> Webview install selected"
+		ui_print "ⓘ Webview install selected"
 		download_webview
 	elif test "$INSTALL" -eq 1; then
-		ui_print '     -> Browser install selected'
+		ui_print 'ⓘ Browser install selected'
 		download_browser
 	elif test "$INSTALL" -eq 2; then
-		ui_print "     -> Both webview and browser install selected"
+		ui_print "ⓘ Both webview and browser install selected"
 		download_browser
 		download_webview
 	fi
@@ -352,32 +346,32 @@ online_install() {
 offline_install() {
 	set_path
 	if test ! -f "$EXT_DATA"/apks/webview.apk; then
-		ui_print "- No webview.apk found!"
+		ui_print "⚠ No webview.apk found!"
 	else
-		ui_print "- Webview.apk found! Using it."
+		ui_print "ⓘ Webview.apk found! Using it."
 		extract_webview
 	fi
 	if test ! -f "$EXT_DATA"/apks/browser.apk; then
-		ui_print "- No browser.apk found!"
+		ui_print "⚠ No browser.apk found!"
 	else
-		ui_print "- Browser.apk found! Using it"
+		ui_print "ⓘ Browser.apk found! Using it"
 		extract_browser
 	fi
 }
 do_install() {
 	set_config
 	if ! "$BOOTMODE"; then
-		ui_print "- Detected recovery install! Proceeding with reduced featureset"
+		ui_print "ⓘ Detected recovery install! Proceeding with reduced featureset"
 		recovery_actions
 		offline_install
 		recovery_cleanup
 	elif test "$OFFLINE" -eq 1; then
-		ui_print " Offline install selected! Proceeding..."
+		ui_print "⚠ Offline install selected! Proceeding..."
 		offline_install
 	else
 		test_connection
 		if test $? -ne 0; then
-			ui_print "- No internet detcted, falling back to offline install!"
+			ui_print "⚠ No internet detcted, falling back to offline install!"
 			offline_install
 		else
 			if test ${TRY_COUNT} -ge 3; then
@@ -390,12 +384,11 @@ do_install() {
 	do_cleanup
 }
 clean_dalvik() {
-	# Removes dalvik cache to re-register our overlay and webview
-	ui_print "Dalvik cache will be cleared next boot"
-	ui_print "Expect longer boot time"
+	ui_print "⚠ Dalvik cache will be cleared next boot"
+	ui_print "⚠ Expect longer boot time"
 }
 do_cleanup() {
-	ui_print "- Cleaning up..."
+	ui_print "ⓘ Cleaning up..."
 	{
 		echo "Here's some useful links:"
 		echo "Website: https://www.androidacy.com"
@@ -404,7 +397,7 @@ do_cleanup() {
 	} >"$EXT_DATA"/README.txt
 	rm -f "$MODPATH"/system/app/placeholder
 	rm -f "$MODPATH"/*.md
-	ui_print "- Backing up important stuffs to module directory"
+	ui_print "ⓘ Backing up important stuffs to module directory"
 	mkdir -p "$MODPATH"/backup/
 	cp /data/system/overlays.xml "$MODPATH"/backup/
 	cp -rf "$MODPATH"/product/* "$MODPATH"/system/product
@@ -417,20 +410,22 @@ if test ${TRY_COUNT} -ge "3"; then
 else
 	do_install
 fi
+ui_print ' '
+ui_print "ⓘ Some OEM/Google things were remvoed during install, to avoid conflicts"
+sleep 0.2
+ui_print "ⓘ You can reinstall them, but do not request support if you do"
+sleep 0.2
+ui_print "ⓘ Enjoy a more private and faster webview, done systemlessly"
+sleep 0.2
 ui_print " "
-ui_print "ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ"
-ui_print " "
-ui_print " Some OEM/Google things were remvoed during install, to avoid conflicts"
-ui_print " You can reinstall them, but do not request support if you do"
-ui_print " Enjoy a more private and faster webview, done systemlessly"
-ui_print " "
-sleep 0.6
-ui_print " WebviewManager - By Androidacy"
-sleep 1
-ui_print " Donate at https://www.androidacy.com/donate/"
-ui_print " Website, how to get support and blog is at https://www.androidacy.com"
-sleep 3
-ui_print "-> Install apparently succeeded, please reboot ASAP"
-ui_print " "
-ui_print "ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ  ℹ"
+sleep 0.2
+ui_print "			Webview Manager | By Androidacy"
+ui_print ' '
+sleep 0.2
+ui_print "☑ Donate at https://www.androidacy.com/donate/"
+sleep 0.2
+ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
+sleep 0.2
+ui_print "☑ Install apparently succeeded, please reboot ASAP"
+sleep 0.2
 ui_print " "

@@ -1,5 +1,5 @@
 # Config file for Webview Switcher
-# If ivvalid values are found, or this file is missing, then the module falls back to the default in parenthesis
+# If invalid values are found, or this file is missing, then the module falls back to the default in parenthesis
 
 CV="5" # DO NOT CHANGE THIS
 
