@@ -30,8 +30,6 @@ dl() {
 	fi
 	"$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
-magiskpolicy --live "allow system_server sdcardfs file { read write }"
-magiskpolicy --live "allow zygote adb_data_file file getattr"
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
 if [ -f $VEN/build.prop ]; then
@@ -132,6 +130,7 @@ old_version() {
 	fi
 }
 download_webview() {
+	cd "$TMPDIR"
 	old_version
 	if test "$WEBVIEW" -eq 0; then
 		do_bromite_webview
@@ -142,14 +141,16 @@ download_webview() {
 	fi
 	if test "$VF" -eq 1; then
 		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
-		dl "$URL"/"$DIR"/webview-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
+		dl "$URL"/"$DIR"/webview-"$ARCH".apk
+		mv -f webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Webview.apk; then
 		if test "$OLD_WEBVIEW" -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
-			dl "$URL"/"$DIR"/webview-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
+			dl "$URL"/"$DIR"/webview-"$ARCH".apk
+			mv -f webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -158,13 +159,14 @@ download_webview() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} webview!"
 		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
-		dl "$URL"/"$DIR"/webview-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Webview.apk
-		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
+		dl "$URL"/"$DIR"/webview-"$ARCH".apk
+		mv -f webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	verify_webview
 }
 download_browser() {
+	cd "$TMPDIR"
 	old_version
 	if test "$BROWSER" -eq 0; then
 		do_bromite_browser
@@ -175,14 +177,16 @@ download_browser() {
 	fi
 	if test "$VF" -eq 1; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
-		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Browser.apk
+		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
+		mv -f browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Browser.apk; then
 		if test "$OLD_BROWSER" -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
-			dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Browser.apk
+			dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
+			mv -f browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -191,7 +195,8 @@ download_browser() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} browser!"
 		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
-		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk -o "$EXT_DATA"/apks/"$NAME"Browser.apk
+		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
+		mv -f browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi

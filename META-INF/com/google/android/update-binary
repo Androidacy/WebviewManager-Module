@@ -21,8 +21,11 @@ umask 022
 TMPDIR=/dev/tmp
 PERSISTDIR=/sbin/.magisk/mirror/persist
 
-rm -rf $TMPDIR 2>/dev/null
-mkdir -p $TMPDIR
+[ -z $TMPDIR ] && TMPDIR=/dev/tmp;
+
+rm -rf $TMPDIR;
+mkdir -p $TMPDIR;
+cd $TMPDIR;
 
 # echo before loading util_functions
 ui_print() { echo "$1"; }
