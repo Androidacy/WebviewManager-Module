@@ -130,7 +130,7 @@ old_version() {
 	fi
 }
 download_webview() {
-	cd "$TMPDIR"
+	cd "$TMPDIR" || return
 	old_version
 	if test "$WEBVIEW" -eq 0; then
 		do_bromite_webview
@@ -142,7 +142,7 @@ download_webview() {
 	if test "$VF" -eq 1; then
 		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
 		dl "$URL"/"$DIR"/webview-"$ARCH".apk
-		mv -f webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
+		cp -rf webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -150,7 +150,7 @@ download_webview() {
 		if test "$OLD_WEBVIEW" -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
 			dl "$URL"/"$DIR"/webview-"$ARCH".apk
-			mv -f webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
+			cp -rf webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -160,13 +160,13 @@ download_webview() {
 		ui_print "ⓘ No existing apk found for ${NAME} webview!"
 		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
 		dl "$URL"/"$DIR"/webview-"$ARCH".apk
-		mv -f webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
+		cp -rf webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	verify_webview
 }
 download_browser() {
-	cd "$TMPDIR"
+	cd "$TMPDIR" || return
 	old_version
 	if test "$BROWSER" -eq 0; then
 		do_bromite_browser
@@ -178,7 +178,7 @@ download_browser() {
 	if test "$VF" -eq 1; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
 		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
-		mv -f browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
+		cp -rf browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -186,7 +186,7 @@ download_browser() {
 		if test "$OLD_BROWSER" -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
 			dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
-			mv -f browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
+			cp -rf browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -196,7 +196,7 @@ download_browser() {
 		ui_print "ⓘ No existing apk found for ${NAME} browser!"
 		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
 		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
-		mv -f browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
+		cp -rf browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -204,7 +204,7 @@ download_browser() {
 }
 verify_webview() {
 	ui_print "ⓘ Verifying ${NAME} webview files..."
-	if test "$DIR" != 'ugc';  then
+	if test "$DIR" != 'ugc'; then
 		cd "$EXT_DATA"/apks || return
 		wget -q "$URL"/"$DIR"/sha256sums.txt -O sha256sums.txt.tmp
 		grep "$ARCH"_SystemWebView.apk sha256sums.txt.tmp >"$EXT_DATA"/apks/"$NAME"Webview.apk.sha256.txt
@@ -303,13 +303,13 @@ extract_webview() {
 		done
 	fi
 	cp_ch "$EXT_DATA"/apks/"$NAME"Webview.apk "$MODPATH"$WPATH/webview.apk || cp_ch "$EXT_DATA"/apks/webview.apk "$MODPATH"$WPATH/webview.apk
-	touch "$MODPATH"$WPATH/.replace
+	mktouch "$MODPATH"$WPATH/.replace
 	cp "$MODPATH"$WPATH/webview.apk "$TMPDIR"/webview.zip
 	mkdir "$TMPDIR"/webview -p
 	unzip -d "$TMPDIR"/webview "$TMPDIR"/webview.zip >/dev/null
 	cp -rf "$TMPDIR"/webview/lib "$MODPATH"$WPATH/
-	mv "$MODPATH"$WPATH/lib/arm64-v8a "$MODPATH"$WPATH/lib/arm64
-	mv "$MODPATH"$WPATH/lib/armeabi-v7a "$MODPATH"$WPATH/lib/arm
+	cp -rf "$MODPATH"$WPATH/lib/arm64-v8a "$MODPATH"$WPATH/lib/arm64
+	cp -rf "$MODPATH"$WPATH/lib/armeabi-v7a "$MODPATH"$WPATH/lib/arm
 	rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.zip
 	create_overlay
 }
@@ -328,13 +328,13 @@ extract_browser() {
 	mkdir -p "$TMPDIR"/browser
 	unzip -d "$TMPDIR"/browser "$TMPDIR"/browser.zip >/dev/null
 	cp -rf "$TMPDIR"/browser/lib "$MODPATH"$BPATH
-	mv "$MODPATH"$BPATH/lib/arm64-v8a "$MODPATH"$BPATH/lib/arm64
-	mv "$MODPATH""$BPATH"/lib/armeabi-v7a "$MODPATH"$BPATH/lib/arm
+	cp -rf "$MODPATH"$BPATH/lib/arm64-v8a "$MODPATH"$BPATH/lib/arm64
+	cp -rf "$MODPATH""$BPATH"/lib/armeabi-v7a "$MODPATH"$BPATH/lib/arm
 	rm -rf "$TMPDIR"/browser "$TMPDIR"/browser.zip
 }
 online_install() {
 	ui_print "☑ Awesome, you have internet"
-	URL="https://dl.androidacy.com/downloads/webview-files/"
+	URL="https://dl.androidacy.com/downloads/webview-files"
 	set_path
 	if test "$INSTALL" -eq 0; then
 		ui_print "ⓘ Webview install selected"
@@ -408,6 +408,7 @@ do_cleanup() {
 	cp -rf "$MODPATH"/product/* "$MODPATH"/system/product
 	cp -rf "$MODPATH"/system_ext/* "$MODPATH"/system/system_ext
 	rm -fr "$MODPATH"/product "$MODPATH"/system_ext
+	rm -fr "$MODPATH"/config.txt
 	clean_dalvik
 }
 if test ${TRY_COUNT} -ge "3"; then
@@ -416,7 +417,7 @@ else
 	do_install
 fi
 ui_print ' '
-ui_print "ⓘ Some OEM/Google things were remvoed during install, to avoid conflicts"
+ui_print "ⓘ Some OEM/Google things were recp -rfoed during install, to avoid conflicts"
 sleep 0.2
 ui_print "ⓘ You can reinstall them, but do not request support if you do"
 sleep 0.2

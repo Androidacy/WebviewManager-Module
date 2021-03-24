@@ -1,9 +1,6 @@
 #!/data/adb/magisk/busybox ash
 # shellcheck shell=dash
 # shellcheck disable=SC2034
-if "$(getenforce)" == "Enforcing" || "$(getenforce)" == "enforcing"; then
-	setenforce 0 && SELINUX_R=true
-fi
 ASH_STANDALONE=1
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
@@ -48,7 +45,4 @@ if ! $OVERLAY; then
 	sed -i "s|</overlays>|    <item packageName=\"${OL}\" userId=\"0\" targetPackageName=\"android\" baseCodePath=\"${DR}/WebviewOverlay.apk\" state=\"${STATE}\" isEnabled=\"true\" isStatic=\"true\" priority=\"9999\" /></overlays>|" $LIST
 	sed -i "/OVERLAY/d" "${MODDIR}"/status.txt
 	echo "OVERLAY=true" >>"${MODDIR}"/status.txt
-fi
-if $SELINUX_R; then
-	setenforce 1
 fi
