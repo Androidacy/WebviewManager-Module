@@ -1,6 +1,14 @@
 
 # Changelog
 
+<h4>8.1.0</h4>
+
+- Address download error
+- Cleanup sepolicy; implement proper install solution
+- Properly support MIUI and Android 11
+- Move away from github and move some download logic server side.
+- Fix vanilla chromium download
+
 <h4>8.0.2</h4 
 
 - Fix files not getting downloaded to the right location for some users
