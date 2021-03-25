@@ -1,6 +1,6 @@
 id=bromitewebview
 name=Webview Manager
-version=8.1.0_publicbeta3
-versionCode=4041
+version=8.1.1
+versionCode=4042
 author=Androidacy
 description=Change System WebView and default browser systemless-ly, on any ROM. You can block ads and fingerprinting, increase privacy, and more. Website: www.androidacy.com.
