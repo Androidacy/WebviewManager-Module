@@ -417,21 +417,23 @@ else
 	do_install
 fi
 ui_print ' '
-ui_print "ⓘ Some OEM/Google things were recp -rfoed during install, to avoid conflicts"
-sleep 0.2
-ui_print "ⓘ You can reinstall them, but do not request support if you do"
-sleep 0.2
-ui_print "ⓘ Enjoy a more private and faster webview, done systemlessly"
-sleep 0.2
+ui_print "ⓘ Some stock apps have been systemlessly  debloated during install"
+sleep 0.1
+ui_print "ⓘ Anything debloated is known to cause conflicts"
+sleep 0.1
+ui_print "ⓘ Such as Chrome, Google WebView, etc"
+sleep 0.1
+ui_print "ⓘ It is recommended not to reinstall them"
+sleep 0.1
 ui_print " "
-sleep 0.2
+sleep 0.1
 ui_print "			Webview Manager | By Androidacy"
 ui_print ' '
-sleep 0.2
+sleep 0.1
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
-sleep 0.2
+sleep 0.1
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
-sleep 0.2
+sleep 0.1
 ui_print "☑ Install apparently succeeded, please reboot ASAP"
-sleep 0.2
+sleep 0.1
 ui_print " "
