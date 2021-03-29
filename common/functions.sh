@@ -13,14 +13,11 @@
 # shellcheck disable=SC2044
 # shellcheck disable=SC2166
 # shellcheck disable=SC2061
-if "$(getenforce)" == "Enforcing" || "$(getenforce)" == "enforcing"; then
-	setenforce 0 && SELINUX_R=true
-fi
 abort() {
   ui_print "$1"
-  rm -rf $MODPATH 2>/dev/null
+  rm -fr $MODPATH 2>/dev/null
   $BOOTMODE || recovery_cleanup
-  rm -rf $TMPDIR 2>/dev/null
+  rm -fr $TMPDIR 2>/dev/null
   exit 1
 }
 it_failed() {
@@ -36,7 +33,7 @@ it_failed() {
   ui_print "	 5) There's a *tiny* chance we screwed up"
   ui_print " Please fix any issues and retry."
   ui_print " If you feel this is a bug or need assistance, head to our telegram"
-  rm -rf "${EXT_DATA}"/apks "$EXT_DATA"/*.txt
+  rm -fr "${EXT_DATA}"/apks "$EXT_DATA"/*.txt
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
@@ -46,20 +43,25 @@ it_failed() {
 detect_ext_data() {
   if touch /sdcard/.rw && rm /sdcard/.rw; then
     export EXT_DATA="/sdcard/WebviewManager"
-    mkdir -p "$EXT_DATA"/apks "$EXT_DATA"/logs
   elif touch /storage/emulated/0/.rw && rm /storage/emulated/0/.rw; then
     export EXT_DATA="/storage/emulated/0/WebviewManager"
-    mkdir -p "$EXT_DATA"/apks "$EXT_DATA"/logs
   elif touch /data/media/0/.rw && rm /data/media/0/.rw; then
     export EXT_DATA="/data/media/0/WebviewManager"
-    mkdir -p "$EXT_DATA"/apks "$EXT_DATA"/logs
   else
     EXT_DATA='/storage/emulated/0/WebviewManager'
-    mkdir -p "$EXT_DATA"/apks "$EXT_DATA"/logs
   fi
 }
 
 detect_ext_data
+mkdir "EXT_DATA" 
+if test $? -ne 0; then
+	ui_print "⚠ Cannot access internal storage!"
+	it_failed
+fi
+mkdir "$MODPATH"/logs/
+mkdir "$EXT_DATA"/apks/
+mkdir "$EXT_DATA"/logs/
+chmod 750 -R "$EXT_DATA"
 
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return
@@ -101,14 +103,14 @@ umount_apex() {
     # Detach loop device just in case
     losetup -d $SRC 2>/dev/null
   done
-  rm -rf /apex
+  rm -fr /apex
   unset ANDROID_RUNTIME_ROOT
   unset ANDROID_TZDATA_ROOT
   unset BOOTCLASSPATH
 }
 
 cleanup() {
-  rm -rf $MODPATH/common 2>/dev/null
+  rm -fr $MODPATH/common 2>/dev/null
   ui_print " "
   ui_print "    **************************************"
   ui_print "    *   MMT Extended by Zackptg5 @ XDA   *"
@@ -295,7 +297,7 @@ if [ -f $INFO ]; then
         if [[ "$(ls -A $LINE 2>/dev/null)" ]]; then
           break 1
         else
-          rm -rf $LINE
+          rm -fr $LINE
         fi
       done
     fi
@@ -329,7 +331,7 @@ for i in $(find $MODPATH -type f -name "*.sh" -o -name "*.prop" -o -name "*.rule
   esac
 done
 
-$IS64BIT || for i in $(find $MODPATH/system -type d -name "lib64"); do rm -rf $i 2>/dev/null; done
+$IS64BIT || for i in $(find $MODPATH/system -type d -name "lib64"); do rm -fr $i 2>/dev/null; done
 [ -d "/system/priv-app" ] || mv -f $MODPATH/system/priv-app $MODPATH/system/app 2>/dev/null
 [ -d "/system/xbin" ] || mv -f $MODPATH/system/xbin $MODPATH/system/bin 2>/dev/null
 if $DYNLIB; then
@@ -340,7 +342,7 @@ if $DYNLIB; then
     esac
     mkdir -p "$(dirname $MODPATH/system/vendor/$FILE)"
     mv -f $MODPATH/system/$FILE $MODPATH/system/vendor/$FILE
-    [ "$(ls -A $(dirname $MODPATH/system/$FILE))" ] || rm -rf $(dirname $MODPATH/system/$FILE)
+    [ "$(ls -A $(dirname $MODPATH/system/$FILE))" ] || rm -fr $(dirname $MODPATH/system/$FILE)
   done
   # Delete empty lib folders (busybox find doesn't have this capability)
   toybox find $MODPATH/system/* -type d -empty -delete >/dev/null 2>&1
@@ -363,6 +365,3 @@ set_permissions
 
 # Complete install
 cleanup
-if $SELINUX_R; then
-	setenforce 1
-fi
