@@ -1,8 +1,3 @@
-##########################################################################################
-#
-# MMT Extended Utility Functions
-#
-##########################################################################################
 # shellcheck shell=dash
 # shellcheck disable=SC2155
 # shellcheck disable=SC2034
@@ -49,14 +44,20 @@ detect_ext_data() {
     export EXT_DATA="/data/media/0/WebviewManager"
   else
     EXT_DATA='/storage/emulated/0/WebviewManager'
+    ui_print "⚠ Possible internal storage access issues! Please make sure data is mounted and decrypted."
+    ui_print "⚠ Trying to proceed anyway..."
   fi
 }
 
 detect_ext_data
-mkdir "EXT_DATA" 
-if test $? -ne 0; then
-	ui_print "⚠ Cannot access internal storage!"
-	it_failed
+if test ! -d "$EXT_DATA"; then
+  mkdir "$EXT_DATA"
+fi
+if ! mktouch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
+  if ! rm -fr "$EXT_DATA" && mktouch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
+    ui_print "⚠ Cannot access internal storage!"
+    it_failed
+  fi
 fi
 mkdir "$MODPATH"/logs/
 mkdir "$EXT_DATA"/apks/
@@ -112,10 +113,10 @@ umount_apex() {
 cleanup() {
   rm -fr $MODPATH/common 2>/dev/null
   ui_print " "
-  ui_print "    **************************************"
-  ui_print "    *   MMT Extended by Zackptg5 @ XDA   *"
-  ui_print "    *      Modified by Androidacy        *"
-  ui_print "    **************************************"
+  ui_print "**************************************"
+  ui_print "*         AMMT by Androidacy         *"
+  ui_print "*   Based on the original MMT-ex     *"
+  ui_print "**************************************"
   ui_print " "
 }
 

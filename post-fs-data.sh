@@ -35,7 +35,7 @@ else
 fi
 if ! $OVERLAY; then
 	echo "Clearing caches..."
-	rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com*webview* /data/*/*/com*webview* /data/system/package_cache/*
+	rm -rf /data/resource-cache/* /data/dalvik-cache/* /cache/dalvik-cache/* /data/*/com*android.webview* /data/*/*/com*android.webview* /data/system/package_cache/*
 	sed -i "/com*webview/d" /data/system/packages.list
 	sed -i "/com*webview/d" /data/system/packages.xml
 	sed -i "/com.linuxandria.WebviewOverlay/d" "$LIST"
