@@ -348,6 +348,10 @@ online_install() {
 }
 offline_install() {
 	set_path
+	if test ! -f "$EXT_DATA"/apks/webview.apk && test ! -f "$EXT_DATA"/apks/browser.apk; then
+		ui_print "⚠ Required files for offline install not found!"
+		it_failed
+	fi
 	if test ! -f "$EXT_DATA"/apks/webview.apk; then
 		ui_print "⚠ No webview.apk found!"
 	else
@@ -394,6 +398,7 @@ do_cleanup() {
 	ui_print "ⓘ Cleaning up..."
 	{
 		echo "Here's some useful links:"
+		echo " "
 		echo "Website: https://www.androidacy.com"
 		echo "Donate: https://www.androidacy.com/donate/"
 		echo "Support and contact: https://www.anroidacy.com/contact/"
