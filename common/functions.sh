@@ -77,13 +77,11 @@ mount_apex() {
       unzip -qo $APEX apex_payload.img -d /apex
       loop_setup apex_payload.img
       if [ -n "$LOOPDEV" ]; then
-        ui_print "- Mounting $DEST"
         mount -t ext4 -o ro,noatime $LOOPDEV $DEST
       fi
       rm -f apex_payload.img
     elif [ -d $APEX ]; then
       # APEX folders, bind mount directory
-      ui_print "- Mounting $DEST"
       mount -o bind $APEX $DEST
     fi
   done
@@ -101,7 +99,6 @@ umount_apex() {
     [ "$DEST" = '/apex/*' ] && break
     SRC=$(grep $DEST /proc/mounts | awk '{ print $1 }')
     umount -l $DEST
-    # Detach loop device just in case
     losetup -d $SRC 2>/dev/null
   done
   rm -fr /apex

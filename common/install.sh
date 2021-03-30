@@ -37,7 +37,7 @@ else
 fi
 check_config() {
 	if test "$CV" -ne 5; then
-		ui_print "⚠ Invalid config version! Using defaults"
+		ui_print "⚠ Wrong config version! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
 	fi
@@ -262,6 +262,7 @@ create_overlay() {
 	echo "$OLP" >"$MODPATH"/overlay.txt
 }
 set_path() {
+	ui_print "ⓘ Detecting and debloating conflicting packages"
 	paths=$(cmd package dump com.android.webview | grep codePath)
 	A=${paths##*=}
 	unset paths
