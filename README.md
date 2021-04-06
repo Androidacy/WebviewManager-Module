@@ -1,17 +1,22 @@
-# Webview Switcher
-## An Androidacy Project
+# Webview Switcher - An Androidacy Project
 
-## Website
+![Logo](https://www.androidacy.com/wp-content/uploads/rsz_cropped-adobe_post_20210202_00133408277657334196729-1024x576-1.png)
 
-- Main site: [click me](https://www.androidacy.com/).
+<br>
 
-- Blog/Updates: [right here](https://www.androidacy.com/blog/).
+## Links
 
-### **Be sure to check out our new module, Fontifier!**
+- [Website](https://www.androidacy.com/).
+
+- [Blog and updates](https://www.androidacy.com/blog/).
+
+* [Upstream repository](https://github.com/androidacy/WebviewSwitcher). All development is done here until stable release.
+
+### Be sure to check out our new module, Font Manager!
 
 - Downloads are [here](https://dl.androidacy.com/?eeFolder=Magisk-Modules&eeListID=1)
 
-- The source is [here](https://github.com/androidacy/fontrevival)
+- The source is [here](https://github.com/androidacy/FontManager)
 
 - XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
 
@@ -29,7 +34,7 @@ The latest update should now work on all ROMs Android v7.0+. ROMs versions 5.x t
 
 Webview is a shared component between apps to display web content instead of directing to a browser. It's like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include email, wewbview wrapper apps, or even some banking apps. Even the Google app uses a webview.
 
-**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE'S OWN WEBVIEW**. We can't fix that and any issues on it will be closed and ignored. Complain to the app developer, not us. We're not even sure why this happens or how they check.
+**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE'S OWN WEBVIEW**. We can't fix that and any issues on it will be closed and ignored. Complain to the app developer, not us. We're not even sure why this happens or if/how they check.
 
 ## Credits
 
@@ -84,8 +89,3 @@ Here is our [Discord](https://discord.gg/gTnDxQ6) [very inactive]
 - **Recommended to flash through magisk manager**
 	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the offline install method. Note we do not provide support for this!
 - SELinux enforcing/pernissive
-
-## Other resources
-
-* [Bromite SystemWebView wiki page for reference](https://github.com/bromite/bromite/wiki/Installing-SystemWebView). **The information there is outdated and has a risk of bricking your device, but is linked for reference.**
-* [Upstream repository](https://github.com/androidacy/WebviewSwitcher). All development is done here until stable release.
