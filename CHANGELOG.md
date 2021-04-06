@@ -1,7 +1,13 @@
 
 # Changelog
 
-<h4>8.1.0</h4>
+### 8.1.3
+
+- Address situation where, especially on android 10+, internal storage isn't accessible
+- Bugfixes and performance improvements
+- Code formatting
+
+### 8.1.0
 
 - Address download error
 - Cleanup sepolicy; implement proper install solution
@@ -9,12 +15,12 @@
 - Move away from github and move some download logic server side.
 - Fix vanilla chromium download
 
-<h4>8.0.2</h4 
+### 8.0.2
 
 - Fix files not getting downloaded to the right location for some users
 - Fix ungoogled chromium extensions download
 
-<h4>8.0.1</h4>
+### 8.0.1
 
 - Huge refactor
 - Support android 11
@@ -27,12 +33,11 @@
 - Add better error handling
 - Fix some events don't properly trigger an install abort
 
-<h4>7.3.0</h4>
+### 7.3.0
 
 - Misc code refactoring
 
-<h4>7.1.1</h4>
-(Also applies to 7.1.0)
+### 7.1.1
 
 - Fix several critical bugs in the 7.x release
 
@@ -40,7 +45,7 @@
 
 - Misc refactoring
 
-<h4>7.0.1</h4>
+### 7.0.1
 
 - Rebrand the module to reflect new abilities
 
@@ -60,7 +65,7 @@
 
 - Other optimizations
 
-<h4>6.1.0</h4>
+### 6.1.0
 
 - Support recovery and system installs - system installs are experimental and I will NOT provide support for them
 
@@ -68,7 +73,7 @@
 
 - Hopefully fix "no connection" issues for some users
 
-<h4>6.0.0</h4>
+### 6.0.0
 
 - Rework overlay to prevent some boot loop
 
@@ -82,7 +87,7 @@
 
 - Extract libraries from all, meaning even if install fails no crashing should occur
 
-<h4>5.0.1</h4>
+### 5.0.1
 
 - Switch to MMT-ex template
 
@@ -96,7 +101,7 @@
 
 - Misc bugfixes & improvements
 
-<h4>4.4.3</h4>
+### 4.4.3
 
 - Hopefully last release 4.x series
 
@@ -110,7 +115,7 @@
 
 - Updated sepolicy
 
-<h4>4.4.1</h4>
+### 4.4.1
 
 - Introduce better logging
 
@@ -126,11 +131,11 @@
 
 - This will be the last release using Unity. 5.0 will use MMT-ex, meaning ONLY magisk will be supported
 
-<h4>4.3.0</h4>
+### 4.3.0
 
 - Misc fixes
 
-<h4>4.2.2</h4>
+### 4.2.2
 
 - Fixed overlay not copying to the right place
 
@@ -138,7 +143,7 @@
 
 - Remove some debugging code
 
-<h4>4.2.0</h4>
+### 4.2.0
 
 - Fixes for overlay on custom ROMs
 
@@ -156,13 +161,13 @@
 
 - Misc. bugfixes
 
-<h4>4.1.0</h4>
+### 4.1.0
 
 - Fixes for app installation on boot
 
 - More dynamic in boot script should no longer mess with manual app updates
 
-<h4>4.0.0</h4>
+### 4.0.0
 
 - Fixed compatibility with stock ROMs
 
@@ -170,11 +175,11 @@
 
 - Updated boot scripts
 
-<h4>3.7.3</h4>
+### 3.7.3
 
 - Always download latest Bromite WebView apk
 
-<h4>3.7.2</h4>
+### 3.7.2
 
 - Download APK from official sources
 
@@ -182,13 +187,13 @@
 
 - Update install logic
 
-<h4>3.6.2</h4>
+### 3.6.2
 
 - Updated bromite to 75.0.3770.132
 
 - Fixed boot script (I say that a lot...)
 
-<h4>3.6.1</h4>
+### 3.6.1
 
 - Improve install logic
 
@@ -200,13 +205,13 @@
 
 - Re-add 64 bit curl binary
 
-<h4>3.5.1</h4>
+### 3.5.1
 
 - Hotfix for multiple modules. All because of a comment in the code BTW
 
 - Hotfix for Chrome removal, wasn't received well
 
-<h4>3.5</h4>
+### 3.5
 
 - Attempt to fix support on Pixels and Pixel ROMs
 
@@ -214,23 +219,23 @@
 
 - Script cleanup
 
-<h4>3.4</h4>
+### 3.4
 
 - `reverted`
 
-<h4>3.3</h4>
+### 3.3
 
 - Further fix webview recognition on reboot
 
-<h4>3.2</h4>
+### 3.2
 
 - Add uninstall script to fixed issues with no webview on uninstall
 
-<h4>v3.1</h4>
+### v3.1
 
 - Bugfixes, probably added more bugs
 
-<h4>v3.0 - big changes</h4>
+### v3.0
 
 - Now fetches needed files from internet to reduce filesize
 
@@ -238,36 +243,36 @@
 
 - Fix boot script
 
-<h4>v2.1.1</h4>
+### v2.1.1
 
 - Fix boot script
 
-<h4>v2.0</h4>
+### v2.0
 
 - Unbreak the module
 
-<h4>v1.5</h4>
+### v1.5
 
 - Fix script
 
-<h4>v1.4</h4>
+### v1.4
 
 - Add support for more CPU arch besides arm64
 
 - Update bromite to v75
 
-<h4>v1.3</h4>
+### v1.3
 
 - Misc bugfixes
 
-<h4>v1.2</h4>
+### v1.2
 
 - Updated libs
 
-<h4>v1.1</h4>
+### v1.1
 
 - Fix WebView crash
 
-<h4>v1.0</h4>
+### v1.0
 
 - Initial release
