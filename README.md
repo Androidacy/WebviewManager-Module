@@ -6,18 +6,14 @@
 
 ## Links
 
-- [Website](https://www.androidacy.com/).
-
-- [Blog and updates](https://www.androidacy.com/blog/).
-
+- [Website](https://www.androidacy.com/)
+- [Blog and updates](https://www.androidacy.com/blog/)
 * [Upstream repository](https://github.com/androidacy/WebviewSwitcher). All development is done here until stable release.
 
 ### Be sure to check out our new module, Font Manager!
 
 - Downloads are [here](https://dl.androidacy.com/?eeFolder=Magisk-Modules&eeListID=1)
-
 - The source is [here](https://github.com/androidacy/FontManager)
-
 - XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
 
 ## What is this?
