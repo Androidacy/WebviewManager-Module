@@ -1,6 +1,11 @@
 
 # Changelog
 
+### 8.1.4
+
+- Fix debloats
+- Implement browser signature verification
+
 ### 8.1.3
 
 - Address situation where, especially on android 10+, internal storage isn't accessible
