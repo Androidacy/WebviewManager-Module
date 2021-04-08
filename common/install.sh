@@ -161,7 +161,7 @@ download_webview() {
 		cp -rf webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
-	verify_webview
+	verify_w
 }
 download_browser() {
 	cd "$TMPDIR" || return
@@ -198,9 +198,9 @@ download_browser() {
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
-	extract_browser
+	verify_b
 }
-verify_webview() {
+verify_w() {
 	ui_print "ⓘ Verifying ${NAME} webview files..."
 	if test "$DIR" != 'ugc'; then
 		cd "$EXT_DATA"/apks || return
@@ -224,6 +224,36 @@ verify_webview() {
 			ui_print "☑ Verified successfully. Proceeding..."
 			VF=0
 			extract_webview
+		fi
+	else
+		ui_print "⚠ ${NAME} cannot be verified, as they don't publish sha256sums."
+	fi
+	cd "$TMPDIR" || return
+}
+verify_b() {
+	ui_print "ⓘ Verifying ${NAME} browser files..."
+	if test "$DIR" != 'ugc'; then
+		cd "$EXT_DATA"/apks || return
+		wget -q "$URL"/"$DIR"/sha256sums.txt -O sha256sums.txt.tmp
+		grep "$ARCH"_ChromePublic.apk sha256sums.txt.tmp >"$EXT_DATA"/apks/"$NAME"Browser.apk.sha256.txt
+		rm -fr sha256sums.txt.tmp
+		sed -i s/"$ARCH"_ChromePublic.apk/${NAME}Browser.apk/gi "$NAME"Browser.apk.sha256.txt
+		sha256sum -sc "$NAME"Browser.apk.sha256.txt >/dev/null
+		if test $? -ne 0; then
+			ui_print "⚠ Verification failed, retrying download"
+			rm -f "$EXT_DATA"/apks/*Browser.apk
+			TRY_COUNT=$((TRY_COUNT + 1))
+			VF=1
+			if test ${TRY_COUNT} -ge 3; then
+				it_failed
+			else
+				cd "$TMPDIR" || return
+				download_browser
+			fi
+		else
+			ui_print "☑ Verified successfully. Proceeding..."
+			VF=0
+			extract_browser
 		fi
 	else
 		ui_print "⚠ ${NAME} cannot be verified, as they don't publish sha256sums."
@@ -409,9 +439,12 @@ do_cleanup() {
 	ui_print "ⓘ Backing up important stuffs to module directory"
 	mkdir -p "$MODPATH"/backup/
 	cp /data/system/overlays.xml "$MODPATH"/backup/
-	cp -rf "$MODPATH"/product/* "$MODPATH"/system/product
-	cp -rf "$MODPATH"/system_ext/* "$MODPATH"/system/system_ext
-	rm -fr "$MODPATH"/product "$MODPATH"/system_ext
+	if test -d "$MODPATH"/product; then
+		mv "$MODPATH"/product/ "$MODPATH"/system
+	fi
+	if test -d "$MODPATH"/system_ext; then
+		mv "$MODPATH"/system_ext/ "$MODPATH"/system/
+	fi
 	rm -fr "$MODPATH"/config.txt
 	clean_dalvik
 }
