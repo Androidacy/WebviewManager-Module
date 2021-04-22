@@ -11,22 +11,8 @@ VERSIONFILE="$EXT_DATA/version.txt"
 alias aapt='"$MODPATH"/common/tools/aapt-"$ARCH"'
 alias sign='"$MODPATH"/common/tools/zipsigner'
 chmod -R 0755 "$MODPATH"/common/tools
-setup_certs() {
-	mkdir -p "$MODPATH"/system/etc/security
-	if [ -f "/system/etc/security/ca-certificates.crt" ]; then
-		cp -f /system/etc/security/ca-certificates.crt "$MODPATH"/ca-certificates.crt
-	else
-		for i in /system/etc/security/cacerts*/*.0; do
-			sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i" >>"$MODPATH"/ca-certificates.crt
-		done
-	fi
-	SEC="true"
-}
 dl() {
-	if ! $SEC; then
-		setup_certs
-	fi
-	"$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
+	curl -kL "$1" >"$2"
 }
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
@@ -55,6 +41,10 @@ check_config() {
 		. "$EXT_DATA"/config.txt
 	fi
 }
+vol_sel() {
+	# will be used for volume keys select
+	true
+}
 set_config() {
 	ui_print "ⓘ Setting configs..."
 	if test -f "$EXT_DATA"/config.txt; then
@@ -72,6 +62,9 @@ set_config() {
 		ui_print "ⓘ Make sure if you want/need a custom setup to edit config.txt"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
+	fi
+	if "$FORCE_CONFIG" -ne "1"; then
+		vol_sel
 	fi
 }
 test_connection() {
@@ -139,16 +132,14 @@ download_webview() {
 	fi
 	if test "$VF" -eq 1; then
 		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
-		dl "$URL"/"$DIR"/webview-"$ARCH".apk
-		cp -rf webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
+		dl "$URL"/"$DIR"/webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Webview.apk; then
 		if test "$OLD_WEBVIEW" -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
-			dl "$URL"/"$DIR"/webview-"$ARCH".apk
-			cp -rf webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
+			dl "$URL"/"$DIR"/webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -157,8 +148,8 @@ download_webview() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} webview!"
 		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
-		dl "$URL"/"$DIR"/webview-"$ARCH".apk
-		cp -rf webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
+		dl "$URL"/"$DIR"/webview-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Webview.apk
+		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	verify_w
@@ -175,16 +166,14 @@ download_browser() {
 	fi
 	if test "$VF" -eq 1; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
-		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
-		cp -rf browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
+		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Browser.apk; then
 		if test "$OLD_BROWSER" -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
-			dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
-			cp -rf browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
+			dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -193,8 +182,7 @@ download_browser() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} browser!"
 		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
-		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk
-		cp -rf browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
+		dl "$URL"/"$DIR"/browser"$EXT"-"$ARCH".apk "$EXT_DATA"/apks/"$NAME"Browser.apk
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -303,7 +291,6 @@ set_path() {
 	unset paths
 	I=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -iv stub | grep -iv overlay)
 	H=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -i stub | grep -iv overlay)
-	WPATH="/system/app/webview"
 	G=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -iv stub | grep -i overlay)
 	paths=$(cmd package dump com.android.chrome | grep codePath)
 	C=${paths##*=}
@@ -315,9 +302,9 @@ set_path() {
 	unset paths
 	paths=$(cmd package dump org.lineageos.jelly | grep codePath)
 	E=${paths##*=}
-	BPATH="/system/app/browser"
 }
 extract_webview() {
+	WPATH="/system/app/${NAME}Webview"
 	ui_print "ⓘ Installing ${NAME} Webview"
 	for i in "$A" "$H" "$I" "$B" "$G" "$K" "$L"; do
 		if test ! -z "$i"; then
@@ -343,6 +330,7 @@ extract_webview() {
 	create_overlay
 }
 extract_browser() {
+	BPATH="/system/app/${NAME}Browser"
 	ui_print "ⓘ Installing ${NAME} Browser"
 	for i in "$J" "$F" "$C" "$E" "$D"; do
 		if test ! -z "$i"; then
