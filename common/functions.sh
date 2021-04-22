@@ -1,13 +1,5 @@
-# shellcheck shell=dash
-# shellcheck disable=SC2155
-# shellcheck disable=SC2034
-# shellcheck disable=SC1090
-# shellcheck disable=SC2086
-# shellcheck disable=SC2169
-# shellcheck disable=SC2046
-# shellcheck disable=SC2044
-# shellcheck disable=SC2166
-# shellcheck disable=SC2061
+# shellcheck shell=ash
+# shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091
 abort() {
   ui_print "$1"
   rm -fr $MODPATH 2>/dev/null
@@ -28,7 +20,7 @@ it_failed() {
   ui_print "	 5) There's a *tiny* chance we screwed up"
   ui_print " Please fix any issues and retry."
   ui_print " If you feel this is a bug or need assistance, head to our telegram"
-  rm -fr "${EXT_DATA}"/apks "$EXT_DATA"/*.txt
+  rm -fr "${EXT_DATA}"/apks "$EXT_DATA"/version.txt
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
@@ -53,8 +45,8 @@ detect_ext_data
 if test ! -d "$EXT_DATA"; then
   mkdir "$EXT_DATA"
 fi
-if ! mktouch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
-  if ! rm -fr "$EXT_DATA" && mktouch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
+if ! mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
+  if ! rm -fr "$EXT_DATA" && mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
     ui_print "⚠ Cannot access internal storage!"
     it_failed
   fi
@@ -70,7 +62,7 @@ mount_apex() {
   setup_mntpoint /apex
   for APEX in /system/apex/*; do
     DEST=/apex/$(basename $APEX .apex)
-    [ "$DEST" == /apex/com.android.runtime.release ] && DEST=/apex/com.android.runtime
+    [ "$DEST" = /apex/com.android.runtime.release ] && DEST=/apex/com.android.runtime
     mkdir -p $DEST 2>/dev/null
     if [ -f $APEX ]; then
       # APEX APKs, extract and loop mount
@@ -141,7 +133,7 @@ device_check() {
   for i in /system /vendor /odm /product; do
     if [ -f $i/build.prop ]; then
       for j in "ro.product.$type" "ro.build.$type" "ro.product.vendor.$type" "ro.vendor.product.$type"; do
-        [ "$(sed -n "s/^$j=//p" $i/build.prop 2>/dev/null | head -n 1 | tr '[:upper:]' '[:lower:]')" == "$prop" ] && return 0
+        [ "$(sed -n "s/^$j=//p" $i/build.prop 2>/dev/null | head -n 1 | tr '[:upper:]' '[:lower:]')" = "$prop" ] && return 0
       done
     fi
   done
@@ -176,7 +168,7 @@ cp_ch() {
   esac
   for OFILE in ${OFILES}; do
     if $FOL; then
-      if [ "$(basename $SRC)" == "$(basename $DEST)" ]; then
+      if [ "$(basename $SRC)" = "$(basename $DEST)" ]; then
         local FILE=$(echo $OFILE | sed "s|$SRC|$DEST|")
       else
         local FILE=$(echo $OFILE | sed "s|$SRC|$DEST/$(basename $SRC)|")
@@ -225,7 +217,7 @@ install_script() {
     *) sed -i "1a $i=$(eval echo \$$i)" $1 ;;
     esac
   done
-  [ "$1" == "$MODPATH/uninstall.sh" ] && return 0
+  [ "$1" = "$MODPATH/uninstall.sh" ] && return 0
   case $(basename $1) in
   post-fs-data.sh | service.sh) ;;
   *) cp_ch -n $1 $INPATH/$(basename $1) 0755 ;;
@@ -284,7 +276,7 @@ ui_print "- Removing old files"
 
 if [ -f $INFO ]; then
   while read -r LINE; do
-    if [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
+    if [ "$(echo -n $LINE | tail -c 1)" = "~" ]; then
       continue
     elif [ -f "$LINE~" ]; then
       mv -f $LINE~ $LINE

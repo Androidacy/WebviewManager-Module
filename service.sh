@@ -35,7 +35,7 @@ it_failed() {
 	exit 1
 }
 INSTALL=false
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 . "${MODDIR}"/status.txt
 FINDLOG=$MODDIR/logs/find.log
 VERBOSELOG=$MODDIR/logs/service-verbose.log
@@ -83,5 +83,5 @@ touch "$FINDLOG"
 	echo -n "Module DIR contains:"
 	find "$MODDIR"
 } >"$FINDLOG"
-tail -n +1 "$EXT_DATA"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/full.log
-cp -rf "$MODDIR"/logs/full.log "$EXT_DATA"/logs
+tail -n +1 "$EXT_DATA"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/full-"$(date +%F-%T)".log
+cp -rf "$MODDIR"/logs/full-"$(date +%F-%T)".log "$EXT_DATA"/logs

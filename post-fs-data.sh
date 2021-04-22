@@ -14,7 +14,7 @@ set -x 2
 set -euo pipefail
 trap 'exxit $?' EXIT
 OVERLAY=false
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 . "${MODDIR}"/status.txt
 FINDLOG="$MODDIR"/logs/find.log
 PROPSLOG="$MODDIR"/logs/props.log
