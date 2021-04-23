@@ -27,20 +27,20 @@ check_config() {
 	if test "$CV" -ne 5; then
 		ui_print "⚠ Wrong config version! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		vol_sel
+		. "$EXT_DATA"/config.txt
 	fi
 	if test "$INSTALL" -ne 0 && test "$INSTALL" -ne 1 && test "$INSTALL" -ne 2; then
 		ui_print "⚠ Invalid config value for INSTALL!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		vol_sel
+		. "$EXT_DATA"/config.txt
 	elif test "$WEBVIEW" -ne 0 && test "$WEBVIEW" -ne 1 && test "$WEBVIEW" -ne 2; then
 		ui_print "⚠ Invalid config value for WEBIEW!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		vol_sel
+		. "$EXT_DATA"/config.txt
 	elif test "$BROWSER" -ne 0 && test "$BROWSER" -ne 1 && test "$BROWSER" -ne 2 && test "$BROWSER" -ne 3; then
 		ui_print "⚠ Invalid config value for BROWSER!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		vol_sel
+		. "$EXT_DATA"/config.txt
 	fi
 }
 vol_sel() {
@@ -133,12 +133,13 @@ set_config() {
 	ui_print "ⓘ Setting configs..."
 	eval "$(grep -ir force_config "$EXT_DATA"/config.txt)"
 	if "$FORCE_CONFIG" -ne "1"; then
-		vol_sel
+		if test ! -f "$EXT_DATA"/config.txt; then
+			cp "$MODPATH"/config.txt "$EXT_DATA"
+			vol_sel
+		fi
 	else
 		check_config
-	fi
-	if test ! -f "$EXT_DATA"/config.txt; then
-		cp "$MODPATH"/config.txt "$EXT_DATA"
+		. "$EXT_DATA"/config.txt
 	fi
 }
 test_connection() {
