@@ -27,46 +27,118 @@ check_config() {
 	if test "$CV" -ne 5; then
 		ui_print "⚠ Wrong config version! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
+		vol_sel
 	fi
 	if test "$INSTALL" -ne 0 && test "$INSTALL" -ne 1 && test "$INSTALL" -ne 2; then
-		ui_print "⚠ Invalid config value for INSTALL! Using defaults"
+		ui_print "⚠ Invalid config value for INSTALL!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
+		vol_sel
 	elif test "$WEBVIEW" -ne 0 && test "$WEBVIEW" -ne 1 && test "$WEBVIEW" -ne 2; then
-		ui_print "⚠ Invalid config value for INSTALL! Using defaults"
+		ui_print "⚠ Invalid config value for WEBIEW!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
+		vol_sel
 	elif test "$BROWSER" -ne 0 && test "$BROWSER" -ne 1 && test "$BROWSER" -ne 2 && test "$BROWSER" -ne 3; then
-		ui_print "⚠ Invalid config value for INSTALL! Using defaults"
+		ui_print "⚠ Invalid config value for BROWSER!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
+		vol_sel
 	fi
 }
 vol_sel() {
-	# will be used for volume keys select
-	true
+	ui_print "ⓘ Starting config mode...."
+	ui_print "ⓘ To use config.txt, set FORCE_CONFIG=1 in config.txt and edit as necessary."
+	ui_print "ⓘ Volume up is yes, volume down no unless otherwise specified"
+	slepp 2
+	ui_print "-> Do you wnat to install only webview?"
+	if chooseport; then
+		INSTALL=0
+	fi
+	if ! test -z $INSTALL; then
+		ui_print "-> How about only browser?"
+		if chooseport; then
+			INSTALL=1
+		fi
+	fi
+	if ! test -z $INSTALL; then
+		ui_print "-> How about both browser and webview?"
+		if chooseport; then
+			INSTALL=2
+		fi
+	fi
+	if ! test -z $INSTALL; then
+		ui_print "-> No valid choice, Using just webview"
+		INSTALL=0
+	fi
+	sel_web() {
+		ui_print "-> How about bromite webview?"
+		if chooseport; then
+			WEBVIEW=0
+		fi
+		if ! test -z $WEBVIEW; then
+			ui_print "-> How about Chromium webveiw?"
+			if chooseport; then
+				WEBVIEW=1
+			fi
+		fi
+		if ! test -z $WEBVIEW; then
+			ui_print "-> How about ungoogled-chromium webview?"
+			if chooseport; then
+				WEBVIEW=2
+			fi
+		fi
+		if ! test -z $WEBVIEW; then
+			ui_print "-> No valid choice, using bromite"
+			WEBVIEW=0
+		fi
+	}
+	sel_browser() {
+		ui_print "-> How about bromite browser?"
+		if chooseport; then
+			WEBVIEW=0
+		fi
+		if ! test -z $WEBVIEW; then
+			ui_print "-> How about Chromium browser?"
+			if chooseport; then
+				BROWSER=1
+			fi
+		fi
+		if ! test -z $WEBVIEW; then
+			ui_print "-> How about ungoogled-chromium browser?"
+			if chooseport; then
+				BROWSER=2
+			fi
+		fi
+		if ! test -z $WEBVIEW; then
+			ui_print "-> How about ungoogled-chromium browser (extensions version)?"
+			if chooseport; then
+				BROWSER=3
+			fi
+		fi
+		if ! test -z $WEBVIEW; then
+			ui_print "-> No valid choice, using bromite"
+			BROWSER=0
+		fi
+	}
+	if test "$INSTALL" -eq 0; then
+		sel_web
+	fi
+	if test "$INSTALL" -eq 2; then
+		sel_web
+		sel_browser
+	fi
+	if test "$INSTALL" -eq 1; then
+		sel_browser
+	fi
 }
 set_config() {
 	ui_print "ⓘ Setting configs..."
-	if test -f "$EXT_DATA"/config.txt; then
-		. "$EXT_DATA"/config.txt
-		if test $? -ne 0; then
-			ui_print "⚠ Invalid config file! Using defaults"
-			cp "$MODPATH"/config.txt "$EXT_DATA"
-			. "$EXT_DATA"/config.txt
-		else
-			check_config
-		fi
-	else
-		ui_print "ⓘ No config found, using defaults"
-		ui_print "     (Only install bromite webview)"
-		ui_print "ⓘ Make sure if you want/need a custom setup to edit config.txt"
-		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
-	fi
+	eval "$(grep -ir force_config "$EXT_DATA"/config.txt)"
 	if "$FORCE_CONFIG" -ne "1"; then
 		vol_sel
+	else
+		check_config
+	fi
+	if test ! -f "$EXT_DATA"/config.txt; then
+		cp "$MODPATH"/config.txt "$EXT_DATA"
 	fi
 }
 test_connection() {
