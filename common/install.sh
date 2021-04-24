@@ -5,16 +5,27 @@ TRY_COUNT=1
 VF=0
 OLD_WEBVIEW=0
 OLD_BROWSER=0
+VERIFY=true
 AVER=$(resetprop ro.build.version.release)
 ui_print "ⓘ Android ${AVER}, API level ${API}, arch ${ARCH} device detected"
 VERSIONFILE="$EXT_DATA/version.txt"
 mkdir "$TMPDIR"/path
-tar -xvf "$MODPATH"/common/tools/tools.tar.gz -C "$TMPDIR"/path
-PATH="$TMPDIR/path/$ARCH:$TMPDIR/path:$PATH"
-alias sign='"$MODPATH"/common/tools/zipsigner'
-chmod -R 0755 "$MODPATH"/common/tools
+unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
+alias aapt="$TMPDIR/path/$ARCH/aapt"
+alias sign="$TMPDIR/path/zipsigner"
+chmod -R a+x "$TMPDIR"/path
 dl() {
-	curl -kL --dns-servers 1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4 "$1" >"$2"
+	wget -qO "$2" "$1"
+	if test $? -ne 0; then
+	    if test ${TRY_COUNT} -gt 3; then
+	        it_failed
+		else
+	        ui_print "⚠ Download failed! Retrying."
+	        TRY_COUNT=$((TRY_COUNT + 1))
+	        rm -f "$2"
+	        wget -qO "$2" "$1"
+	    fi
+	fi
 }
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
@@ -47,73 +58,76 @@ vol_sel() {
 	ui_print "ⓘ Starting config mode...."
 	ui_print "ⓘ To use config.txt, set FORCE_CONFIG=1 in config.txt and edit as necessary."
 	ui_print "ⓘ Volume up is yes, volume down no unless otherwise specified"
-	slepp 2
+	sleep 2
 	ui_print "-> Do you wnat to install only webview?"
+	unset INSTALL WEBVIEW
 	if chooseport; then
 		INSTALL=0
 	fi
-	if ! test -z $INSTALL; then
+	if test -z $INSTALL; then
 		ui_print "-> How about only browser?"
 		if chooseport; then
 			INSTALL=1
 		fi
 	fi
-	if ! test -z $INSTALL; then
+	if test -z $INSTALL; then
 		ui_print "-> How about both browser and webview?"
 		if chooseport; then
 			INSTALL=2
 		fi
 	fi
-	if ! test -z $INSTALL; then
+	if test -z $INSTALL; then
 		ui_print "-> No valid choice, Using just webview"
 		INSTALL=0
 	fi
 	sel_web() {
-		ui_print "-> How about bromite webview?"
+	    unset WEBVIEW
+		ui_print "-> Do you want bromite webview?"
 		if chooseport; then
 			WEBVIEW=0
 		fi
-		if ! test -z $WEBVIEW; then
+		if test -z $WEBVIEW; then
 			ui_print "-> How about Chromium webveiw?"
 			if chooseport; then
 				WEBVIEW=1
 			fi
 		fi
-		if ! test -z $WEBVIEW; then
+		if test -z $WEBVIEW; then
 			ui_print "-> How about ungoogled-chromium webview?"
 			if chooseport; then
 				WEBVIEW=2
 			fi
 		fi
-		if ! test -z $WEBVIEW; then
+		if test -z $WEBVIEW; then
 			ui_print "-> No valid choice, using bromite"
 			WEBVIEW=0
 		fi
 	}
 	sel_browser() {
-		ui_print "-> How about bromite browser?"
+	    unset BROWSER
+		ui_print "-> Do you want bromite browser?"
 		if chooseport; then
 			WEBVIEW=0
 		fi
-		if ! test -z $WEBVIEW; then
+		if test -z $BROWSER; then
 			ui_print "-> How about Chromium browser?"
 			if chooseport; then
 				BROWSER=1
 			fi
 		fi
-		if ! test -z $WEBVIEW; then
+		if test -z $BROWSER; then
 			ui_print "-> How about ungoogled-chromium browser?"
 			if chooseport; then
 				BROWSER=2
 			fi
 		fi
-		if ! test -z $WEBVIEW; then
+		if test -z $BROWSER; then
 			ui_print "-> How about ungoogled-chromium browser (extensions version)?"
 			if chooseport; then
 				BROWSER=3
 			fi
 		fi
-		if ! test -z $WEBVIEW; then
+		if test -z $BROWSER; then
 			ui_print "-> No valid choice, using bromite"
 			BROWSER=0
 		fi
@@ -131,54 +145,60 @@ vol_sel() {
 }
 set_config() {
 	ui_print "ⓘ Setting configs..."
-	eval "$(grep -ir force_config "$EXT_DATA"/config.txt)"
-	if "$FORCE_CONFIG" -ne "1"; then
-		if test ! -f "$EXT_DATA"/config.txt; then
-			cp "$MODPATH"/config.txt "$EXT_DATA"
-			vol_sel
-		fi
+	if test ! -f "$EXT_DATA"/config.txt; then
+	    cp  "$MODPATH"/config.txt "$EXT_DATA"
+		vol_sel
 	else
-		check_config
-		. "$EXT_DATA"/config.txt
+	    FORCE_CONFIG=0
+	    eval "$(grep FORCE_CONFIG "$EXT_DATA"/config.txt)"
+	    if test "$FORCE_CONFIG" -eq 1; then
+		    check_config
+	    	. "$EXT_DATA"/config.txt
+		else
+		    cp "$MODPATH"/config.txt "$EXT_DATA"
+		    vol_sel
+	    fi
 	fi
 }
 test_connection() {
 	ui_print "ⓘ Testing internet connectivity"
-	(curl -kL https://dl.androidacycom/api/?p >/dev/null 2>&1) && return 0 || return 1
+	(wget -qO- https://dl.androidacy.com/api/?p >/dev/null 2>&1) && return 0 || return 1
 }
 do_ungoogled_webview() {
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-w'
-	W_VER="$(curl -kL "$URL"/${DIR}/version-webview)"
+	VERIFY=false
+	W_VER="$(wget -qO- "$URL/?m=wvm&s=$DIR&v")"
 }
 do_ungoogled_browser() {
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-b'
-	B_VER="$(curl -kL "$URL"/${DIR}/version-browser)"
+	VERIFY=false
+	B_VER="$(wget -qO- "$URL/?m=wvm&s=$DIR&v")"
 	if test "$BROWSER" -eq 3; then
-		DIR='-ugc'
-		B_VER="$(curl -kL "$URL/?m=wvm&s=$DIR&v")"
+		DIR='ugc-e'
+		B_VER="$(wget -qO- "$URL/?m=wvm&s=$DIR&v")"
 	fi
 }
 do_vanilla_webview() {
 	NAME="Chromium"
 	DIR=chrm
-	W_VER="$(curl -kL "$URL/?m=wvm&s=$DIR&v")"
+	W_VER="$(wget -qO- "$URL/?m=wvm&s=$DIR&v")"
 }
 do_vanilla_browser() {
 	NAME="Chromium"
 	DIR=chrm
-	B_VER="$(curl -kL "$URL/?m=wvm&s=$DIR&v")"
+	B_VER="$(wget -qO- "$URL/?m=wvm&s=$DIR&v")"
 }
 do_bromite_webview() {
 	NAME="Bromite"
 	DIR=brm
-	W_VER="$(curl -kL "$URL/?m=wvm&s=$DIR&v")"
+	W_VER="$(wget -qO- "$URL/?m=wvm&s=$DIR&v")"
 }
 do_bromite_browser() {
 	NAME="Bromite"
 	DIR=brm
-	B_VER="$(curl -kL "$URL/?m=wvm&s=$DIR&v")"
+	B_VER="$(wget -qO- "$URL/?m=wvm&s=$DIR&v")"
 }
 old_version() {
 	ui_print "ⓘ Checking whether this is a new install...."
@@ -265,13 +285,17 @@ download_browser() {
 }
 verify_w() {
 	ui_print "ⓘ Verifying ${NAME} webview files..."
-	if test "$DIR" != 'ugc'; then
+	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
 		dl "$URL/?m=wvm&s=$DIR&w=sha256sums&a=&ft=txt" "$EXT_DATA"/apks/sha256sums.txt.tmp
 		grep "$ARCH"_SystemWebView.apk sha256sums.txt.tmp >"$EXT_DATA"/apks/"$NAME"Webview.apk.sha256.txt
 		rm -fr sha256sums.txt.tmp
-		sed -i s/"$ARCH"_SystemWebView.apk/${NAME}Webview.apk/gi "$NAME"Webview.apk.sha256.txt
-		sha256sum -sc "$NAME"Webview.apk.sha256.txt >/dev/null
+		if test "$DIR" = "brm"; then
+		    cp "$NAME"Webview.apk "$ARCH"_SystemWebView.apk
+		else
+		    cp "$NAME"Webview.apk chr_"ARCH"_SystemWebView.apk
+		fi
+		sha256sum -cs "$NAME"Webview.apk.sha256.txt >/dev/null
 		if test $? -ne 0; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
@@ -286,6 +310,7 @@ verify_w() {
 		else
 			ui_print "☑ Verified successfully. Proceeding..."
 			VF=0
+			rm -fr *$ARCH*.apk
 			extract_webview
 		fi
 	else
@@ -295,13 +320,17 @@ verify_w() {
 }
 verify_b() {
 	ui_print "ⓘ Verifying ${NAME} browser files..."
-	if test "$DIR" != 'ugc'; then
+	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
 		dl "$URL/?m=wvm&s=$DIR&w=sha256sums&a=&ft=txt" "$EXT_DATA"/apks/sha256sums.txt.tmp
 		grep "$ARCH"_ChromePublic.apk sha256sums.txt.tmp >"$EXT_DATA"/apks/"$NAME"Browser.apk.sha256.txt
 		rm -fr sha256sums.txt.tmp
-		sed -i s/"$ARCH"_ChromePublic.apk/${NAME}Browser.apk/gi "$NAME"Browser.apk.sha256.txt
-		sha256sum -sc "$NAME"Browser.apk.sha256.txt >/dev/null
+		if test "$DIR" = "brm"; then
+		    cp "$NAME"Browser.apk "$ARCH"_ChromePublic.apk
+		else
+		    cp "$NAME"Browser.apk chr_"ARCH"_ChromePublic.apk
+		fi
+		sha256sum -cs "$NAME"Webview.apk.sha256.txt >/dev/nulll
 		if test $? -ne 0; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
@@ -316,10 +345,12 @@ verify_b() {
 		else
 			ui_print "☑ Verified successfully. Proceeding..."
 			VF=0
+			rm -fr *$ARCH*.apk
 			extract_browser
 		fi
 	else
 		ui_print "⚠ ${NAME} cannot be verified, as they don't publish sha256sums."
+		    extract_browser
 	fi
 	cd "$TMPDIR" || return
 }
@@ -393,14 +424,13 @@ extract_webview() {
 			fi
 		done
 	fi
-	cp_ch "$EXT_DATA"/apks/"$NAME"Webview.apk "$MODPATH"$WPATH/webview.apk || cp_ch "$EXT_DATA"/apks/webview.apk "$MODPATH"$WPATH/webview.apk
 	mktouch "$MODPATH"$WPATH/.replace
+	cp_ch "$EXT_DATA"/apks/"$NAME"Webview.apk "$MODPATH"$WPATH/webview.apk || cp_ch "$EXT_DATA"/apks/webview.apk "$MODPATH"$WPATH/webview.apk
 	cp "$MODPATH"$WPATH/webview.apk "$TMPDIR"/webview.zip
-	mkdir "$TMPDIR"/webview -p
+	mkdir -p "$TMPDIR"/webview "$MODPATH"$WPATH/lib/arm64 "$MODPATH"$WPATH/lib/arm
 	unzip -d "$TMPDIR"/webview "$TMPDIR"/webview.zip >/dev/null
-	cp -rf "$TMPDIR"/webview/lib "$MODPATH"$WPATH/
-	cp -rf "$MODPATH"$WPATH/lib/arm64-v8a "$MODPATH"$WPATH/lib/arm64
-	cp -rf "$MODPATH"$WPATH/lib/armeabi-v7a "$MODPATH"$WPATH/lib/arm
+	cp -rf "$TMPDIR"/webview/lib/arm64-v8a/* "$MODPATH"$WPATH/lib/arm64
+	cp -rf "$TMPDIR"/webview/lib/armeabi-v7a/* "$MODPATH"$WPATH/lib/arm
 	rm -rf "$TMPDIR"/webview "$TMPDIR"/webview.zip
 	create_overlay
 }
@@ -412,32 +442,27 @@ extract_browser() {
 			mktouch "$MODPATH""$i"/.replace
 		fi
 	done
-	mkdir -p "$MODPATH"$BPATH
-	touch "$MODPATH"$BPATH/.replace
+	mktouch "$MODPATH""$BPATH"/.replace
 	cp_ch "$EXT_DATA"/apks/"$NAME"Browser.apk "$MODPATH"$BPATH/browser.apk || cp_ch "$EXT_DATA"/apks/browser.apk "$MODPATH"$BPATH/browser.apk
-	touch "$MODPATH"$BPATH/.replace
 	cp_ch "$MODPATH"$BPATH/browser.apk "$TMPDIR"/browser.zip
-	mkdir -p "$TMPDIR"/browser
+	mkdir -p "$TMPDIR"/browser "$MODPATH"$BPATH/lib/arm64 "$MODPATH"$BPATH/lib/arm
 	unzip -d "$TMPDIR"/browser "$TMPDIR"/browser.zip >/dev/null
-	cp -rf "$TMPDIR"/browser/lib "$MODPATH"$BPATH
-	cp -rf "$MODPATH"$BPATH/lib/arm64-v8a "$MODPATH"$BPATH/lib/arm64
-	cp -rf "$MODPATH""$BPATH"/lib/armeabi-v7a "$MODPATH"$BPATH/lib/arm
+	cp -rf "$TMPDIR"/browser/lib/arm64-v8a/* "$MODPATH"$BPATH/lib/arm64
+	cp -rf "$TMPDIR"/browser/lib/armeabi-v7a/* "$MODPATH"$BPATH/lib/arm
 	rm -rf "$TMPDIR"/browser "$TMPDIR"/browser.zip
 }
 online_install() {
 	ui_print "☑ Awesome, you have internet"
-	URL="https://dl.androidacy.com/api/"
+	URL="https://dl.androidacy.com/api"
 	set_path
-	if test "$INSTALL" -eq 0; then
-		ui_print "ⓘ Webview install selected"
-		download_webview
-	elif test "$INSTALL" -eq 1; then
-		ui_print 'ⓘ Browser install selected'
-		download_browser
-	elif test "$INSTALL" -eq 2; then
-		ui_print "ⓘ Both webview and browser install selected"
-		download_browser
-		download_webview
+	set_config
+	if test $INSTALL -eq 0; then
+	    download_webview
+	elif test $INSTALL -eq 1; then
+	    download_browser
+	elif test $INSTALL -eq 2; then
+	    download_webview
+	    download_browser
 	fi
 }
 offline_install() {
@@ -460,7 +485,10 @@ offline_install() {
 	fi
 }
 do_install() {
-	set_config
+    if test -f "$EXT_DATA"config.txt; then
+        OFFLINE=0
+        eval "$(grep OFFLINE "$EXT_DATA"/config.txt)"
+    fi
 	if ! "$BOOTMODE"; then
 		ui_print "ⓘ Detected recovery install! Proceeding with reduced featureset"
 		recovery_actions
@@ -518,22 +546,22 @@ else
 fi
 ui_print ' '
 ui_print "ⓘ Some stock apps have been systemlessly  debloated during install"
-sleep 0.1
+sleep 0.15
 ui_print "ⓘ Anything debloated is known to cause conflicts"
-sleep 0.1
+sleep 0.15
 ui_print "ⓘ Such as Chrome, Google WebView, etc"
-sleep 0.1
+sleep 0.15
 ui_print "ⓘ It is recommended not to reinstall them"
-sleep 0.1
+sleep 0.15
 ui_print " "
-sleep 0.1
+sleep 0.15
 ui_print "			Webview Manager | By Androidacy"
 ui_print ' '
-sleep 0.1
+sleep 0.15
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
-sleep 0.1
+sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
-sleep 0.1
+sleep 0.15
 ui_print "☑ Install apparently succeeded, please reboot ASAP"
-sleep 0.1
+sleep 0.15
 ui_print " "
