@@ -85,3 +85,4 @@ touch "$FINDLOG"
 } >"$FINDLOG"
 tail -n +1 "$EXT_DATA"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/full-"$(date +%F-%T)".log
 cp -rf "$MODDIR"/logs/full-"$(date +%F-%T)".log "$EXT_DATA"/logs
+find "$EXT_DATA"/logs -mtime +5 -exec rm {} \;
