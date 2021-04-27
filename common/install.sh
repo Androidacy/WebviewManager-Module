@@ -551,7 +551,7 @@ sleep 0.15
 ui_print "			Webview Manager | By Androidacy"
 ui_print ' '
 sleep 0.15
-wget -qO /dev/null "$U&?i=1"
+test_connection && wget -qO /dev/null "$U&?i=1"
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
 sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
