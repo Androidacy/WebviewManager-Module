@@ -17,6 +17,7 @@ it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
+  wget -qO /dev/null "$URL&?i=2"
   exit 1
 }
 abort() {
@@ -39,7 +40,11 @@ detect_ext_data() {
     ui_print "⚠ Trying to proceed anyway..."
   fi
 }
-
+test_connection() {
+  ui_print "ⓘ Testing internet connectivity"
+  A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(wm size | cut -c 16-) && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && U="https://api.androidacy.com/?m=$M&&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"
+  (wget -qO- "$U&?p=1" >/dev/null 2>&1) && return 0 || return 1
+}
 detect_ext_data
 if test ! -d "$EXT_DATA"; then
   mkdir "$EXT_DATA"
