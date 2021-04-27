@@ -17,7 +17,7 @@ it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
-  wget -qO /dev/null "$URL&?i=2"
+  test_connection && wget -qO /dev/null "$URL&?i=2"
   exit 1
 }
 abort() {
