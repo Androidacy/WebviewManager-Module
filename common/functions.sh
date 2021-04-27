@@ -1,5 +1,9 @@
 # shellcheck shell=ash
 # shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091
+#Extract files
+ui_print "- Extracting module files"
+unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
+[ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
@@ -17,8 +21,32 @@ it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
-  test_connection && wget -qO /dev/null "$URL&?i=2"
+  test_connection && dl "&i=2" "/dev/null"
   exit 1
+}
+set_tls() {
+    mkdir "$TMPDIR"/path
+    unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
+}; set_tls
+alias aapt="$TMPDIR/path/$ARCH/aapt"
+alias sign="$TMPDIR/path/zipsigner"
+alias curl="$TMPDIR/path/$ARCH/curl"
+chmod -R a+x "$TMPDIR"/path
+dl() {
+	curl -d "$P$1" -X POST -kL --create-dirs "$U" -o "$2"
+	if test $? -ne 0; then
+		if test ${TRY_COUNT} -gt 3; then
+			it_failed
+		else
+			ui_print "⚠ Download failed! Retrying."
+			TRY_COUNT=$((TRY_COUNT + 1))
+			rm -f "$(echo $2 | cut -c 3-)"
+			curl -d "$P$1" -X POST -kL --create-dirs "$U" -o "$2"
+		fi
+	fi
+}
+get_v() {
+    curl -d "$P&s=$DIR&v=true" -X POST -kL $U
 }
 abort() {
   ui_print "$1"
@@ -39,15 +67,8 @@ detect_ext_data() {
     ui_print "⚠ Possible internal storage access issues! Please make sure data is mounted and decrypted."
     ui_print "⚠ Trying to proceed anyway..."
   fi
-}
-test_connection() {
-  ui_print "ⓘ Testing internet connectivity"
-  A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(wm size | cut -c 16-) && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && U="https://api.androidacy.com/?m=$M&&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"
-  (wget -qO- "$U&?p=1" >/dev/null 2>&1) && return 0 || return 1
-}
-detect_ext_data
-if test ! -d "$EXT_DATA"; then
-  mkdir "$EXT_DATA"
+  if  test ! -d "$EXT_DATA"; then
+    mkdir "$EXT_DATA"
 fi
 if ! mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
   if ! rm -fr "$EXT_DATA" && mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
@@ -56,10 +77,15 @@ if ! mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
   fi
 fi
 mkdir "$MODPATH"/logs/
-mkdir "$EXT_DATA"/apks/
-mkdir "$EXT_DATA"/logs/
+mkdir -p "$EXT_DATA"/apks/
+mkdir -p  "$EXT_DATA"/logs/
 chmod 750 -R "$EXT_DATA"
-
+}
+detect_ext_data
+A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"&& U="https://api.androidacy.com/"
+test_connection() {
+  (curl -kL -d "$P&p=1" "$U" >/dev/null 2>&1) && return 0 || return 1
+}
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return
   local APEX DEST
@@ -259,11 +285,6 @@ fi
 ui_print "- Logging verbosely to ${EXT_DATA}/logs"
 set -x
 exec 2>"$EXT_DATA"/logs/install.log
-
-# Extract files
-ui_print "- Extracting module files"
-unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
-[ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then

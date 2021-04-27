@@ -5,26 +5,8 @@ VF=0
 OLD_WEBVIEW=0
 OLD_BROWSER=0
 VERIFY=true
-ui_print "ⓘ Your device is a $D with android $A, sdk$SDK, with an $ARCH cpu"
+ui_print "ⓘ Your device is a $D with android $A, sdk$API, with an $ARCH cpu"
 VERSIONFILE="$EXT_DATA/version.txt"
-mkdir "$TMPDIR"/path
-unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
-alias aapt="$TMPDIR/path/$ARCH/aapt"
-alias sign="$TMPDIR/path/zipsigner"
-chmod -R a+x "$TMPDIR"/path
-dl() {
-	wget -qO "$2" "$1"
-	if test $? -ne 0; then
-		if test ${TRY_COUNT} -gt 3; then
-			it_failed
-		else
-			ui_print "⚠ Download failed! Retrying."
-			TRY_COUNT=$((TRY_COUNT + 1))
-			rm -f "$2"
-			wget -qO "$2" "$1"
-		fi
-	fi
-}
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
 if [ -f $VEN/build.prop ]; then
@@ -161,38 +143,36 @@ set_config() {
 do_ungoogled_webview() {
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-w'
-	VERIFY=false
-	W_VER="$(wget -qO- "$U&s=$DIR&v")"
+	W_VER=$(get_v)
 }
 do_ungoogled_browser() {
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-b'
-	VERIFY=false
-	B_VER="$(wget -qO- "$U&s=$DIR&v")"
+	B_VER=$(get_v)
 	if test "$BROWSER" -eq 3; then
 		DIR='ugc-e'
-		B_VER="$(wget -qO- "$U&s=$DIR&v")"
+		B_VER=$(get_v)
 	fi
 }
 do_vanilla_webview() {
 	NAME="Chromium"
 	DIR=chrm
-	W_VER="$(wget -qO- "$U&s=$DIR&v")"
+	W_VER=$(get_v)
 }
 do_vanilla_browser() {
 	NAME="Chromium"
 	DIR=chrm
-	B_VER="$(wget -qO- "$U&s=$DIR&v")"
+	B_VER=$(get_v)
 }
 do_bromite_webview() {
 	NAME="Bromite"
 	DIR=brm
-	W_VER="$(wget -qO- "$U&s=$DIR&v")"
+	W_VER=$(get_v)
 }
 do_bromite_browser() {
 	NAME="Bromite"
 	DIR=brm
-	B_VER="$(wget -qO- "$U&s=$DIR&v")"
+	B_VER=$(get_v)
 }
 old_version() {
 	ui_print "ⓘ Checking whether this is a new install...."
@@ -211,7 +191,6 @@ old_version() {
 }
 download_webview() {
 	cd "$TMPDIR" || return
-	old_version
 	if test "$WEBVIEW" -eq 0; then
 		do_bromite_webview
 	elif test "$WEBVIEW" -eq 1; then
@@ -221,14 +200,16 @@ download_webview() {
 	fi
 	if test "$VF" -eq 1; then
 		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
-		dl "$U&s=$DIR&w=webview&ft=apk" "$EXT_DATA"/apks/"$NAME"Webview.apk
+		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+	else
+	    old_version
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Webview.apk; then
 		if test "$OLD_WEBVIEW" -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
-			dl "$U&s=$DIR&w=webview&a=$ARCH&ft=apk" "$EXT_DATA"/apks/"$NAME"Webview.apk
+			dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -237,7 +218,7 @@ download_webview() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} webview!"
 		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
-		dl "$U&s=$DIR&w=webview&a=$ARCH&ft=apk" "$EXT_DATA"/apks/"$NAME"Webview.apk
+		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -245,7 +226,6 @@ download_webview() {
 }
 download_browser() {
 	cd "$TMPDIR" || return
-	old_version
 	if test "$BROWSER" -eq 0; then
 		do_bromite_browser
 	elif test "$BROWSER" -eq 1; then
@@ -255,14 +235,16 @@ download_browser() {
 	fi
 	if test "$VF" -eq 1; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
-		dl "$U&s=$DIR&w=browser&ft=apk" "$EXT_DATA"/apks/"$NAME"Browser.apk
+        dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+	else
+	    old_version
 	fi
 	if test -f "$EXT_DATA"/apks/"$NAME"Browser.apk; then
 		if test "$OLD_BROWSER" -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
 			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
-			dl "$U&s=$DIR&w=browser&ft=apk" "$EXT_DATA"/apks/"$NAME"Browser.apk
+			dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -271,7 +253,7 @@ download_browser() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} browser!"
 		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
-		dl "$U&s=$DIR&w=browser&a=$ARCH&ft=apk" "$EXT_DATA"/apks/"$NAME"Browser.apk
+		dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -281,16 +263,9 @@ verify_w() {
 	ui_print "ⓘ Verifying ${NAME} webview files..."
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
-		dl "$U&s=$DIR&w=sha256sums&a=&ft=txt" "$EXT_DATA"/apks/sha256sums.txt.tmp
-		grep "$ARCH"_SystemWebView.apk sha256sums.txt.tmp >"$EXT_DATA"/apks/"$NAME"Webview.apk.sha256.txt
-		rm -fr sha256sums.txt.tmp
-		if test "$DIR" = "brm"; then
-			cp "$NAME"Webview.apk "$ARCH"_SystemWebView.apk
-		else
-			cp "$NAME"Webview.apk chr_"ARCH"_SystemWebView.apk
-		fi
-		sha256sum -cs "$NAME"Webview.apk.sha256.txt >/dev/null
-		if test $? -ne 0; then
+		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//")
+		T_S=$(curl -d "$P&s=$DIR&w=webview&ft=apk&c=1" -X POST -kL $U)
+		if test $T_S != $O_S; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
@@ -316,16 +291,9 @@ verify_b() {
 	ui_print "ⓘ Verifying ${NAME} browser files..."
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
-		dl "$U&s=$DIR&w=sha256sums&ft=txt" "$EXT_DATA"/apks/sha256sums.txt.tmp
-		grep "$ARCH"_ChromePublic.apk sha256sums.txt.tmp >"$EXT_DATA"/apks/"$NAME"Browser.apk.sha256.txt
-		rm -fr sha256sums.txt.tmp
-		if test "$DIR" = "brm"; then
-			cp "$NAME"Browser.apk "$ARCH"_ChromePublic.apk
-		else
-			cp "$NAME"Browser.apk chr_"ARCH"_ChromePublic.apk
-		fi
-		sha256sum -cs "$NAME"Webview.apk.sha256.txt >/dev/nulll
-		if test $? -ne 0; then
+		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//")
+		T_S=$(curl -d "$P&s=$DIR&w=browser&ft=apk&c=1" -X POST -kL $U)
+		if test $T_S != $O_S; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
@@ -550,8 +518,7 @@ ui_print " "
 sleep 0.15
 ui_print "			Webview Manager | By Androidacy"
 ui_print ' '
-sleep 0.15
-test_connection && wget -qO /dev/null "$U&?i=1"
+test_connection && dl "&i=1" "/dev/null"
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
 sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
