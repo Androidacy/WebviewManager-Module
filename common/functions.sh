@@ -28,12 +28,12 @@ set_tls() {
     mkdir "$TMPDIR"/path
     unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
 }; set_tls
-alias aapt="$TMPDIR/path/$ARCH/aapt"
-alias sign="$TMPDIR/path/zipsigner"
-alias curl="$TMPDIR/path/$ARCH/curl"
+alias aapt='$TMPDIR/path/$ARCH/aapt'
+alias sign='$TMPDIR/path/zipsigner'
+alias curl='$TMPDIR/path/$ARCH/curl'
 chmod -R a+x "$TMPDIR"/path
 dl() {
-	curl -d "$P$1" -X POST -kL --create-dirs "$U" -o "$2"
+	curl -d "$P$1" -X POST -kL --create-dirs "$U"/"$3" -o "$2"
 	if test $? -ne 0; then
 		if test ${TRY_COUNT} -gt 3; then
 			it_failed
@@ -41,7 +41,7 @@ dl() {
 			ui_print "⚠ Download failed! Retrying."
 			TRY_COUNT=$((TRY_COUNT + 1))
 			rm -f "$(echo $2 | cut -c 3-)"
-			curl -d "$P$1" -X POST -kL --create-dirs "$U" -o "$2"
+			curl -d "$P$1" -X POST -kL --create-dirs "$U"/"$3" -o "$2"
 		fi
 	fi
 }
@@ -84,7 +84,7 @@ chmod 750 -R "$EXT_DATA"
 detect_ext_data
 A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"&& U="https://api.androidacy.com/"
 test_connection() {
-  (curl -kL -d "$P&p=1" "$U" >/dev/null 2>&1) && return 0 || return 1
+  (curl -kL -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
 }
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return

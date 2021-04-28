@@ -1,5 +1,5 @@
 # shellcheck shell=dash
-# shellcheck disable=SC1091,SC1090,SC2139
+# shellcheck disable=SC1091,SC1090,SC2139,SC3010
 TRY_COUNT=1
 VF=0
 OLD_WEBVIEW=0
@@ -15,20 +15,20 @@ else
 	BUILDS="/system/build.prop"
 fi
 check_config() {
-	if test "$CV" -ne 5; then
+	if [[ "$CV" -ne 5 ]]; then
 		ui_print "⚠ Wrong config version! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
 	fi
-	if test "$INSTALL" -ne 0 && test "$INSTALL" -ne 1 && test "$INSTALL" -ne 2; then
+	if [[ $INSTALL -ne 0 ]] && [[ $INSTALL -ne 1 ]] && [[ $INSTALL -ne 2 ]]; then
 		ui_print "⚠ Invalid config value for INSTALL!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
-	elif test "$WEBVIEW" -ne 0 && test "$WEBVIEW" -ne 1 && test "$WEBVIEW" -ne 2; then
+	elif [[ $WEBVIEW -ne 0 ]] && [[ $WEBVIEW -ne 1 ]] && [[ $WEBVIEW -ne 2 ]]; then
 		ui_print "⚠ Invalid config value for WEBIEW!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
-	elif test "$BROWSER" -ne 0 && test "$BROWSER" -ne 1 && test "$BROWSER" -ne 2 && test "$BROWSER" -ne 3; then
+	elif [[ $BROWSER -ne 0 ]] && [[ $BROWSER -ne 1 ]] && [[ $BROWSER -ne 2 ]] && [[ $BROWSER -ne 3 ]]; then
 		ui_print "⚠ Invalid config value for BROWSER!"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
@@ -44,19 +44,19 @@ vol_sel() {
 	if chooseport; then
 		INSTALL=0
 	fi
-	if test -z $INSTALL; then
+	if [[ -z $INSTALL ]]; then
 		ui_print "-> How about only browser?"
 		if chooseport; then
 			INSTALL=1
 		fi
 	fi
-	if test -z $INSTALL; then
+	if [[ -z $INSTALL ]]; then
 		ui_print "-> How about both browser and webview?"
 		if chooseport; then
 			INSTALL=2
 		fi
 	fi
-	if test -z $INSTALL; then
+	if [[ -z $INSTALL ]]; then
 		ui_print "-> No valid choice, Using just webview"
 		INSTALL=0
 	fi
@@ -66,19 +66,19 @@ vol_sel() {
 		if chooseport; then
 			WEBVIEW=0
 		fi
-		if test -z $WEBVIEW; then
+		if [[ -z $WEBVIEW ]]; then
 			ui_print "-> How about Chromium webveiw?"
 			if chooseport; then
 				WEBVIEW=1
 			fi
 		fi
-		if test -z $WEBVIEW; then
+		if [[ -z $WEBVIEW ]]; then
 			ui_print "-> How about ungoogled-chromium webview?"
 			if chooseport; then
 				WEBVIEW=2
 			fi
 		fi
-		if test -z $WEBVIEW; then
+		if [[ -z $WEBVIEW ]]; then
 			ui_print "-> No valid choice, using bromite"
 			WEBVIEW=0
 		fi
@@ -89,49 +89,49 @@ vol_sel() {
 		if chooseport; then
 			WEBVIEW=0
 		fi
-		if test -z "$BROWSER"; then
+		if [[ -z $BROWSER ]]; then
 			ui_print "-> How about Chromium browser?"
 			if chooseport; then
 				BROWSER=1
 			fi
 		fi
-		if test -z "$BROWSER"; then
+		if [[ -z $BROWSER ]]; then
 			ui_print "-> How about ungoogled-chromium browser?"
 			if chooseport; then
 				BROWSER=2
 			fi
 		fi
-		if test -z $BROWSER; then
+		if [[ -z $BROWSER ]]; then
 			ui_print "-> How about ungoogled-chromium browser (extensions version)?"
 			if chooseport; then
 				BROWSER=3
 			fi
 		fi
-		if test -z $BROWSER; then
+		if [[ -z $BROWSER ]]; then
 			ui_print "-> No valid choice, using bromite"
 			BROWSER=0
 		fi
 	}
-	if test "$INSTALL" -eq 0; then
+	if [[ "$INSTALL" -eq 0 ]]; then
 		sel_web
 	fi
-	if test "$INSTALL" -eq 2; then
+	if [[ "$INSTALL" -eq 2 ]]; then
 		sel_web
 		sel_browser
 	fi
-	if test "$INSTALL" -eq 1; then
+	if [[ "$INSTALL" -eq 1 ]]; then
 		sel_browser
 	fi
 }
 set_config() {
 	ui_print "ⓘ Setting configs..."
-	if test ! -f "$EXT_DATA"/config.txt; then
+	if [[ ! -f "$EXT_DATA"/config.txt ]]; then
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		vol_sel
 	else
 		FORCE_CONFIG=0
 		eval "$(grep FORCE_CONFIG "$EXT_DATA"/config.txt)"
-		if test "$FORCE_CONFIG" -eq 1; then
+		if [[ "$FORCE_CONFIG" -eq 1 ]]; then
 			check_config
 			. "$EXT_DATA"/config.txt
 		else
@@ -149,7 +149,7 @@ do_ungoogled_browser() {
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-b'
 	B_VER=$(get_v)
-	if test "$BROWSER" -eq 3; then
+	if [[ $BROWSER -eq 3 ]]; then
 		DIR='ugc-e'
 		B_VER=$(get_v)
 	fi
@@ -176,13 +176,12 @@ do_bromite_browser() {
 }
 old_version() {
 	ui_print "ⓘ Checking whether this is a new install...."
-	if test ! -f "$EXT_DATA"/version.txt; then
+	if [[ ! -f $EXT_DATA/version.txt ]]; then
 		echo "OLD_BROWSER=0" >"$VERSIONFILE"
 		echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
 		. "$EXT_DATA"/version.txt
 	else
-		. "$EXT_DATA"/version.txt
-		if test $? -ne 0; then
+		if ! . "$EXT_DATA"/version.txt; then
 			echo "OLD_BROWSER=0" >"$VERSIONFILE"
 			echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
 			. "$EXT_DATA"/version.txt
@@ -191,14 +190,14 @@ old_version() {
 }
 download_webview() {
 	cd "$TMPDIR" || return
-	if test "$WEBVIEW" -eq 0; then
+	if [[ $WEBVIEW -eq 0 ]]; then
 		do_bromite_webview
-	elif test "$WEBVIEW" -eq 1; then
+	elif [[ $WEBVIEW -eq 1 ]]; then
 		do_vanilla_webview
 	else
 		do_ungoogled_webview
 	fi
-	if test "$VF" -eq 1; then
+	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
 		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
@@ -206,10 +205,10 @@ download_webview() {
 	else
 	    old_version
 	fi
-	if test -f "$EXT_DATA"/apks/"$NAME"Webview.apk; then
-		if test "$OLD_WEBVIEW" -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
+	if [[ -f $EXT_DATA/apks/"$NAME"Webview.apk ]]; then
+		if [[ $OLD_WEBVIEW -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
 			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
-			dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
+			dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk" "download"
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -218,7 +217,7 @@ download_webview() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} webview!"
 		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
-		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
+		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk" "download"
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -226,25 +225,25 @@ download_webview() {
 }
 download_browser() {
 	cd "$TMPDIR" || return
-	if test "$BROWSER" -eq 0; then
+	if [[ $BROWSER -eq 0 ]]; then
 		do_bromite_browser
-	elif test "$BROWSER" -eq 1; then
+	elif [[ $BROWSER -eq 1 ]]; then
 		do_vanilla_browser
 	else
 		do_ungoogled_browser
 	fi
-	if test "$VF" -eq 1; then
+	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
-        dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
+        dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk" "download"
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	else
 	    old_version
 	fi
-	if test -f "$EXT_DATA"/apks/"$NAME"Browser.apk; then
-		if test "$OLD_BROWSER" -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')"; then
+	if [[ -f $EXT_DATA/apks/"$NAME"Browser.apk ]]; then
+		if [[ $OLD_BROWSER -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
 			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
-			dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
+			dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk" "download"
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -253,7 +252,7 @@ download_browser() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} browser!"
 		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
-		dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
+		dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk" "download"
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -264,13 +263,13 @@ verify_w() {
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//")
-		T_S=$(curl -d "$P&s=$DIR&w=webview&ft=apk&c=1" -X POST -kL $U)
-		if test $T_S != $O_S; then
+		T_S=$(curl -d "$P&s=$DIR&w=webview&ft=apk" -X POST -kL "$U"/verify)
+		if [[ $T_S != "$O_S" ]]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			VF=1
-			if test ${TRY_COUNT} -gt 3; then
+			if [[ ${TRY_COUNT} -gt 3 ]]; then
 				it_failed
 			else
 				cd "$TMPDIR" || return
@@ -292,13 +291,14 @@ verify_b() {
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//")
-		T_S=$(curl -d "$P&s=$DIR&w=browser&ft=apk&c=1" -X POST -kL $U)
-		if test $T_S != $O_S; then
+		T_S=$(curl -d "$P&s=$DIR&w=browser&ft=apk" -X POST -kL "$U"/verify)
+		# shellcheck disable=SC2086
+		if [[ $T_S != "$O_S" ]]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
 			VF=1
-			if test ${TRY_COUNT} -gt 3; then
+			if [[ ${TRY_COUNT} -gt 3 ]]; then
 				it_failed
 			else
 				cd "$TMPDIR" || return
@@ -319,12 +319,12 @@ verify_b() {
 create_overlay() {
 	cd "$TMPDIR" || return
 	ui_print "ⓘ Fixing system webview whitelist"
-	if test "${API}" -ge "29"; then
+	if [[ "${API}" -ge "29" ]]; then
 		aapt p -f -v -M "$MODPATH"/common/overlay10/AndroidManifest.xml -I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay10/res -F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
 	else
 		aapt p -f -v -M "$MODPATH"/common/overlay9/AndroidManifest.xml -I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay9/res -F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
 	fi
-	if test -f "$MODPATH"/unsigned.apk; then
+	if [[ -f "$MODPATH"/unsigned.apk ]]; then
 		sign "$MODPATH"/unsigned.apk "$MODPATH"/signed.apk
 		cp -rf "$MODPATH"/signed.apk "$MODPATH"/common/WebviewOverlay.apk
 		rm -rf "$MODPATH"/signed.apk "$MODPATH"/unsigned.apk
@@ -375,13 +375,13 @@ extract_webview() {
 	WPATH="/system/app/${NAME}Webview"
 	ui_print "ⓘ Installing ${NAME} Webview"
 	for i in "$A" "$H" "$I" "$B" "$G" "$K" "$L"; do
-		if test ! -z "$i"; then
+		if [[ -n "$i" ]]; then
 			mktouch "$MODPATH""$i"/.replace
 		fi
 	done
-	if test "${API}" -lt "29"; then
+	if [[ "${API}" -lt "29" ]]; then
 		for i in "$J" "$F" "$C"; do
-			if test ! -z "$i"; then
+			if [[ -n "$i" ]]; then
 				mktouch "$MODPATH""$i"/.replace
 			fi
 		done
@@ -400,7 +400,7 @@ extract_browser() {
 	BPATH="/system/app/${NAME}Browser"
 	ui_print "ⓘ Installing ${NAME} Browser"
 	for i in "$J" "$F" "$C" "$E" "$D"; do
-		if test ! -z "$i"; then
+		if [[ -n "$i" ]]; then
 			mktouch "$MODPATH""$i"/.replace
 		fi
 	done
@@ -417,28 +417,28 @@ online_install() {
 	ui_print "☑ Awesome, you have internet"
 	set_path
 	set_config
-	if test $INSTALL -eq 0; then
+	if [[ $INSTALL -eq 0 ]]; then
 		download_webview
-	elif test $INSTALL -eq 1; then
+	elif [[ $INSTALL -eq 1 ]]; then
 		download_browser
-	elif test $INSTALL -eq 2; then
+	elif [[ $INSTALL -eq 2 ]]; then
 		download_webview
 		download_browser
 	fi
 }
 offline_install() {
 	set_path
-	if test ! -f "$EXT_DATA"/apks/webview.apk && test ! -f "$EXT_DATA"/apks/browser.apk; then
+	if [[ ! -f $EXT_DATA/apks/webview.apk ]] && [[ ! -f $EXT_DATA/apks/browser.apk ]]; then
 		ui_print "⚠ Required files for offline install not found!"
 		it_failed
 	fi
-	if test ! -f "$EXT_DATA"/apks/webview.apk; then
+	if [[ ! -f $EXT_DATA/apks/webview.apk ]]; then
 		ui_print "⚠ No webview.apk found!"
 	else
 		ui_print "ⓘ Webview.apk found! Using it."
 		extract_webview
 	fi
-	if test ! -f "$EXT_DATA"/apks/browser.apk; then
+	if [[ ! -f $EXT_DATA/apks/browser.apk ]]; then
 		ui_print "⚠ No browser.apk found!"
 	else
 		ui_print "ⓘ Browser.apk found! Using it"
@@ -446,7 +446,7 @@ offline_install() {
 	fi
 }
 do_install() {
-	if test -f "$EXT_DATA"config.txt; then
+	if [[ -f $EXT_DATA/config.txt ]]; then
 		OFFLINE=0
 		eval "$(grep OFFLINE "$EXT_DATA"/config.txt)"
 	fi
@@ -455,16 +455,15 @@ do_install() {
 		recovery_actions
 		offline_install
 		recovery_cleanup
-	elif test "$OFFLINE" -eq 1; then
+	elif [[ "$OFFLINE" -eq 1 ]]; then
 		ui_print "⚠ Offline install selected! Proceeding..."
 		offline_install
 	else
-		test_connection
-		if test $? -ne 0; then
+		if ! test_connection; then
 			ui_print "⚠ No internet detcted, falling back to offline install!"
 			offline_install
 		else
-			if test ${TRY_COUNT} -gt 3; then
+			if [[ ${TRY_COUNT} -gt 3 ]]; then
 				it_failed
 			else
 				online_install
@@ -491,16 +490,16 @@ do_cleanup() {
 	ui_print "ⓘ Backing up important stuffs to module directory"
 	mkdir -p "$MODPATH"/backup/
 	cp /data/system/overlays.xml "$MODPATH"/backup/
-	if test -d "$MODPATH"/product; then
+	if [[ -d "$MODPATH"/product ]]; then
 		mv "$MODPATH"/product/ "$MODPATH"/system
 	fi
-	if test -d "$MODPATH"/system_ext; then
+	if [[ -d "$MODPATH"/system_ext ]]; then
 		mv "$MODPATH"/system_ext/ "$MODPATH"/system/
 	fi
 	rm -fr "$MODPATH"/config.txt
 	clean_dalvik
 }
-if test ${TRY_COUNT} -ge "3"; then
+if [[ ${TRY_COUNT} -ge "3" ]]; then
 	it_failed
 else
 	do_install
