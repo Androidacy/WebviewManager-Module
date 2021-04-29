@@ -130,7 +130,7 @@ set_config() {
 		vol_sel
 	else
 		FORCE_CONFIG=0
-		eval "$(grep FORCE_CONFIG "$EXT_DATA"/config.txt)"
+		FORCE_CONFIG="$(cat $EXT_DATA/config.txt | grep FORCE_CONFIG | cut -c 14)"
 		if [[ "$FORCE_CONFIG" -eq 1 ]]; then
 			check_config
 			. "$EXT_DATA"/config.txt
@@ -199,7 +199,7 @@ download_webview() {
 	fi
 	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
-		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
+		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk" "download"
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	else
@@ -264,7 +264,7 @@ verify_w() {
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//")
 		T_S=$(curl -d "$P&s=$DIR&w=webview&ft=apk" -X POST -kL "$U"/verify)
-		if [[ $T_S != "$O_S" ]]; then
+		if [[ $T_S != $O_S ]]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
@@ -293,7 +293,7 @@ verify_b() {
 		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//")
 		T_S=$(curl -d "$P&s=$DIR&w=browser&ft=apk" -X POST -kL "$U"/verify)
 		# shellcheck disable=SC2086
-		if [[ $T_S != "$O_S" ]]; then
+		if [[ $T_S != $O_S ]]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
@@ -448,7 +448,7 @@ offline_install() {
 do_install() {
 	if [[ -f $EXT_DATA/config.txt ]]; then
 		OFFLINE=0
-		eval "$(grep OFFLINE "$EXT_DATA"/config.txt)"
+		OFFLINE="$(cat $EXT_DATA/config.txt | grep OFFLINE | cut -c 9-)"
 	fi
 	if ! "$BOOTMODE"; then
 		ui_print "ⓘ Detected recovery install! Proceeding with reduced featureset"
@@ -517,7 +517,7 @@ ui_print " "
 sleep 0.15
 ui_print "			Webview Manager | By Androidacy"
 ui_print ' '
-test_connection && dl "&i=1" "/dev/null"
+test_connection && dl "&i=1" "/dev/null" "ping"
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
 sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"

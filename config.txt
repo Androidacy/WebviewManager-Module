@@ -4,7 +4,7 @@
 CV="6" # DO NOT CHANGE THIS
 
 # Skips setup during installs and uses the values in this file
-FOCE_CONFIG=0
+FORCE_CONFIG=0
 
 # Should we do a completely offline install?
 # To use an apk, place in /sdcard/WebviewManager/apks with the appropriate name, eg webview.apk is for webview and browser.apk for browser
