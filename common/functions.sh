@@ -1,7 +1,17 @@
 # shellcheck shell=ash
 # shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091
 #Extract files
-ui_print "- Extracting module files"
+echo " __        __     _            _                 ";
+echo " \ \      / /___ | |__ __   __(_)  ___ __      __";
+echo "  \ \ /\ / // _ \| '_ \\ \ / /| | / _ \\ \ /\ / /";
+echo "   \ V  V /|  __/| |_) |\ V / | ||  __/ \ V  V / ";
+echo "    \_/\_/  \___||_.__/  \_/  |_| \___|  \_/\_/  ";
+echo "  __  __                                         ";
+echo " |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ";
+echo " | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|";
+echo " | |  | || (_| || | | || (_| || (_| ||  __/| |   ";
+echo " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ";
+echo "                               |___/             ";
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 it_failed() {
@@ -21,7 +31,7 @@ it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
-  test_connection && dl "&i=2" "/dev/null"
+  test_connection && dl "&i=2" "/dev/null" "ping"
   exit 1
 }
 set_tls() {
@@ -30,23 +40,16 @@ set_tls() {
 }; set_tls
 alias aapt='$TMPDIR/path/$ARCH/aapt'
 alias sign='$TMPDIR/path/zipsigner'
-alias curl='$TMPDIR/path/$ARCH/curl'
+alias curl='$TMPDIR/path/$ARCH/curl -kL --tr-encoding --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors'
 chmod -R a+x "$TMPDIR"/path
 dl() {
-	curl -d "$P$1" -X POST -kL --create-dirs "$U"/"$3" -o "$2"
-	if test $? -ne 0; then
-		if test ${TRY_COUNT} -gt 3; then
-			it_failed
-		else
-			ui_print "⚠ Download failed! Retrying."
-			TRY_COUNT=$((TRY_COUNT + 1))
-			rm -f "$(echo $2 | cut -c 3-)"
-			curl -d "$P$1" -X POST -kL --create-dirs "$U"/"$3" -o "$2"
-		fi
+    if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
+        ui_print "⚠ Download failed! Bailing out!"
+        it_failed
 	fi
 }
 get_v() {
-    curl -d "$P&s=$DIR&v=true" -X POST -kL $U
+    curl -d "$P&s=$DIR" -X POST -kL $U/version
 }
 abort() {
   ui_print "$1"
@@ -82,7 +85,7 @@ mkdir -p  "$EXT_DATA"/logs/
 chmod 750 -R "$EXT_DATA"
 }
 detect_ext_data
-A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"&& U="https://api.androidacy.com/"
+A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"&& U="https://api.androidacy.com"
 test_connection() {
   (curl -kL -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
 }
@@ -282,22 +285,22 @@ else
 fi
 
 # Debug
-ui_print "- Logging verbosely to ${EXT_DATA}/logs"
+ui_print "ⓘ Logging verbosely to ${EXT_DATA}/logs"
 set -x
 exec 2>"$EXT_DATA"/logs/install.log
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
   ui_print " "
-  ui_print "- Running Addons -"
+  ui_print "ⓘ Running Addons -"
   for i in "$MODPATH"/common/addon/*/install.sh; do
-    ui_print "  Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
+    ui_print "ⓘ Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
     . $i
   done
 fi
 
 # Remove files outside of module directory
-ui_print "- Removing old files"
+ui_print "ⓘ Removing old files"
 
 if [ -f $INFO ]; then
   while read -r LINE; do
@@ -321,7 +324,7 @@ if [ -f $INFO ]; then
 fi
 
 ### Install
-ui_print "- Installing"
+ui_print "ⓘ Installing"
 
 [ -f "$MODPATH/common/install.sh" ] && . $MODPATH/common/install.sh
 
@@ -365,7 +368,7 @@ fi
 
 # Set permissions
 ui_print " "
-ui_print "- Setting Permissions"
+ui_print "ⓘ Setting Permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
 if [ -d $MODPATH/system/vendor ]; then
   set_perm_recursive $MODPATH/system/vendor 0 0 0755 0644 u:object_r:vendor_file:s0
