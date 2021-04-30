@@ -262,10 +262,9 @@ verify_w() {
 	ui_print "ⓘ Verifying ${NAME} webview files..."
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
-		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//")
-		T_S=$(curl -d "$P&s=$DIR&w=webview&ft=apk" -X POST -kL "$U"/verify)
-		# shellcheck disable=SC2053
-		if [[ $T_S != $O_S ]]; then
+		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
+		T_S=$(curl -d "$P&s=$DIR&w=webview&ft=apk" -X POST -kL "$U"/verify | tr -d '[:space:]')
+		if [ "$T_S" != "$O_S" ]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
@@ -291,10 +290,9 @@ verify_b() {
 	ui_print "ⓘ Verifying ${NAME} browser files..."
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
-		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//")
-		T_S=$(curl -d "$P&s=$DIR&w=browser&ft=apk" -X POST -kL "$U"/verify)
-		# shellcheck disable=SC2086,SC2053
-		if [[ $T_S != $O_S ]]; then
+		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
+		T_S=$(curl -d "$P&s=$DIR&w=browser&ft=apk" -X POST -kL "$U"/verify | tr -d '[:space:]')
+		if [ "$T_S" != "$O_S" ]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
