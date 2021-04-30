@@ -1,17 +1,17 @@
 # shellcheck shell=ash
 # shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091
 #Extract files
-echo " __        __     _            _                 ";
-echo " \ \      / /___ | |__ __   __(_)  ___ __      __";
-echo "  \ \ /\ / // _ \| '_ \\ \ / /| | / _ \\ \ /\ / /";
-echo "   \ V  V /|  __/| |_) |\ V / | ||  __/ \ V  V / ";
-echo "    \_/\_/  \___||_.__/  \_/  |_| \___|  \_/\_/  ";
-echo "  __  __                                         ";
-echo " |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ";
-echo " | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|";
-echo " | |  | || (_| || | | || (_| || (_| ||  __/| |   ";
-echo " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ";
-echo "                               |___/             ";
+echo " __        __     _            _                 "
+echo " \ \      / /___ | |__ __   __(_)  ___ __      __"
+echo "  \ \ /\ / // _ \| '_ \\ \ / /| | / _ \\ \ /\ / /"
+echo "   \ V  V /|  __/| |_) |\ V / | ||  __/ \ V  V / "
+echo "    \_/\_/  \___||_.__/  \_/  |_| \___|  \_/\_/  "
+echo "  __  __                                         "
+echo " |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ "
+echo " | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|"
+echo " | |  | || (_| || | | || (_| || (_| ||  __/| |   "
+echo " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
+echo "                               |___/             "
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 it_failed() {
@@ -35,21 +35,22 @@ it_failed() {
   exit 1
 }
 set_tls() {
-    mkdir "$TMPDIR"/path
-    unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
-}; set_tls
+  mkdir "$TMPDIR"/path
+  unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
+}
+set_tls
 alias aapt='$TMPDIR/path/$ARCH/aapt'
 alias sign='$TMPDIR/path/zipsigner'
-alias curl='$TMPDIR/path/$ARCH/curl -kL --tr-encoding --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors'
+alias curl='$TMPDIR/path/$ARCH/curl -kL --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors --dns-servers '1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4''
 chmod -R a+x "$TMPDIR"/path
 dl() {
-    if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
-        ui_print "⚠ Download failed! Bailing out!"
-        it_failed
-	fi
+  if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
+    ui_print "⚠ Download failed! Bailing out!"
+    it_failed
+  fi
 }
 get_v() {
-    curl -d "$P&s=$DIR" -X POST -kL $U/version
+  curl -d "$P&s=$DIR" -X POST -kL $U/version
 }
 abort() {
   ui_print "$1"
@@ -70,22 +71,22 @@ detect_ext_data() {
     ui_print "⚠ Possible internal storage access issues! Please make sure data is mounted and decrypted."
     ui_print "⚠ Trying to proceed anyway..."
   fi
-  if  test ! -d "$EXT_DATA"; then
+  if test ! -d "$EXT_DATA"; then
     mkdir "$EXT_DATA"
-fi
-if ! mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
-  if ! rm -fr "$EXT_DATA" && mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
-    ui_print "⚠ Cannot access internal storage!"
-    it_failed
   fi
-fi
-mkdir "$MODPATH"/logs/
-mkdir -p "$EXT_DATA"/apks/
-mkdir -p  "$EXT_DATA"/logs/
-chmod 750 -R "$EXT_DATA"
+  if ! mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
+    if ! rm -fr "$EXT_DATA" && mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
+      ui_print "⚠ Cannot access internal storage!"
+      it_failed
+    fi
+  fi
+  mkdir "$MODPATH"/logs/
+  mkdir -p "$EXT_DATA"/apks/
+  mkdir -p "$EXT_DATA"/logs/
+  chmod 750 -R "$EXT_DATA"
 }
 detect_ext_data
-A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"&& U="https://api.androidacy.com"
+A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 test_connection() {
   (curl -kL -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
 }

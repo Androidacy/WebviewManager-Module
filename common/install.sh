@@ -130,7 +130,7 @@ set_config() {
 		vol_sel
 	else
 		FORCE_CONFIG=0
-		FORCE_CONFIG="$(cat $EXT_DATA/config.txt | grep FORCE_CONFIG | cut -c 14)"
+		FORCE_CONFIG="$(grep -q FORCE_CONFIG "$EXT_DATA"/config.txt | cut -c 14)"
 		if [[ "$FORCE_CONFIG" -eq 1 ]]; then
 			check_config
 			. "$EXT_DATA"/config.txt
@@ -203,7 +203,7 @@ download_webview() {
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	else
-	    old_version
+		old_version
 	fi
 	if [[ -f $EXT_DATA/apks/"$NAME"Webview.apk ]]; then
 		if [[ $OLD_WEBVIEW -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
@@ -234,11 +234,11 @@ download_browser() {
 	fi
 	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
-        dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk" "download"
+		dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk" "download"
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	else
-	    old_version
+		old_version
 	fi
 	if [[ -f $EXT_DATA/apks/"$NAME"Browser.apk ]]; then
 		if [[ $OLD_BROWSER -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
@@ -264,6 +264,7 @@ verify_w() {
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//")
 		T_S=$(curl -d "$P&s=$DIR&w=webview&ft=apk" -X POST -kL "$U"/verify)
+		# shellcheck disable=SC2053
 		if [[ $T_S != $O_S ]]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
@@ -292,7 +293,7 @@ verify_b() {
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//")
 		T_S=$(curl -d "$P&s=$DIR&w=browser&ft=apk" -X POST -kL "$U"/verify)
-		# shellcheck disable=SC2086
+		# shellcheck disable=SC2086,SC2053
 		if [[ $T_S != $O_S ]]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
@@ -448,7 +449,7 @@ offline_install() {
 do_install() {
 	if [[ -f $EXT_DATA/config.txt ]]; then
 		OFFLINE=0
-		OFFLINE="$(cat $EXT_DATA/config.txt | grep OFFLINE | cut -c 9-)"
+		OFFLINE="$(grep -q OFFLINE "$EXT_DATA"/config.txt | cut -c 9-)"
 	fi
 	if ! "$BOOTMODE"; then
 		ui_print "ⓘ Detected recovery install! Proceeding with reduced featureset"
