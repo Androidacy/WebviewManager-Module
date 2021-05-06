@@ -37,10 +37,10 @@ check_config() {
 vol_sel() {
 	ui_print "ⓘ Starting config mode...."
 	ui_print "ⓘ To use config.txt, set FORCE_CONFIG=1 in config.txt and edit as necessary."
-	ui_print "ⓘ Volume up is yes, volume down no unless otherwise specified"
+	ui_print "ⓘ Volume up to accept the current choice, and down to move to next option"
 	sleep 2
 	ui_print "-> Do you wnat to install only webview?"
-	unset INSTALL WEBVIEW
+	unset INSTALL
 	if chooseport; then
 		INSTALL=0
 	fi
@@ -62,18 +62,19 @@ vol_sel() {
 	fi
 	sel_web() {
 		unset WEBVIEW
-		ui_print "-> Do you want bromite webview?"
+		ui_print "-> Please choose your webview."
+		ui_print "  1. Bromite"
 		if chooseport; then
 			WEBVIEW=0
 		fi
 		if [[ -z $WEBVIEW ]]; then
-			ui_print "-> How about Chromium webveiw?"
+			ui_print "  2. Chromium"
 			if chooseport; then
 				WEBVIEW=1
 			fi
 		fi
 		if [[ -z $WEBVIEW ]]; then
-			ui_print "-> How about ungoogled-chromium webview?"
+			ui_print "  3. Ungoogled Chromium"
 			if chooseport; then
 				WEBVIEW=2
 			fi
@@ -85,24 +86,25 @@ vol_sel() {
 	}
 	sel_browser() {
 		unset BROWSER
-		ui_print "-> Do you want bromite browser?"
+		ui_print "-> Please choose your browser."
+		ui_print "  1. Bromite"
 		if chooseport; then
 			WEBVIEW=0
 		fi
 		if [[ -z $BROWSER ]]; then
-			ui_print "-> How about Chromium browser?"
+			ui_print "  2. Chromium"
 			if chooseport; then
 				BROWSER=1
 			fi
 		fi
 		if [[ -z $BROWSER ]]; then
-			ui_print "-> How about ungoogled-chromium browser?"
+			ui_print "  3. Ungoogled Chromium"
 			if chooseport; then
 				BROWSER=2
 			fi
 		fi
 		if [[ -z $BROWSER ]]; then
-			ui_print "-> How about ungoogled-chromium browser (extensions version)?"
+			ui_print "  4. Ungoogled Chromium (extensions support version)?"
 			if chooseport; then
 				BROWSER=3
 			fi
