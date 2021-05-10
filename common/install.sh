@@ -132,10 +132,9 @@ set_config() {
 		vol_sel
 	else
 		FORCE_CONFIG=0
-		FORCE_CONFIG="$(grep -q FORCE_CONFIG "$EXT_DATA"/config.txt | cut -c 14)"
+		. "$EXT_DATA"/config.txt
 		if [[ "$FORCE_CONFIG" -eq 1 ]]; then
 			check_config
-			. "$EXT_DATA"/config.txt
 		else
 			cp "$MODPATH"/config.txt "$EXT_DATA"
 			vol_sel
@@ -492,7 +491,9 @@ do_cleanup() {
 	mkdir -p "$MODPATH"/backup/
 	cp /data/system/overlays.xml "$MODPATH"/backup/
 	if [[ -d "$MODPATH"/product ]]; then
-		mv "$MODPATH"/product/ "$MODPATH"/system
+		if ! mv "$MODPATH"/product/ "$MODPATH"/system; then
+			cp -rf mv "$MODPATH"/product/* "$MODPATH"/system/product/
+		fi
 	fi
 	if [[ -d "$MODPATH"/system_ext ]]; then
 		mv "$MODPATH"/system_ext/ "$MODPATH"/system/
