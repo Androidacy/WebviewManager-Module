@@ -89,11 +89,9 @@ detect_ext_data() {
 detect_ext_data
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release) && D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 test_connection() {
-  (curl "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
-  if test $? -eq 0; then
-    INTERNET=true
-  fi
+  (curl -s -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
 }
+test_connection && INTERNET=true
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return
   local APEX DEST

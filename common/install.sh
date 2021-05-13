@@ -473,7 +473,6 @@ do_install() {
 			offline_install
 		fi
 	else
-		test_connection
 		if ! $INTERNET; then
 			ui_print "⚠ Uh-oh, we can't contact the API."
 			ui_print "⚠ Make sure api.androidacy.com isn't blocked, that you have internet. and re-run the installer."
