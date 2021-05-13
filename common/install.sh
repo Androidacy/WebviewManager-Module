@@ -15,7 +15,7 @@ else
 	BUILDS="/system/build.prop"
 fi
 check_config() {
-	if [[ "$CV" -ne 5 ]]; then
+	if [[ "$CV" -ne 6 ]]; then
 		ui_print "⚠ Wrong config version! Using defaults"
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
