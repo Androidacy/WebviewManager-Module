@@ -450,7 +450,7 @@ offline_install() {
 		if [ -e "$file" ]; then
 			ui_print "ⓘ Webview apk found! Using it"
 			OFFLN_WV=true
-			extract_browser
+			extract_webview
 			break
 		else
 			ui_print "⚠ No webview apk found!"
