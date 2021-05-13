@@ -1,6 +1,19 @@
 
 # Changelog
 
+### 9.1
+
+- Remove recovery install completely. It's been broken for awhile now anyway.
+- Properly respect FORCE_CONFIG
+- API updates
+
+### 9.0
+
+- Add volume key selection for options
+- Improve security
+- Switch to new backend
+- Misc fixes
+
 ### 8.1.4
 
 - Fix debloats

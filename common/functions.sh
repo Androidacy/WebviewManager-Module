@@ -27,11 +27,12 @@ it_failed() {
   ui_print "	 5) There's a *tiny* chance we screwed up"
   ui_print " Please fix any issues and retry."
   ui_print " If you feel this is a bug or need assistance, head to our telegram"
+  ui_print " All files besides logs are assumed to be corrupt, and have been removed."
   rm -fr "$EXT_DATA"/apks "$EXT_DATA"/version.txt
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
-  test_connection && dl "&i=2" "/dev/null" "ping"
+  $INTERNET && curl -s -d "$P&i=2" "$U"/ping >/dev/null
   exit 1
 }
 set_tls() {
@@ -86,9 +87,12 @@ detect_ext_data() {
   chmod 750 -R "$EXT_DATA"
 }
 detect_ext_data
-A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
+A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release) && D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 test_connection() {
-  (curl -kL -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
+  (curl "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
+  if test $? -eq 0; then
+    INTERNET=true
+  fi
 }
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return
