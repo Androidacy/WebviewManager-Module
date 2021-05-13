@@ -20,18 +20,25 @@ check_config() {
 		cp "$MODPATH"/config.txt "$EXT_DATA"
 		. "$EXT_DATA"/config.txt
 	fi
-	if [[ $INSTALL -ne 0 ]] && [[ $INSTALL -ne 1 ]] && [[ $INSTALL -ne 2 ]]; then
-		ui_print "⚠ Invalid config value for INSTALL!"
+	overrid_conf() {
 		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
+		vol_sel
+	}
+	if [[ $FORCE_CONFIG -ne 0 ]] && [[ $FORCE_CONFIG -ne 1 ]]; then
+		ui_print "⚠ Invalid config value for FORCE_CONFIG!"
+		overrid_conf
+	elif [[ $OFFLINE -ne 0 ]] && [[ $OFFLINE -ne 1 ]]; then
+		ui_print "⚠ Invalid config value for OFFLINE!"
+		overrid_conf
+	elif [[ $INSTALL -ne 0 ]] && [[ $INSTALL -ne 1 ]] && [[ $INSTALL -ne 2 ]]; then
+		ui_print "⚠ Invalid config value for INSTALL!"
+		overrid_conf
 	elif [[ $WEBVIEW -ne 0 ]] && [[ $WEBVIEW -ne 1 ]] && [[ $WEBVIEW -ne 2 ]]; then
 		ui_print "⚠ Invalid config value for WEBIEW!"
-		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
+		overrid_conf
 	elif [[ $BROWSER -ne 0 ]] && [[ $BROWSER -ne 1 ]] && [[ $BROWSER -ne 2 ]] && [[ $BROWSER -ne 3 ]]; then
 		ui_print "⚠ Invalid config value for BROWSER!"
-		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
+		overrid_conf
 	fi
 }
 vol_sel() {
@@ -41,18 +48,18 @@ vol_sel() {
 	sleep 2
 	ui_print "-> Do you wnat to install only webview?"
 	unset INSTALL
-	if chooseport; then
+	if chooseport 5; then
 		INSTALL=0
 	fi
 	if [[ -z $INSTALL ]]; then
 		ui_print "-> How about only browser?"
-		if chooseport; then
+		if chooseport 5; then
 			INSTALL=1
 		fi
 	fi
 	if [[ -z $INSTALL ]]; then
 		ui_print "-> How about both browser and webview?"
-		if chooseport; then
+		if chooseport 5; then
 			INSTALL=2
 		fi
 	fi
@@ -64,18 +71,18 @@ vol_sel() {
 		unset WEBVIEW
 		ui_print "-> Please choose your webview."
 		ui_print "  1. Bromite"
-		if chooseport; then
+		if chooseport 5; then
 			WEBVIEW=0
 		fi
 		if [[ -z $WEBVIEW ]]; then
 			ui_print "  2. Chromium"
-			if chooseport; then
+			if chooseport 5; then
 				WEBVIEW=1
 			fi
 		fi
 		if [[ -z $WEBVIEW ]]; then
 			ui_print "  3. Ungoogled Chromium"
-			if chooseport; then
+			if chooseport 5; then
 				WEBVIEW=2
 			fi
 		fi
@@ -88,24 +95,24 @@ vol_sel() {
 		unset BROWSER
 		ui_print "-> Please choose your browser."
 		ui_print "  1. Bromite"
-		if chooseport; then
+		if chooseport 5; then
 			WEBVIEW=0
 		fi
 		if [[ -z $BROWSER ]]; then
 			ui_print "  2. Chromium"
-			if chooseport; then
+			if chooseport 5; then
 				BROWSER=1
 			fi
 		fi
 		if [[ -z $BROWSER ]]; then
 			ui_print "  3. Ungoogled Chromium"
-			if chooseport; then
+			if chooseport 5; then
 				BROWSER=2
 			fi
 		fi
 		if [[ -z $BROWSER ]]; then
 			ui_print "  4. Ungoogled Chromium (extensions support version)?"
-			if chooseport; then
+			if chooseport 5; then
 				BROWSER=3
 			fi
 		fi
@@ -124,6 +131,7 @@ vol_sel() {
 	if [[ "$INSTALL" -eq 1 ]]; then
 		sel_browser
 	fi
+	ui_print "ⓘ Config complete! Proceeding."
 }
 set_config() {
 	ui_print "ⓘ Setting configs..."
@@ -416,7 +424,6 @@ extract_browser() {
 online_install() {
 	ui_print "☑ Awesome, you have internet"
 	set_path
-	set_config
 	if [[ $INSTALL -eq 0 ]]; then
 		download_webview
 	elif [[ $INSTALL -eq 1 ]]; then
@@ -428,39 +435,49 @@ online_install() {
 }
 offline_install() {
 	set_path
-	if [[ ! -f $EXT_DATA/apks/webview.apk ]] && [[ ! -f $EXT_DATA/apks/browser.apk ]]; then
+	for file in "$EXT_DATA"/apks/*browser.apk; do
+		if [ -e "$file" ]; then
+			ui_print "ⓘ Browser apk found! Using it"
+			OFFLN_BRS=true
+			extract_browser
+			break
+		else
+			ui_print "⚠ No browser apk found!"
+			break
+		fi
+	done
+	for file in "$EXT_DATA"/apks/*webview.apk; do
+		if [ -e "$file" ]; then
+			ui_print "ⓘ Webview apk found! Using it"
+			OFFLN_WV=true
+			extract_browser
+			break
+		else
+			ui_print "⚠ No webview apk found!"
+			break
+		fi
+	done
+	if [[ -z $OFFLN_BRS ]] && [[ -z $OFFLN_WV ]]; then
 		ui_print "⚠ Required files for offline install not found!"
 		it_failed
 	fi
-	if [[ ! -f $EXT_DATA/apks/webview.apk ]]; then
-		ui_print "⚠ No webview.apk found!"
-	else
-		ui_print "ⓘ Webview.apk found! Using it."
-		extract_webview
-	fi
-	if [[ ! -f $EXT_DATA/apks/browser.apk ]]; then
-		ui_print "⚠ No browser.apk found!"
-	else
-		ui_print "ⓘ Browser.apk found! Using it"
-		extract_browser
-	fi
 }
 do_install() {
-	if [[ -f $EXT_DATA/config.txt ]]; then
-		OFFLINE=0
-		OFFLINE="$(grep -q OFFLINE "$EXT_DATA"/config.txt | cut -c 9-)"
-	fi
+	set_config
 	if ! "$BOOTMODE"; then
-		ui_print "ⓘ Detected recovery install! Proceeding with reduced featureset"
-		recovery_actions
-		offline_install
-		recovery_cleanup
-	elif [[ "$OFFLINE" -eq 1 ]]; then
-		ui_print "⚠ Offline install selected! Proceeding..."
-		offline_install
+		ui_print "ⓘ Detected recovery install! Aborting!"
+		it_failed 1
+	elif [[ $FORCE_CONFIG -eq 1 ]]; then
+		if [[ $OFFLINE -eq 1 ]]; then
+			ui_print "⚠ Offline install selected! Proceeding..."
+			offline_install
+		fi
 	else
-		if ! test_connection; then
-			ui_print "⚠ No internet detcted, falling back to offline install!"
+		test_connection
+		if ! $INTERNET; then
+			ui_print "⚠ Uh-oh, we can't contact the API."
+			ui_print "⚠ Make sure api.androidacy.com isn't blocked, that you have internet. and re-run the installer."
+			ui_print "⚠ Falling back to offline mode for now."
 			offline_install
 		else
 			if [[ ${TRY_COUNT} -gt 3 ]]; then
@@ -491,12 +508,20 @@ do_cleanup() {
 	mkdir -p "$MODPATH"/backup/
 	cp /data/system/overlays.xml "$MODPATH"/backup/
 	if [[ -d "$MODPATH"/product ]]; then
-		if ! mv "$MODPATH"/product/ "$MODPATH"/system; then
-			cp -rf mv "$MODPATH"/product/* "$MODPATH"/system/product/
+		if [[ -d "$MODPATH"/system/product ]]; then
+			cp -rf "$MODPATH"/product/* "$MODPATH"/system/product/
+			rm -fr "$MODPATH"/product/
+		else
+			mv "$MODPATH"/product/ "$MODPATH"/system/
 		fi
 	fi
 	if [[ -d "$MODPATH"/system_ext ]]; then
-		mv "$MODPATH"/system_ext/ "$MODPATH"/system/
+		if [[ -d "$MODPATH"/system/systen_ext ]]; then
+			cp -rf "$MODPATH"/system_ext/ "$MODPATH"/system/
+			rm -fr "$MODPATH"/system_ext/
+		else
+			mv "$MODPATH"/system_ext/ "$MODPATH"/system/
+		fi
 	fi
 	rm -fr "$MODPATH"/config.txt
 	clean_dalvik
@@ -519,7 +544,7 @@ ui_print " "
 sleep 0.15
 ui_print "			Webview Manager | By Androidacy"
 ui_print ' '
-test_connection && dl "&i=1" "/dev/null" "ping"
+$INTERNET && curl -s -d "$P&i=1" "$U"/ping >/dev/null
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
 sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
