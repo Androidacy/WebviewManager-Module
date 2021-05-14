@@ -48,18 +48,18 @@ vol_sel() {
 	sleep 2
 	ui_print "-> Do you wnat to install only webview?"
 	unset INSTALL
-	if chooseport 5; then
+	if chooseport; then
 		INSTALL=0
 	fi
 	if [[ -z $INSTALL ]]; then
 		ui_print "-> How about only browser?"
-		if chooseport 5; then
+		if chooseport; then
 			INSTALL=1
 		fi
 	fi
 	if [[ -z $INSTALL ]]; then
 		ui_print "-> How about both browser and webview?"
-		if chooseport 5; then
+		if chooseport; then
 			INSTALL=2
 		fi
 	fi
@@ -71,18 +71,18 @@ vol_sel() {
 		unset WEBVIEW
 		ui_print "-> Please choose your webview."
 		ui_print "  1. Bromite"
-		if chooseport 5; then
+		if chooseport; then
 			WEBVIEW=0
 		fi
 		if [[ -z $WEBVIEW ]]; then
 			ui_print "  2. Chromium"
-			if chooseport 5; then
+			if chooseport; then
 				WEBVIEW=1
 			fi
 		fi
 		if [[ -z $WEBVIEW ]]; then
 			ui_print "  3. Ungoogled Chromium"
-			if chooseport 5; then
+			if chooseport; then
 				WEBVIEW=2
 			fi
 		fi
@@ -95,24 +95,24 @@ vol_sel() {
 		unset BROWSER
 		ui_print "-> Please choose your browser."
 		ui_print "  1. Bromite"
-		if chooseport 5; then
+		if chooseport; then
 			WEBVIEW=0
 		fi
 		if [[ -z $BROWSER ]]; then
 			ui_print "  2. Chromium"
-			if chooseport 5; then
+			if chooseport; then
 				BROWSER=1
 			fi
 		fi
 		if [[ -z $BROWSER ]]; then
 			ui_print "  3. Ungoogled Chromium"
-			if chooseport 5; then
+			if chooseport; then
 				BROWSER=2
 			fi
 		fi
 		if [[ -z $BROWSER ]]; then
 			ui_print "  4. Ungoogled Chromium (extensions support version)?"
-			if chooseport 5; then
+			if chooseport; then
 				BROWSER=3
 			fi
 		fi
