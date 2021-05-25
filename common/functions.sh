@@ -12,6 +12,10 @@ echo " | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|"
 echo " | |  | || (_| || | | || (_| || (_| ||  __/| |   "
 echo " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
 echo "                               |___/             "
+if [[ ! $(getenforce) == "permissive" || ! $(getenforce) == "Permissive" ]]; then
+  SELINUX=true
+fi
+$SELINUX && setenforce 0
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 it_failed() {
@@ -45,7 +49,7 @@ alias sign='$TMPDIR/path/zipsigner'
 chmod 755 "$TMPDIR/path/$ARCH/aapt"
 chmod 755 "$TMPDIR/path/zipsigner"
 dl() {
-  if ! wget -qc  "${U}/${3}?${P}${1}" -O "$2"; then
+  if ! wget -qc "${U}/${3}?${P}${1}" -O "$2"; then
     ui_print "⚠ Download failed! Bailing out!"
     it_failed
   fi
@@ -87,7 +91,7 @@ mkdir "$MODPATH"/logs/
 mkdir -p "$EXT_DATA"/apks/
 mkdir -p "$EXT_DATA"/logs/
 chmod 750 -R "$EXT_DATA"
-A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && S=$(setenforce 0 && wm size | cut -c 16- && setenforce 1) && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
+A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && S=$(wm size | cut -c 16-) && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 test_connection() {
   (wget -qc "$U/ping?$P" -O /dev/null -o /dev/null) && return 0 || return 1
 }
@@ -143,6 +147,7 @@ cleanup() {
   ui_print "*   Based on the original MMT-ex     *"
   ui_print "**************************************"
   ui_print " "
+  $SELINUX && setenforce 1
 }
 
 device_check() {
