@@ -2,5 +2,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.androidacy.WebviewOverlay">
     <application android:hasCode="false" />
     <overlay android:priority="9999" android:targetPackage="android" android:isStatic="true"/>
-    <application android:label="Webview Overlay"/>
+    <application android:label="Androidacy Webview Overlay"/>
 </manifest>

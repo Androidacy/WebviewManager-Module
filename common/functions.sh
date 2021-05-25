@@ -45,13 +45,13 @@ alias sign='$TMPDIR/path/zipsigner'
 chmod 755 "$TMPDIR/path/$ARCH/aapt"
 chmod 755 "$TMPDIR/path/zipsigner"
 dl() {
-  if ! wget -qc  "$U"/"${3}?${P}${1}" -O "$2"; then
+  if ! wget -qc  "${U}/${3}?${P}${1}" -O "$2"; then
     ui_print "⚠ Download failed! Bailing out!"
     it_failed
   fi
 }
 get_v() {
-  curl -d "$P&s=$DIR" -X POST -kL $U/version
+  dl "&s=$DIR" '-' version
 }
 abort() {
   ui_print "$1"
