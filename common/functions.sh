@@ -42,10 +42,10 @@ set_tls() {
 set_tls
 alias aapt='$TMPDIR/path/$ARCH/aapt'
 alias sign='$TMPDIR/path/zipsigner'
-alias curl='$TMPDIR/path/$ARCH/curl -kL --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors --dns-servers '1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4''
-chmod -R a+x "$TMPDIR"/path
+chmod 755 "$TMPDIR/path/$ARCH/aapt"
+chmod 755 "$TMPDIR/path/zipsigner"
 dl() {
-  if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
+  if ! wget -qc  "$U"/"${3}?${P}${1}" -O "$2"; then
     ui_print "⚠ Download failed! Bailing out!"
     it_failed
   fi
@@ -89,7 +89,7 @@ detect_ext_data() {
 detect_ext_data
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release) && D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 test_connection() {
-  (curl -s -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
+  (wget -qc "$U/ping?$P" -O /dev/null -o /dev/null) && return 0 || return 1
 }
 test_connection && INTERNET=true
 mount_apex() {
