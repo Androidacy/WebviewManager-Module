@@ -272,7 +272,7 @@ verify_w() {
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
-		T_S=$(curl -d "$P&s=$DIR&w=webview&ft=apk" -X POST -kL "$U"/verify | tr -d '[:space:]')
+		T_S=$(dl "&s=$DIR&w=webview&ft=apk" '-' verify | tr -d '[:space:]')
 		if [ "$T_S" != "$O_S" ]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
@@ -300,7 +300,7 @@ verify_b() {
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
-		T_S=$(curl -d "$P&s=$DIR&w=browser&ft=apk" -X POST -kL "$U"/verify | tr -d '[:space:]')
+		T_S=$(dl "&s=$DIR&w=browser&ft=apk" '-' verify | tr -d '[:space:]')
 		if [ "$T_S" != "$O_S" ]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
