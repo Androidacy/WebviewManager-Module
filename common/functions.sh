@@ -87,7 +87,7 @@ detect_ext_data() {
   chmod 750 -R "$EXT_DATA"
 }
 detect_ext_data
-A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#' || resetprop ro.build.version.release | sed 's#\ #%20#') && D=$(resetprop ro.product.model | sed 's#\ #%20#' || resetprop ro.product.device | sed 's#\ #%20#' | sed 's#\ #%20#' || resetprop ro.product.vendor.device | sed 's#\ #%20#' | sed 's#\ #%20#' || resetprop ro.product.system.model | sed 's#\ #%20#' | sed 's#\ #%20#' || resetprop ro.product.vendor.model | sed 's#\ #%20#' | sed 's#\ #%20#' || resetprop ro.product.name | sed 's#\ #%20#') && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale | sed 's#\ #%20#' || resetprop ro.product.locale | sed 's#\ #%20#') && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
+A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && S=$(setenforce 0 && wm size | cut -c 16- && setenforce 1) && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 test_connection() {
   (wget -qc "$U/ping?$P" -O /dev/null -o /dev/null) && return 0 || return 1
 }
