@@ -42,7 +42,7 @@ Chromium is created by and copyright [The Chromium Project](http://www.chromium.
 
 All binaries utilized and the original MMT-Extended template are developed by and copyright Zackptg5 excluding BusyBox and the original installer template which is built by and copyright John Wu. The upstream binaries are copyright and developed by the original authors.
 
-Module created by Androidacy with help early on from Skittles9823 and Zackptg5. The module is licensed under Apache-2.0.
+Module created by Androidacy with help early on from Skittles9823 and Zackptg5. The module is licensed under the AOSL (see LICENSE).
 
 The logging code used was orginally developed by and copyright John Fawkes, and modified later by Androidacy
 
