@@ -1,13 +1,25 @@
-   Copyright 2021 Androidacy
+   Copyright 2021 Androidacy. All rights reserved unless otherwise specified.
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+   This work is licensed under the Androidacy Open Source License, hereafter referred to as the "AOSL".
 
-     http://www.apache.org/licenses/LICENSE-2.0
+   Androidacy believes strongly in the power of both free and open source software, and as such, our software is offered that way. We hereby grant you the license to look at, reuse, and share our works, with some limitations and requirements.
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+   The AOSL grants you a irrevocable license to:
+   - Obtain the publicly available source code of our Application
+   - Modify the source as you see fit for personal use
+   - Suggest changes to Androidacy, who is under no obligation to make them
+
+   The AOSL, however, does NOT give you the license to:
+   - Resell our works, modified or unmodified, for a profit
+   - Rebrand our work as your own
+   - Republish our unmodified Software on any unofficial sources or mirror it
+   - Request private source code.
+   - Use this Software to harm or otherwise damage Androidacy or any of our clients
+   
+   Androidacy will make a best effort to include the source code of any compenents of the Software; however, we are under no obligation to, and will only publish code as we see fit. We also reserve the right to monetize our work as we see fit.
+
+   In addition, if you use an open source compenent by Androidacy in your project, you are hereby obligated to share the source code and any modifications you make to it. You must also credit Androidacy for any code you reuse.
+
+   THIS SOFTWARE IS OFFERED "AS-IS", WITH NO WARRANTIES EXPRESSED OR IMPLIED. IT IS OFFERED IN THE HOPE THAT IS FOUND USEFUL, BUT ANDROIDACY MAKES NO WARRANTIES OF MERCHANTABILITY FOR ANY PURPOSE WHATSOEVER.
+
+   
