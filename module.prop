@@ -1,6 +1,6 @@
 id=bromitewebview
 name=Webview Manager
-version=9.2.2
-versionCode=4071
+version=9.2.3
+versionCode=4075
 author=Androidacy
-description=Change System WebView and default browser systemless-ly. Block ads and fingerprinting, increase privacy, and more. Website: https://www.androidacy.com; Group: https://t.me/androidacy_discussions; Announcements: https://t.me/androidacy
+description=Change System WebView and default browser systemless-ly. Block ads and fingerprinting, increase privacy, and more. Website: https://www.androidacy.com/?utm_source=mrepo; Group: https://t.me/androidacy_discussions; Announcements: https://t.me/androidacy

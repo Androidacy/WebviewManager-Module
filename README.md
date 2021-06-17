@@ -6,13 +6,13 @@
 
 ## Links
 
-- [Website](https://www.androidacy.com/)
-- [Blog and updates](https://www.androidacy.com/blog/)
+- [Website](https://www.androidacy.com/?utm_source=WebviewManager)
+- [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager)
 * [Upstream repository](https://github.com/androidacy/WebviewSwitcher). All development is done here until stable release.
 
 ### Be sure to check out our new module, Font Manager!
 
-- Downloads are [here](https://dl.androidacy.com/?eeFolder=Magisk-Modules&eeListID=1)
+- Downloads are [here](https://dl.androidacy.com/?eeFolder=Magisk-Modules&eeListID=1&utm_source=WebviewManager)
 - The source is [here](https://github.com/androidacy/FontManager)
 - XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
 
@@ -48,8 +48,8 @@ The logging code used was orginally developed by and copyright John Fawkes, and 
 
 ## ETAs/ Versions
 
-This module downloads the latest browser and/or webview APK every time it is flashed. We will otherwise update when We have time. 
-At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although you should wait for us to do a release on [the filehost](https://dl.androidacy.com}), click on magisk modules then bromitewebview
+This module downloads the latest browser and/or webview APK every time it is flashed. We will otherwise update as we see fit. 
+At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although you should wait for us to do a release on [the filehost](https://dl.androidacy.com/?utm_source=WebviewManager), click on magisk modules then bromitewebview
 
 In addition, there may be third party ways to update any apps that can be installed with the module. We do not endorse nor did we create these ways!
 
@@ -59,7 +59,7 @@ In addition, there may be third party ways to update any apps that can be instal
 
 ## Donations
 
-Donations: [here](https://www.androidacy.com/donate/)
+Donations: [here](https://www.androidacy.com/donate/?utm_source=WebviewManager)
 
 We recommend you check out the websites of the developers of the included apps for donation links.
 
@@ -81,7 +81,7 @@ Here is our [Discord](https://discord.gg/gTnDxQ6) [very inactive]
 - Android 5.x to 11.0 (7.x+ recommended). 
   - Some heavily customized stock ROMs may have issues. This is especially true on android 11!
   - MIUI is not officially supported for the aforementioned reason. Some people have had success with debloating the stock bloatware.
-- Magisk v20.1+ required!
+- Magisk v20.1+ required
 - **Recommended to flash through magisk manager**
-	- TWRP installs should work; however this requires a working correctly TWRP, decrypted /data, and the offline install method. Note we do not provide support for this!
-- SELinux enforcing/pernissive
+	- TWRP installs are not supported!
+- SELinux enforcing/permissive
