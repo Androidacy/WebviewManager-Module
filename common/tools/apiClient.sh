@@ -41,10 +41,10 @@ buildClient() {
 # Tokens init
 initTokens() {
     if test -f /sdcard/.androidacy; then
-        cachedToken=$(</sdcard/.androidacy)
+        cachedToken=$(cat /sdcard/.androidacy)
     else
-        wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data 'app=tokens' $API_URL/tokens/get >/sdcard/.androidacy
-        cachedToken=$(</sdcard/.androidacy)
+        wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data 'app=tokens' "$API_URL/tokens/get" -O /sdcard/.androidacy
+        cachedToken=$(cat /sdcard/.androidacy)
     fi
     validateTokens "$cachedToken"
 }
@@ -55,7 +55,7 @@ validateTokens() {
         echo "Illegal number of parameters passed. Expected one, got $#"
         abort
     else
-        API_LVL=$(wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=tokens&token=$1" $API_URL/tokens/validate)
+        API_LVL=$(wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=tokens&token=$1" "$API_URL/tokens/validate" -O -)
         if test $? -ne 0; then
             # Restart process on validation failure
             rm -f '/sdcard/.androidacy'
@@ -84,7 +84,7 @@ getList() {
             echo "Error! Access denied for beta."
             abort
         fi
-        response=$(wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&token=$API_TOKEN" $API_URL/downloads/list)
+        response=$(wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&token=$API_TOKEN" $API_URL/downloads/list  -O -)
         if test $? -ne 0; then
             echo "API request failed! Assuming API is down and aborting!"
             abort
@@ -111,11 +111,13 @@ downloadFile() {
         local location=$4
         local app=$API_APP
         if test "$API_LVL" -lt 2; then
+            echo '- Looks like your using a free or guest token'
+            echo '- For info on faster downloads, see https://www.androidacy.com/'
             local endpoint='downloads/free'
         else
             local endpoint='downloads/paid'
         fi
-        wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" $API_URL/$endpoint -O "$location"
+        wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/$endpoint" -O "$location"
         if test $? -ne 0; then
             echo "API request failed! Assuming API is down and aborting!"
             abort
@@ -135,7 +137,7 @@ updateChecker() {
     else
         local cat=$1
         local app=$API_APP
-        response=$(wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&token=$API_TOKEN" $API_URL/downloads/updates)
+        response=$(wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&token=$API_TOKEN" "$API_URL/downloads/updates"  -O -)
         # shellcheck disable=SC2001
         parsedList=$(echo "$response" | sed 's/[^a-zA-Z0-9]/ /g')
         response="$parsedList"
@@ -156,7 +158,7 @@ getChecksum() {
         local file=$2
         local format=$3
         local app=$API_APP
-        response=$(wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" $API_URL'/checksum/get')
+        response=$(wget -U "$API_UA" --header="Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" $API_URL'/checksum/get'  -O -)
         if test $? -ne 0; then
             echo "API request failed! Assuming API is down and aborting!"
             abort
