@@ -1,4 +1,4 @@
-# External Tools
+#!/bin/bash
 chmod -R 0755 $MODPATH/common/addon/Volume-Key-Selector/tools
 
 chooseport_legacy() {
@@ -31,7 +31,7 @@ chooseport() {
     local count=0
     while true; do
       timeout $delay /system/bin/getevent -lqc 1 2>&1 > $TMPDIR/events &
-      sleep 0.25; count=$((count + 1))
+      sleep 0.5; count=$((count + 1))
       if (`grep -q 'KEY_VOLUMEUP *DOWN' $TMPDIR/events`); then
         return 0
       elif (`grep -q 'KEY_VOLUMEDOWN *DOWN' $TMPDIR/events`); then

@@ -14,33 +14,6 @@ if [ -f $VEN/build.prop ]; then
 else
 	BUILDS="/system/build.prop"
 fi
-check_config() {
-	if [[ "$CV" -ne 6 ]]; then
-		ui_print "⚠ Wrong config version! Using defaults"
-		cp "$MODPATH"/config.txt "$EXT_DATA"
-		. "$EXT_DATA"/config.txt
-	fi
-	overrid_conf() {
-		cp "$MODPATH"/config.txt "$EXT_DATA"
-		vol_sel
-	}
-	if [[ $FORCE_CONFIG -ne 0 ]] && [[ $FORCE_CONFIG -ne 1 ]]; then
-		ui_print "⚠ Invalid config value for FORCE_CONFIG!"
-		overrid_conf
-	elif [[ $OFFLINE -ne 0 ]] && [[ $OFFLINE -ne 1 ]]; then
-		ui_print "⚠ Invalid config value for OFFLINE!"
-		overrid_conf
-	elif [[ $INSTALL -ne 0 ]] && [[ $INSTALL -ne 1 ]] && [[ $INSTALL -ne 2 ]]; then
-		ui_print "⚠ Invalid config value for INSTALL!"
-		overrid_conf
-	elif [[ $WEBVIEW -ne 0 ]] && [[ $WEBVIEW -ne 1 ]] && [[ $WEBVIEW -ne 2 ]]; then
-		ui_print "⚠ Invalid config value for WEBIEW!"
-		overrid_conf
-	elif [[ $BROWSER -ne 0 ]] && [[ $BROWSER -ne 1 ]] && [[ $BROWSER -ne 2 ]] && [[ $BROWSER -ne 3 ]]; then
-		ui_print "⚠ Invalid config value for BROWSER!"
-		overrid_conf
-	fi
-}
 vol_sel() {
 	ui_print "ⓘ Starting config mode...."
 	ui_print "ⓘ To use config.txt, set FORCE_CONFIG=1 in config.txt and edit as necessary."
@@ -136,7 +109,8 @@ vol_sel() {
 set_config() {
 	ui_print "ⓘ Setting configs..."
 	if [[ ! -f "$EXT_DATA"/config.txt ]]; then
-		cp "$MODPATH"/config.txt "$EXT_DATA"
+		ui_print "- WARNING! Old config.txt found. Note this is no longer used."
+		ui_print "- Using selection mode."
 		vol_sel
 	else
 		FORCE_CONFIG=0
@@ -152,36 +126,36 @@ set_config() {
 do_ungoogled_webview() {
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-w'
-	W_VER=$(get_v)
+	W_VER=$(updateChecker "$DIR")
 }
 do_ungoogled_browser() {
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-b'
-	B_VER=$(get_v)
+	B_VER=$(updateChecker "$DIR")
 	if [[ $BROWSER -eq 3 ]]; then
 		DIR='ugc-e'
-		B_VER=$(get_v)
+		B_VER=$(updateChecker "$DIR")
 	fi
 }
 do_vanilla_webview() {
 	NAME="Chromium"
 	DIR=chrm
-	W_VER=$(get_v)
+	W_VER=$(updateChecker "$DIR")
 }
 do_vanilla_browser() {
 	NAME="Chromium"
 	DIR=chrm
-	B_VER=$(get_v)
+	B_VER=$(updateChecker "$DIR")
 }
 do_bromite_webview() {
 	NAME="Bromite"
 	DIR=brm
-	W_VER=$(get_v)
+	W_VER=$(updateChecker "$DIR")
 }
 do_bromite_browser() {
 	NAME="Bromite"
 	DIR=brm
-	B_VER=$(get_v)
+	B_VER=$(updateChecker "$DIR")
 }
 old_version() {
 	ui_print "ⓘ Checking whether this is a new install...."
@@ -208,7 +182,7 @@ download_webview() {
 	fi
 	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
-		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk" "download"
+		downloadFile "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	else
@@ -217,7 +191,7 @@ download_webview() {
 	if [[ -f $EXT_DATA/apks/"$NAME"Webview.apk ]]; then
 		if [[ $OLD_WEBVIEW -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
 			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
-			dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk" "download"
+			downloadFile "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -226,7 +200,7 @@ download_webview() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} webview!"
 		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
-		dl "&s=$DIR&w=webview&ft=apk" "${EXT_DATA}/apks/${NAME}Webview.apk" "download"
+		downloadFile "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -243,7 +217,7 @@ download_browser() {
 	fi
 	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
-		dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk" "download"
+		downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	else
@@ -252,7 +226,7 @@ download_browser() {
 	if [[ -f $EXT_DATA/apks/"$NAME"Browser.apk ]]; then
 		if [[ $OLD_BROWSER -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
 			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
-			dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk" "download"
+			downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 		else
@@ -261,7 +235,7 @@ download_browser() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} browser!"
 		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
-		dl "&s=$DIR&w=browser&ft=apk" "${EXT_DATA}/apks/${NAME}Browser.apk" "download"
+		downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
 		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	fi
@@ -272,7 +246,8 @@ verify_w() {
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
-		T_S=$(dl "&s=$DIR&w=webview&ft=apk" '-' verify | tr -d '[:space:]')
+		getChecksum "$DIR" "webview${ARCH}" "apk"
+		T_S=$(echo "$response" | tr -d '[:space:]')
 		if [ "$T_S" != "$O_S" ]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
@@ -300,7 +275,8 @@ verify_b() {
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
-		T_S=$(dl "&s=$DIR&w=browser&ft=apk" '-' verify | tr -d '[:space:]')
+		getChecksum "$DIR" "browser${ARCH}" "apk"
+		T_S=$(echo "$response" | tr -d '[:space:]')
 		if [ "$T_S" != "$O_S" ]; then
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
@@ -433,58 +409,13 @@ online_install() {
 		download_browser
 	fi
 }
-offline_install() {
-	set_path
-	for file in "$EXT_DATA"/apks/*browser.apk; do
-		if [ -e "$file" ]; then
-			ui_print "ⓘ Browser apk found! Using it"
-			OFFLN_BRS=true
-			extract_browser
-			break
-		else
-			ui_print "⚠ No browser apk found!"
-			break
-		fi
-	done
-	for file in "$EXT_DATA"/apks/*webview.apk; do
-		if [ -e "$file" ]; then
-			ui_print "ⓘ Webview apk found! Using it"
-			OFFLN_WV=true
-			extract_webview
-			break
-		else
-			ui_print "⚠ No webview apk found!"
-			break
-		fi
-	done
-	if [[ -z $OFFLN_BRS ]] && [[ -z $OFFLN_WV ]]; then
-		ui_print "⚠ Required files for offline install not found!"
-		it_failed
-	fi
-}
 do_install() {
 	set_config
 	if ! "$BOOTMODE"; then
 		ui_print "ⓘ Detected recovery install! Aborting!"
 		it_failed 1
-	elif [[ $FORCE_CONFIG -eq 1 ]]; then
-		if [[ $OFFLINE -eq 1 ]]; then
-			ui_print "⚠ Offline install selected! Proceeding..."
-			offline_install
-		fi
 	else
-		if ! $INTERNET; then
-			ui_print "⚠ Uh-oh, we can't contact the API."
-			ui_print "⚠ Make sure api.androidacy.com isn't blocked, that you have internet. and re-run the installer."
-			ui_print "⚠ Falling back to offline mode for now."
-			offline_install
-		else
-			if [[ ${TRY_COUNT} -gt 3 ]]; then
-				it_failed
-			else
-				online_install
-			fi
-		fi
+		online_install
 	fi
 	do_cleanup
 }
@@ -543,7 +474,6 @@ ui_print " "
 sleep 0.15
 ui_print "			Webview Manager | By Androidacy"
 ui_print ' '
-$INTERNET && curl -s -d "$P&i=1" "$U"/ping >/dev/null
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
 sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"

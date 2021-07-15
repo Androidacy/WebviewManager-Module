@@ -32,27 +32,14 @@ it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
-  $INTERNET && curl -s -d "$P&i=2" "$U"/ping >/dev/null
   exit 1
 }
-set_tls() {
-  mkdir "$TMPDIR"/path
-  unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
-}
-set_tls
-alias aapt='$TMPDIR/path/$ARCH/aapt'
-alias sign='$TMPDIR/path/zipsigner'
-chmod 755 "$TMPDIR/path/$ARCH/aapt"
-chmod 755 "$TMPDIR/path/zipsigner"
-dl() {
-  if ! wget -qc "${U}/${3}?${P}${1}" -O "$2"; then
-    ui_print "⚠ Download failed! Bailing out!"
-    it_failed
-  fi
-}
-get_v() {
-  dl "&s=$DIR" '-' version
-}
+ui_print "- PLEASE NOTE: This module requires interent access and will abort if you don't have any"
+. $MODPATH/common/tools/apiClient.sh
+initClient 'wvm' '10.0.0-beta'
+alias aapt='$MODPATH/common/tools/$ARCH/aapt'
+alias sign='$MODPATH/common/tools/zipsigner'
+chmod 755 aapt zip
 abort() {
   ui_print "$1"
   rm -fr $MODPATH 2>/dev/null
@@ -87,11 +74,6 @@ mkdir "$MODPATH"/logs/
 mkdir -p "$EXT_DATA"/apks/
 mkdir -p "$EXT_DATA"/logs/
 chmod 750 -R "$EXT_DATA"
-A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="wvm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=%20&l=$L" && U="https://api.androidacy.com"
-test_connection() {
-  (wget -qc "$U/ping?$P" -O /dev/null -o /dev/null) && return 0 || return 1
-}
-test_connection && INTERNET=true
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return
   local APEX DEST
