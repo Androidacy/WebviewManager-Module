@@ -34,12 +34,6 @@ it_failed() {
   ui_print " "
   exit 1
 }
-ui_print "- PLEASE NOTE: This module requires interent access and will abort if you don't have any"
-. $MODPATH/common/tools/apiClient.sh
-initClient 'wvm' '10.0.0-beta'
-alias aapt='$MODPATH/common/tools/$ARCH/aapt'
-alias sign='$MODPATH/common/tools/zipsigner'
-chmod 755 aapt zip
 abort() {
   ui_print "$1"
   rm -fr $MODPATH 2>/dev/null
@@ -274,6 +268,14 @@ fi
 ui_print "ⓘ Logging verbosely to ${EXT_DATA}/logs"
 set -x
 exec 2>"$EXT_DATA"/logs/install.log
+ui_print "- PLEASE NOTE: This module requires interent access and will abort if you don't have any"
+chmod 755 $MODPATH/common/tools/apiClient.sh
+. $MODPATH/common/tools/apiClient.sh
+initClient 'wvm' '10.0.0-beta'
+alias aapt='$MODPATH/common/tools/$ARCH/aapt'
+alias sign='$MODPATH/common/tools/zipsigner'
+chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
+chmod 755 "$MODPATH/common/tools/zipsigner"
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
