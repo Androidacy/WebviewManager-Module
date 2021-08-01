@@ -265,9 +265,35 @@ else
 fi
 
 # Debug
+
+BRAND=$(getprop ro.product.brand)
+MODEL=$(getprop ro.product.model)
+DEVICE=$(getprop ro.product.device)
+ROM=$(getprop ro.build.display.id)
+API=$(grep_prop ro.build.version.sdk)
+
 ui_print "ⓘ Logging verbosely to ${EXT_DATA}/logs"
-set -x
-exec 2>"$EXT_DATA"/logs/install.log
+### Logging functions
+
+# Log <level> <message>
+log() {
+  echo "[$1]: $2" >>$LOGFILE
+}
+
+# Initialize logging
+setup_logger() {
+  LOGFILE=$EXT_DATA/logs/install.log
+  export LOGFILE
+  {
+    echo "Module: WebviewManager v10"
+    echo "Device: $BRAND $MODEL ($DEVICE)"
+    echo "ROM: $ROM, sdk$API"
+  } >$LOGFILE
+  exec 2>>$LOGFILE
+}
+
+setup_logger
+
 ui_print "- PLEASE NOTE: This module requires interent access and will abort if you don't have any"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
