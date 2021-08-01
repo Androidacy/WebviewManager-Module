@@ -15,6 +15,7 @@ else
 	BUILDS="/system/build.prop"
 fi
 vol_sel() {
+	log 'INFO' "Entering config"
 	ui_print "ⓘ Starting config mode...."
 	ui_print "ⓘ To use config.txt, set FORCE_CONFIG=1 in config.txt and edit as necessary."
 	ui_print "ⓘ Volume up to accept the current choice, and down to move to next option"
@@ -104,31 +105,28 @@ vol_sel() {
 	if [[ "$INSTALL" -eq 1 ]]; then
 		sel_browser
 	fi
+	log 'INFO' "User chose browser option $BROWSER, webview $WEBVIEW"
 	ui_print "ⓘ Config complete! Proceeding."
 }
 set_config() {
 	ui_print "ⓘ Setting configs..."
 	if [[ ! -f "$EXT_DATA"/config.txt ]]; then
+		log 'WARN' 'Found old config.txt. This warning can be ignored if this is an upgrade.'
 		ui_print "- WARNING! Old config.txt found. Note this is no longer used."
 		ui_print "- Using selection mode."
 		vol_sel
 	else
-		FORCE_CONFIG=0
-		. "$EXT_DATA"/config.txt
-		if [[ "$FORCE_CONFIG" -eq 1 ]]; then
-			check_config
-		else
-			cp "$MODPATH"/config.txt "$EXT_DATA"
-			vol_sel
-		fi
+		vol_sel
 	fi
 }
 do_ungoogled_webview() {
+	log 'INFO' 'Doing ungoogled-chromium webview'
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-w'
 	W_VER=$(updateChecker "$DIR")
 }
 do_ungoogled_browser() {
+	log 'INFO' 'Doing ungoogled-chromium browser'
 	NAME="Ungoogled-Chromium"
 	DIR='ugc-b'
 	B_VER=$(updateChecker "$DIR")
@@ -138,26 +136,31 @@ do_ungoogled_browser() {
 	fi
 }
 do_vanilla_webview() {
+	log 'INFO' 'Doing chromium webview'
 	NAME="Chromium"
 	DIR=chrm
 	W_VER=$(updateChecker "$DIR")
 }
 do_vanilla_browser() {
+	log 'INFO' 'Doing chromium browser'
 	NAME="Chromium"
 	DIR=chrm
 	B_VER=$(updateChecker "$DIR")
 }
 do_bromite_webview() {
+	log 'INFO' 'Doing bromite webview'
 	NAME="Bromite"
 	DIR=brm
 	W_VER=$(updateChecker "$DIR")
 }
 do_bromite_browser() {
+	log 'INFO' 'Doing bromite browser'
 	NAME="Bromite"
 	DIR=brm
 	B_VER=$(updateChecker "$DIR")
 }
 old_version() {
+	log 'INFO' 'Getting version information'
 	ui_print "ⓘ Checking whether this is a new install...."
 	if [[ ! -f $EXT_DATA/version.txt ]]; then
 		echo "OLD_BROWSER=0" >"$VERSIONFILE"
@@ -172,6 +175,7 @@ old_version() {
 	fi
 }
 download_webview() {
+	log 'INFO' 'Downloading webview'
 	cd "$TMPDIR" || return
 	if [[ $WEBVIEW -eq 0 ]]; then
 		do_bromite_webview
@@ -207,6 +211,7 @@ download_webview() {
 	verify_w
 }
 download_browser() {
+	og 'INFO' 'Downloading browser'
 	cd "$TMPDIR" || return
 	if [[ $BROWSER -eq 0 ]]; then
 		do_bromite_browser
@@ -242,6 +247,7 @@ download_browser() {
 	verify_b
 }
 verify_w() {
+	log 'INFO' 'Verifying webview'
 	ui_print "ⓘ Verifying ${NAME} webview files..."
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
@@ -249,6 +255,7 @@ verify_w() {
 		getChecksum "$DIR" "webview${ARCH}" "apk"
 		T_S=$(echo "$response" | tr -d '[:space:]')
 		if [ "$T_S" != "$O_S" ]; then
+			log 'ERROR' 'Invalid webview file digest'
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Webview.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
@@ -271,6 +278,7 @@ verify_w() {
 	cd "$TMPDIR" || return
 }
 verify_b() {
+	log 'INFO' 'Verifying browser'
 	ui_print "ⓘ Verifying ${NAME} browser files..."
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
@@ -278,6 +286,7 @@ verify_b() {
 		getChecksum "$DIR" "browser${ARCH}" "apk"
 		T_S=$(echo "$response" | tr -d '[:space:]')
 		if [ "$T_S" != "$O_S" ]; then
+			log 'ERROR' 'Invalid browser file digest'
 			ui_print "⚠ Verification failed, retrying download"
 			rm -f "$EXT_DATA"/apks/*Browser.apk
 			TRY_COUNT=$((TRY_COUNT + 1))
@@ -301,6 +310,7 @@ verify_b() {
 	cd "$TMPDIR" || return
 }
 create_overlay() {
+	log 'INFO' 'Creating overlays'
 	cd "$TMPDIR" || return
 	ui_print "ⓘ Fixing system webview whitelist"
 	if [[ "${API}" -ge "29" ]]; then
@@ -313,9 +323,12 @@ create_overlay() {
 		cp -rf "$MODPATH"/signed.apk "$MODPATH"/common/WebviewOverlay.apk
 		rm -rf "$MODPATH"/signed.apk "$MODPATH"/unsigned.apk
 	else
-		ui_print "⚠ Overlay creation has failed! Poorly developed ROMs have this issue"
+		log 'ERROR' 'Could not create overlay'
+		ui_print "⚠ Overlay creation has failed! Poorly designed ROMs have this issue"
 		ui_print "⚠ Compatibility is unlikely, please report this to your ROM developer."
 		ui_print "⚠ Some ROMs need a patch to fix this."
+		ui_print "⚠ Do NOT report this issue to us."
+		sleep 1
 	fi
 	cp -f "$MODPATH"/logs/aapt.log "$EXT_DATA"/logs
 	if [ -d /system_ext/overlay ]; then
@@ -332,6 +345,7 @@ create_overlay() {
 	echo "$OLP" >"$MODPATH"/overlay.txt
 }
 set_path() {
+	log 'INFO' 'Running debloater'
 	ui_print "ⓘ Detecting and debloating conflicting packages"
 	paths=$(cmd package dump com.android.webview | grep codePath)
 	A=${paths##*=}
@@ -356,6 +370,7 @@ set_path() {
 	E=${paths##*=}
 }
 extract_webview() {
+	log 'INFO' 'Extracting webview package'
 	WPATH="/system/app/${NAME}Webview"
 	ui_print "ⓘ Installing ${NAME} Webview"
 	for i in "$A" "$H" "$I" "$B" "$G" "$K" "$L"; do
@@ -381,6 +396,7 @@ extract_webview() {
 	create_overlay
 }
 extract_browser() {
+	log 'INFO' 'Extracting browser package'
 	BPATH="/system/app/${NAME}Browser"
 	ui_print "ⓘ Installing ${NAME} Browser"
 	for i in "$J" "$F" "$C" "$E" "$D"; do
@@ -410,6 +426,7 @@ online_install() {
 	fi
 }
 do_install() {
+	log 'INFO' 'Starting install'
 	set_config
 	if ! "$BOOTMODE"; then
 		ui_print "ⓘ Detected recovery install! Aborting!"
@@ -424,9 +441,10 @@ clean_dalvik() {
 	ui_print "⚠ Expect longer boot time"
 }
 do_cleanup() {
+	log 'INFO' 'Running cleanup'
 	ui_print "ⓘ Cleaning up..."
 	{
-		echo "Here's some useful links:"
+		echo "Heres some useful links:"
 		echo " "
 		echo "Website: https://www.androidacy.com"
 		echo "Donate: https://www.androidacy.com/donate/"
@@ -462,7 +480,7 @@ else
 	do_install
 fi
 ui_print ' '
-ui_print "ⓘ Some stock apps have been systemlessly  debloated during install"
+ui_print "ⓘ Some stock apps have been systemlessly debloated"
 sleep 0.15
 ui_print "ⓘ Anything debloated is known to cause conflicts"
 sleep 0.15
@@ -472,12 +490,15 @@ ui_print "ⓘ It is recommended not to reinstall them"
 sleep 0.15
 ui_print " "
 sleep 0.15
-ui_print "			Webview Manager | By Androidacy"
-ui_print ' '
+ui_print ">>> Webview Manager | By Androidacy <<<"
+sleep 0.15
+ui_print " "
+sleep 0.15
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
 sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
 sleep 0.15
 ui_print "☑ Install apparently succeeded, please reboot ASAP"
+am start -a android.intent.action.VIEW -d "https://www.androidacy.com/install-done/?utm_source=WebviewManager&utm_medium=modules&r=wmi&v=10.0.1_publicbeta1" &>/dev/null
 sleep 0.15
 ui_print " "
