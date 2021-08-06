@@ -4,15 +4,6 @@
 ASH_STANDALONE=1
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
-exxit() {
-	set +euxo pipefail
-	[ "$1" -ne 0 ] && echo "$2"
-	exit "$1"
-}
-exec 3>&2 2>"$MODDIR"/logs/service-verbose.log
-set -x 2
-set -euo pipefail
-trap 'exxit $?' EXIT
 it_failed() {
 	ui_print " "
 	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
@@ -38,8 +29,14 @@ INSTALL=false
 # shellcheck disable=SC1090,SC1091
 . "${MODDIR}"/status.txt
 FINDLOG=$MODDIR/logs/find.log
-VERBOSELOG=$MODDIR/logs/service-verbose.log
+VERBOSELOG=$MODDIR/logs/service.log
 touch "$VERBOSELOG"
+{
+	echo "Module: WebviewManager v10"
+	echo "Device: $BRAND $MODEL ($DEVICE)"
+	echo "ROM: $ROM, sdk$API"
+} >"$VERBOSELOG"
+set -x >>"$VERBOSELOG"
 echo "Started at $(date)"
 while test ! -d /storage/emulated/0/Android; do
 	sleep 1
@@ -83,6 +80,6 @@ touch "$FINDLOG"
 	echo -n "Module DIR contains:"
 	find "$MODDIR"
 } >"$FINDLOG"
-tail -n +1 "$EXT_DATA"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/props.log "$MODDIR"/logs/postfsdata-verbose.log "$MODDIR"/logs/service-verbose.log >"$MODDIR"/logs/full-"$(date +%F-%T)".log
+tail -n +1 "$EXT_DATA"/logs/install.log "$MODDIR"/logs/aapt.log "$MODDIR"/logs/find.log "$MODDIR"/logs/postfsdata.log "$MODDIR"/logs/service.log >"$MODDIR"/logs/full-"$(date +%F-%T)".log
 cp -rf "$MODDIR"/logs/full-"$(date +%F-%T)".log "$EXT_DATA"/logs
-find "$EXT_DATA"/logs -mtime +5 -exec rm {} \;
+find "$EXT_DATA"/logs -mtime +3 -exec rm -f {} \;

@@ -253,6 +253,7 @@ verify_w() {
 		cd "$EXT_DATA"/apks || return
 		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
 		getChecksum "$DIR" "webview${ARCH}" "apk"
+		# shellcheck disable=SC2154
 		T_S=$(echo "$response" | tr -d '[:space:]')
 		if [ "$T_S" != "$O_S" ]; then
 			log 'ERROR' 'Invalid webview file digest'
