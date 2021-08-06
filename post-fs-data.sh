@@ -4,20 +4,11 @@
 ASH_STANDALONE=1
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
-exxit() {
-	set +euxo pipefail
-	[ "$1" -ne 0 ] && echo "$2"
-	exit "$1"
-}
-exec 3>&2 2>"$MODDIR"/logs/postfsdata-verbose.log
-set -x 2
-set -euo pipefail
-trap 'exxit $?' EXIT
 OVERLAY=false
 # shellcheck disable=SC1090,SC1091
 . "${MODDIR}"/status.txt
 FINDLOG="$MODDIR"/logs/find.log
-PROPSLOG="$MODDIR"/logs/props.log
+PROPSLOG="$MODDIR"/logs/postfsdata.log
 touch "$FINDLOG"
 OL="org.androidacy.WebviewOverlay"
 LIST="/data/system/overlays.xml"
@@ -25,9 +16,17 @@ DR="$(cat "$MODDIR"/overlay.txt)"
 API="$(getprop ro.build.version.sdk)"
 touch "$PROPSLOG"
 echo "Firing up logging NOW "
-echo "---------- Device info: -----------" >"$PROPSLOG"
-getprop | grep -iv serial | grep -iv 'net[.]' >>"$PROPSLOG"
-echo "------- End Device info ----------" >>"$PROPSLOG"
+BRAND=$(getprop ro.product.brand)
+MODEL=$(getprop ro.product.model)
+DEVICE=$(getprop ro.product.device)
+ROM=$(getprop ro.build.display.id)
+API=$(grep_prop ro.build.version.sdk)
+{
+	echo "Module: WebviewManager v10"
+	echo "Device: $BRAND $MODEL ($DEVICE)"
+	echo "ROM: $ROM, sdk$API"
+} >"$PROPSLOG"
+set -x >>"$PROPSLOG"
 if test "$API" -lt "27"; then
 	STATE="3"
 else

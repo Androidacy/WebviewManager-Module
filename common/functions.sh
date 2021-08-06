@@ -289,6 +289,9 @@ setup_logger() {
     echo "Device: $BRAND $MODEL ($DEVICE)"
     echo "ROM: $ROM, sdk$API"
   } >$LOGFILE
+  if test -f /sdcard/.androidacy-debug; then
+    set -x 2
+  fi
   exec 2>>$LOGFILE
 }
 
@@ -297,7 +300,7 @@ setup_logger
 ui_print "- PLEASE NOTE: This module requires interent access and will abort if you don't have any"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
-initClient 'wvm' '10.0.0-beta'
+initClient 'wvm' '10.0.1-publicbeta1'
 alias aapt='$MODPATH/common/tools/$ARCH/aapt'
 alias sign='$MODPATH/common/tools/zipsigner'
 chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
