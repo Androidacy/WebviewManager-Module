@@ -20,7 +20,7 @@ vol_sel() {
 	ui_print "ⓘ To use config.txt, set FORCE_CONFIG=1 in config.txt and edit as necessary."
 	ui_print "ⓘ Volume up to accept the current choice, and down to move to next option"
 	sleep 2
-	ui_print "-> Do you wnat to install only webview?"
+	ui_print "-> Do you want to install only webview?"
 	unset INSTALL
 	if chooseport; then
 		INSTALL=0
