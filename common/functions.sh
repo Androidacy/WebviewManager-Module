@@ -1,6 +1,6 @@
 # shellcheck shell=ash
 # shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091
-#Extract files
+# LETS FUCKING GOOOOOOO
 echo " __        __     _            _                 "
 echo " \ \      / /___ | |__ __   __(_)  ___ __      __"
 echo "  \ \ /\ / // _ \| '_ \\ \ / /| | / _ \\ \ /\ / /"
@@ -14,6 +14,7 @@ echo " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
 echo "                               |___/             "
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
+unzip "$MODPATH/common/tools/tools.zip" -d "$MODPATH/common/tools" >&2
 it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
@@ -24,16 +25,26 @@ it_failed() {
   ui_print "	 2) You didn't follow instructions"
   ui_print "	 3) You have an unstable internet connection"
   ui_print "	 4) Your ROM is broken"
-  ui_print "	 5) There's a *tiny* chance we screwed up"
+  ui_print "	 5) Bug in the installer"
   ui_print " Please fix any issues and retry."
-  ui_print " If you feel this is a bug or need assistance, head to our telegram"
-  ui_print " All files besides logs are assumed to be corrupt, and have been removed."
+  ui_print " BEFORE REPORTING A BUG, CHECK ITENS 1 - 4"
   rm -fr "$EXT_DATA"/apks "$EXT_DATA"/version.txt
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
+  sleep 2
+  am start -a android.intent.action.VIEW -d "https://www.androidacy.com/contact/?f=wvm_install_fail" &>/dev/null
+sleep 0.15
   exit 1
 }
+BRAND=$(getprop ro.product.brand)
+MODEL=$(getprop ro.product.model)
+DEVICE=$(getprop ro.product.device)
+ROM=$(getprop ro.build.display.id)
+API=$(grep_prop ro.build.version.sdk)
+ABI=$(grep_prop ro.product.cpu.abi | cut -c-3)
+ABI2=$(grep_prop ro.product.cpu.abi2 | cut -c-3)
+ABILONG=$(grep_prop ro.product.cpu.abi)
 abort() {
   ui_print "$1"
   rm -fr $MODPATH 2>/dev/null
@@ -50,7 +61,7 @@ detect_ext_data() {
     export EXT_DATA="/data/media/0/WebviewManager"
   else
     EXT_DATA='/storage/emulated/0/WebviewManager'
-    ui_print "⚠ Possible internal storage access issues! Please make sure data is mounted and decrypted."
+    ui_print "⚠ Possible internal storage access issues! Could be an SEPolicy issue."
     ui_print "⚠ Trying to proceed anyway..."
   fi
   if test ! -d "$EXT_DATA"; then
@@ -62,6 +73,7 @@ detect_ext_data() {
       it_failed
     fi
   fi
+  rm -f "$EXT_DATA"/.rw
 }
 detect_ext_data
 mkdir "$MODPATH"/logs/
@@ -119,7 +131,6 @@ cleanup() {
   ui_print "*   Based on the original MMT-ex     *"
   ui_print "**************************************"
   ui_print " "
-  $SELINUX && setenforce 1
 }
 
 device_check() {
@@ -297,21 +308,21 @@ setup_logger() {
 
 setup_logger
 
-ui_print "- PLEASE NOTE: This module requires interent access and will abort if you don't have any"
+ui_print  "ⓘ PLEASE NOTE: This module requires interent access and will abort if you don't have any"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
 initClient 'wvm' '10.0.1-publicbeta1'
 alias aapt='$MODPATH/common/tools/$ARCH/aapt'
+alias curl='$MODPATH/common/tools/$ARCH/curl'
 alias sign='$MODPATH/common/tools/zipsigner'
 chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
+chmod 755 "$MODPATH/common/tools/$ARCH/curl"
 chmod 755 "$MODPATH/common/tools/zipsigner"
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
   ui_print " "
-  ui_print "ⓘ Running Addons -"
   for i in "$MODPATH"/common/addon/*/install.sh; do
-    ui_print "ⓘ Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
     . $i
   done
 fi
@@ -341,7 +352,7 @@ if [ -f $INFO ]; then
 fi
 
 ### Install
-ui_print "ⓘ Installing"
+ui_print "ⓘ Starting installer"
 
 [ -f "$MODPATH/common/install.sh" ] && . $MODPATH/common/install.sh
 

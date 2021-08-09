@@ -5,7 +5,8 @@ VF=0
 OLD_WEBVIEW=0
 OLD_BROWSER=0
 VERIFY=true
-ui_print "ⓘ Your device is a $(echo "$D" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
+a=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
+ui_print "ⓘ Your device is a $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
 VERSIONFILE="$EXT_DATA/version.txt"
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
