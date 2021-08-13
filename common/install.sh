@@ -5,7 +5,7 @@ VF=0
 OLD_WEBVIEW=0
 OLD_BROWSER=0
 VERIFY=true
-a=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
+A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 ui_print "ⓘ Your device is a $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
 VERSIONFILE="$EXT_DATA/version.txt"
 VEN=/system/vendor
@@ -348,7 +348,7 @@ create_overlay() {
 }
 set_path() {
 	log 'INFO' 'Running debloater'
-	ui_print "ⓘ Detecting and debloating conflicting packages"
+	ui_print "ⓘ Detecting and systemlessly debloating conflicting packages"
 	paths=$(cmd package dump com.android.webview | grep codePath)
 	A=${paths##*=}
 	unset paths
@@ -501,6 +501,6 @@ sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
 sleep 0.15
 ui_print "☑ Install apparently succeeded, please reboot ASAP"
-am start -a android.intent.action.VIEW -d "https://www.androidacy.com/install-done/?utm_source=WebviewManager&utm_medium=modules&r=wmi&v=10.0.1_publicbeta1" &>/dev/null
+am start -a android.intent.action.VIEW -d "https://www.androidacy.com/install-done/?f=wvm_module&r=wmi&v=10.0.1_publicbeta2" &>/dev/null
 sleep 0.15
 ui_print " "

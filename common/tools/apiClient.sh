@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Title: Androidacy API shell client
-# Description: Provides an interface to the Androidacy API
+# Description: Provides an interface to the Androidacy API for shell clients.
 # License: AOSL
-# Version: 1.1.2
-# Author: Androidacy or it's partners
+# Version: 1.1.3
+# Author: Androidacy or our partners
 
 # Initiliaze the API
 initClient() {

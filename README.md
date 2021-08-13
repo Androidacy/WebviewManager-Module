@@ -6,14 +6,15 @@
 
 ## Links
 
+- [Downloads](https://www.androidacy.com/?f=wvm_rdme)
 - [Website](https://www.androidacy.com/?utm_source=WebviewManager)
 - [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager)
 * [Upstream repository](https://github.com/androidacy/WebviewSwitcher). All development is done here until stable release.
 
 ### Be sure to check out our new module, Font Manager!
 
-- Downloads are [here](https://dl.androidacy.com/?eeFolder=Magisk-Modules&eeListID=1&utm_source=WebviewManager)
-- The source is [here](https://github.com/androidacy/FontManager)
+- Downloads are [here](https://www.androidacy.com/?f=fm_upsl)
+- The source is [here](https://github.com/Androidacy/FontManager-Module)
 - XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
 
 ## What is this?
@@ -49,7 +50,7 @@ The logging code used was orginally developed by and copyright John Fawkes, and 
 ## ETAs/ Versions
 
 This module downloads the latest browser and/or webview APK every time it is flashed. We will otherwise update as we see fit. 
-At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although you should wait for us to do a release on [the filehost](https://dl.androidacy.com/?utm_source=WebviewManager), click on magisk modules then bromitewebview
+At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although you should wait for us to do a release first.
 
 In addition, there may be third party ways to update any apps that can be installed with the module. We do not endorse nor did we create these ways!
 
