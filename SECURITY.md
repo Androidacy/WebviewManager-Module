@@ -1,14 +1,10 @@
 # Security Policy
 
+Androidacy takes security very seriously, and develops all of our software with security in mind, follwoing best practices, and more.
+
 ## Supported Versions
 
 Only the current stable and beta is supported. Always report against the latest beta!
-
-| Version | Supported          |
-| ------- | ------------------ |
-|  < 8.x   | :negative_squared_cross_mark: |
-|  8.x   | :warning: |
-|  Beta  | :white_check_mark: |
 
 ## Reporting a Vulnerability
 

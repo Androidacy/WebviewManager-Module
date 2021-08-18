@@ -18,7 +18,6 @@ fi
 vol_sel() {
 	log 'INFO' "Entering config"
 	ui_print "ⓘ Starting config mode...."
-	ui_print "ⓘ To use config.txt, set FORCE_CONFIG=1 in config.txt and edit as necessary."
 	ui_print "ⓘ Volume up to accept the current choice, and down to move to next option"
 	sleep 2
 	ui_print "-> Do you want to install only webview?"
@@ -473,7 +472,6 @@ do_cleanup() {
 			mv "$MODPATH"/system_ext/ "$MODPATH"/system/
 		fi
 	fi
-	rm -fr "$MODPATH"/config.txt
 	clean_dalvik
 }
 if [[ ${TRY_COUNT} -ge "3" ]]; then
@@ -501,6 +499,6 @@ sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
 sleep 0.15
 ui_print "☑ Install apparently succeeded, please reboot ASAP"
-am start -a android.intent.action.VIEW -d "https://www.androidacy.com/install-done/?f=wvm_module&r=wmi&v=10.0.1_publicbeta2" &>/dev/null
+am start -a android.intent.action.VIEW -d "https://www.androidacy.com/install-done/?f=wvm_module&r=wmi&v=10.0.2" &>/dev/null
 sleep 0.15
 ui_print " "
