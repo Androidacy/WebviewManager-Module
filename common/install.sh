@@ -499,6 +499,6 @@ sleep 0.15
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
 sleep 0.15
 ui_print "☑ Install apparently succeeded, please reboot ASAP"
-am start -a android.intent.action.VIEW -d "https://www.androidacy.com/install-done/?f=wvm_module&r=wmi&v=10.0.2" &>/dev/null
+am start -a android.intent.action.VIEW -d "https://www.androidacy.com/install-done/?f=wvm_module&r=wmi&v=10.0.3" &>/dev/null
 sleep 0.15
 ui_print " "
