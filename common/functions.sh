@@ -257,7 +257,7 @@ prop_process() {
 }
 
 # Check for min/max api version
-if $API -lt 26; then
+if test $API -lt 26; then
   abort "! Your system API of $API is less than the minimum api of 26 (Oreo)! Aborting!"
 fi
 
@@ -312,13 +312,13 @@ setup_logger
 ui_print  "ⓘ PLEASE NOTE: This module requires interent access and will abort if you don't have any"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
-alias aapt='$MODPATH/common/tools/$ARCH/aapt'
-alias curl='$MODPATH/common/tools/$ARCH/curl'
+alias aapt="$MODPATH/common/tools/$ARCH/aapt"
+alias curl="$MODPATH/common/tools/$ARCH/curl"
 alias sign='$MODPATH/common/tools/zipsigner'
 chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
 chmod 755 "$MODPATH/common/tools/$ARCH/curl"
 chmod 755 "$MODPATH/common/tools/zipsigner"
-initClient 'wvm' '10.0.3'
+initClient 'wvm' '10.0.4'
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
