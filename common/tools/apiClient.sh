@@ -3,7 +3,7 @@
 # Title: Androidacy API shell client
 # Description: Provides an interface to the Androidacy API for shell clients.
 # License: AOSL
-# Version: 1.1.3
+# Version: 1.2.1
 # Author: Androidacy or our partners
 
 # Initiliaze the API
@@ -13,7 +13,7 @@ initClient() {
         echo "Illegal number of parameters passed. Expected two, got $#"
         abort
     else
-        export API_URL='https://test-api.androidacy.com'
+        export API_URL='https://api.androidacy.com'
         if test "$1" = 'fm'; then
             export API_FN="FontManager"
         elif test "$1" = 'wvm'; then
@@ -23,11 +23,6 @@ initClient() {
         export API_APP=$1
         buildClient
         initTokens
-        if ! curl -kLsA "$API_UA" -H "Accept-Language: $API_LANG" -X POST -d "app=$app&token=$API_TOKEN" $API_URL/ping >/dev/null; then
-            log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
-            echo "API unreachable! Try again in a few minutes"
-            abort
-        fi
         export __API_INIT_DONE=true
     fi
 }
@@ -49,8 +44,13 @@ initTokens() {
         API_TOKEN=$(cat /sdcard/.androidacy)
     else
         log 'WARN' "Couldn't find API credentials. If this is a first run, this warning can be safely ignored."
-        curl -kLsA "$API_UA" -H "Accept-Language: $API_LANG" -X POST -d 'app=tokens' "$API_URL/tokens/get" >/sdcard/.androidacy
-        API_TOKEN=$(cat /sdcard/.androidacy)
+        if ! wget --no-check-certificate -qU  "$API_UA" --header "Accept-Language: $API_LANG" --post-data 'app=tokens' "$API_URL/tokens/get" -O /sdcard/.androidacy; then
+          log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
+          echo "API unreachable! Try again in a few minutes"
+          abort
+        else
+          API_TOKEN=$(cat /sdcard/.androidacy)
+        fi
     fi
     log 'INFO' "Exporting token"
     export API_TOKEN
@@ -64,8 +64,8 @@ validateTokens() {
         log 'ERROR' 'Caught error in validateTokens: wrong arguments passed'
         echo "Illegal number of parameters passed. Expected one, got $#"
         abort
-    else
-        API_LVL=$(curl -kLsA "$API_UA" -H "Accept-Language: $API_LANG" -X POST -d "app=tokens&token=$API_TOKEN" "$API_URL/tokens/validate")
+    else  
+        API_LVL=$(wget --no-check-certificate -qU  "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=tokens&token=$API_TOKEN" "$API_URL/tokens/validate" -O -)
         if test $? -ne 0; then
             log 'WARN' "Got invalid response when trying to validate token!"
             # Restart process on validation failure
@@ -103,7 +103,7 @@ getList() {
             echo "Error! Access denied for beta."
             abort
         fi
-        response=$(curl -kLsA "$API_UA" -H "Accept-Language: $API_LANG" -X POST -d "app=$app&token=$API_TOKEN&category=$cat" "$API_URL/downloads/list")
+        response=$(wget --no-check-certificate -qU  "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&token=$API_TOKEN&category=$cat" "$API_URL/downloads/list" -O -)
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"
@@ -138,7 +138,7 @@ downloadFile() {
         else
             local endpoint='downloads/paid'
         fi
-        curl -kLsA "$API_UA" -H "Accept-Language: $API_LANG" -X POST -d "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/$endpoint" >"$location"
+        wget --no-check-certificate -qU  "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/$endpoint" -O "$location"
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"
@@ -162,7 +162,7 @@ updateChecker() {
     else
         local cat=$1
         local app=$API_APP
-        response=$(curl -kLsA "$API_UA" -H "Accept-Language: $API_LANG" -X POST -d "app=$app&category=$cat&token=$API_TOKEN" "$API_URL/downloads/updates")
+        response=$(wget --no-check-certificate -qU  "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&token=$API_TOKEN" "$API_URL/downloads/updates" -O -)
         # shellcheck disable=SC2001
         parsedList=$(echo "$response" | sed 's/[^a-zA-Z0-9]/ /g')
         response="$parsedList"
@@ -186,7 +186,7 @@ getChecksum() {
         local file=$2
         local format=$3
         local app=$API_APP
-        response=$(curl -kLsA "$API_UA" -H "Accept-Language: $API_LANG" -X POST -d "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/checksum/get")
+        response=$(wget --no-check-certificate -qU  "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/checksum/get" -O -)
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"

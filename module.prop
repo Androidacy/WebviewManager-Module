@@ -1,6 +1,6 @@
 id=bromitewebview
 name=Webview Manager
-version=10.0.4
-versionCode=5008
+version=10.0.5
+versionCode=5010
 author=Androidacy
 description=Change System WebView and default browser systemless-ly. Block ads and fingerprinting, increase privacy, and more. Website and how to get support: https://www.androidacy.com/?f=wmv%20prop

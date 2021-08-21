@@ -60,7 +60,7 @@ In addition, there may be third party ways to update any apps that can be instal
 
 ## Donations
 
-Donations: [here](https://www.androidacy.com/donate/?utm_source=WebviewManager)
+Donations: [here](https://www.androidacy.com/donate/?f=WVM%20Readme)
 
 We recommend you check out the websites of the developers of the included apps for donation links.
 
@@ -74,15 +74,18 @@ The XDA thread is [here](https://forum.xda-developers.com/android/software/bromi
 
 The telegram channel is [here](https://t.me/androidacy_announce)
 
-Here is our [Discord](https://discord.gg/gTnDxQ6) [very inactive]
+A Discord server is available to select supporters on our [Patreon](https://patreon.com/androidacy/?utm_source-WVM%20Readme&utm_medium=modules).
+
+Premium and enterprise support is offered to select Patreon supporters as well.
 
 
 ## Compatibility
 
-- Android 5.x to 11.0 (7.x+ recommended). 
+- Android 7.x to 11.0. 
   - Some heavily customized stock ROMs may have issues. This is especially true on android 11!
   - MIUI is not officially supported for the aforementioned reason. Some people have had success with debloating the stock bloatware.
+  - OneUI users: make sure Secure Folder is disabled before installing.
 - Magisk v20.1+ required
-- **Recommended to flash through magisk manager**
+- **Required: flash through magisk manager**
 	- TWRP installs are not supported!
 - SELinux enforcing/permissive

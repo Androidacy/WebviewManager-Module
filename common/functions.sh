@@ -312,13 +312,11 @@ setup_logger
 ui_print  "ⓘ PLEASE NOTE: This module requires interent access and will abort if you don't have any"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
-alias aapt="$MODPATH/common/tools/$ARCH/aapt"
-alias curl="$MODPATH/common/tools/$ARCH/curl"
+alias aapt='$MODPATH/common/tools/$ARCH/aapt'
 alias sign='$MODPATH/common/tools/zipsigner'
 chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
-chmod 755 "$MODPATH/common/tools/$ARCH/curl"
 chmod 755 "$MODPATH/common/tools/zipsigner"
-initClient 'wvm' '10.0.4'
+initClient 'wvm' '10.0.5'
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
