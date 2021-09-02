@@ -316,7 +316,7 @@ alias aapt='$MODPATH/common/tools/$ARCH/aapt'
 alias sign='$MODPATH/common/tools/zipsigner'
 chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
 chmod 755 "$MODPATH/common/tools/zipsigner"
-initClient 'wvm' '10.0.5'
+initClient 'wvm' '10.1.2'
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then

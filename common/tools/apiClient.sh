@@ -3,7 +3,7 @@
 # Title: Androidacy API shell client
 # Description: Provides an interface to the Androidacy API
 # License: AOSL
-# Version: 1.3.1
+# Version: 1.3.2
 # Author: Androidacy or it's partners
 
 # JSON parser
@@ -18,7 +18,7 @@ initClient() {
         echo "Illegal number of parameters passed. Expected two, got $#"
         abort
     else
-        export API_URL='https://test-api.androidacy.com'
+        export API_URL='https://api2.androidacy.com'
         if test "$1" = 'fm'; then
             export API_FN="FontManager"
         elif test "$1" = 'wvm'; then
@@ -49,8 +49,9 @@ initTokens() {
         API_TOKEN=$(parseJSON "$(cat /sdcard/androidacy.json)" 'token')
     else
         log 'WARN' "Couldn't find API credentials. If this is a first run, this warning can be safely ignored."
-        wget --no-check-certificate -qA "$API_UA" --header "Accept-Language: $API_LANG" "https://www.androidacy.com/credentials/get" -O sdcard/androidacy.json
-        API_TOKEN=$(parseJSON  'token')
+        wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" "https://www.androidacy.com/credentials/get" -O /sdcard/androidacy.json
+        API_TOKEN=$(parseJSON "$(cat /sdcard/androidacy.json)" 'token')
+        sleep 1
     fi
     log 'INFO' "Exporting token"
     export API_TOKEN
@@ -65,11 +66,12 @@ validateTokens() {
         echo "Illegal number of parameters passed. Expected one, got $#"
         abort
     else
-        API_LVL=$(wget --no-check-certificate -qA "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=tokens&token=$API_TOKEN" "$API_URL/tokens/validate" -O -)
+        API_LVL=$(wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=tokens&token=$API_TOKEN" "$API_URL/tokens/validate" -O -)
         if test $? -ne 0; then
             log 'WARN' "Got invalid response when trying to validate token!"
             # Restart process on validation failure
-            rm -f '/sdcard/.androidacy'
+            rm -f '/sdcard/androidacy.json'
+            sleep 1
             initTokens
         else
             # Pass the appropriate API access level back to the caller
@@ -78,8 +80,11 @@ validateTokens() {
     fi
     if test "$API_LVL" -lt 2; then
         echo '- Looks like your using a free or guest token'
-        echo '- For info on faster downloads, see https://www.androidacy.com/donate/'
+        echo '- For info on faster downloads and supporting development, see https://www.androidacy.com/donate/'
+        export sleep=1
+        export API_URL='https://api.androidacy.com'
     else
+        export sleep=1
         export API_URL='https://api2.androidacy.com'
     fi
 }
@@ -103,12 +108,13 @@ getList() {
             echo "Error! Access denied for beta."
             abort
         fi
-        response=$(wget --no-check-certificate -qA "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&token=$API_TOKEN&category=$cat" "$API_URL/downloads/list" -O -)
+        response=$(wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&token=$API_TOKEN&category=$cat" "$API_URL/downloads/list" -O -)
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"
             abort
         fi
+        sleep $sleep
         # shellcheck disable=SC2001
         parsedList=$(echo "$response" | sed 's/[^a-zA-Z0-9]/ /g')
         response="$parsedList"
@@ -138,12 +144,13 @@ downloadFile() {
         else
             local endpoint='downloads/paid'
         fi
-        wget --no-check-certificate -qA "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/$endpoint" -O "$location"
+        wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/$endpoint" -O "$location"
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"
             abort
         fi
+      sleep $sleep
     fi
 }
 
@@ -162,7 +169,8 @@ updateChecker() {
     else
         local cat=$1
         local app=$API_APP
-        response=$(wget --no-check-certificate -qA "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&token=$API_TOKEN" "$API_URL/downloads/updates")
+        response=$(wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&token=$API_TOKEN" "$API_URL/downloads/updates" -O -)
+        sleep $sleep
         # shellcheck disable=SC2001
         response=$(parseJSON "$response" "version")
     fi
@@ -185,12 +193,13 @@ getChecksum() {
         local file=$2
         local format=$3
         local app=$API_APP
-        res=$(wget --no-check-certificate -qA "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/checksum/get" -O -)
+        res=$(wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/checksum/get" -O -)
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"
             abort
         fi
+        sleep $sleep
         response=$(parseJSON "$res" 'checksum')
     fi
 }
