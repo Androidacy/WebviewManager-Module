@@ -7,6 +7,17 @@ OLD_BROWSER=0
 VERIFY=true
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 ui_print "ⓘ Your device is a $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
+ui_print "Checking for module updates..."
+updateChecker 'self'
+newVersion=$response
+if test "$(grep 'versionCode=' "$MODPATH"/module.prop | sed 's/versionCode=//')" -ne "$newVersion"; then
+	ui_print "Module update found! Please download the latest update manually, and flash in magisk manager."
+	ui_print "Attempting to launch downloads page..."
+	sleep 2
+	am start -a android.intent.action.VIEW -d "https://www.androidacy.com/downloads/?f=wvmanager%20uppdate" &>/dev/null
+	ui_print "Exiting now.!"
+	abort
+fi
 VERSIONFILE="$EXT_DATA/version.txt"
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
