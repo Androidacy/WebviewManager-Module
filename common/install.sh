@@ -286,6 +286,7 @@ verify_w() {
 		fi
 	else
 		ui_print "⚠ ${NAME} cannot be verified, as they don't publish sha256sums."
+		extract_webview
 	fi
 	cd "$TMPDIR" || return
 }
