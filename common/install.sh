@@ -81,7 +81,7 @@ vol_sel() {
 		ui_print "-> Please choose your browser."
 		ui_print "  1. Bromite"
 		if chooseport; then
-			WEBVIEW=0
+			BROWSER=0
 		fi
 		if [[ -z $BROWSER ]]; then
 			ui_print "  2. Chromium"
