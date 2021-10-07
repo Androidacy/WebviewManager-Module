@@ -3,7 +3,7 @@
 # Title: Androidacy API shell client
 # Description: Provides an interface to the Androidacy API
 # License: AOSL
-# Version: 1.3.2
+# Version: 2.0.1
 # Author: Androidacy or it's partners
 
 # JSON parser
@@ -66,7 +66,7 @@ validateTokens() {
         echo "Illegal number of parameters passed. Expected one, got $#"
         abort
     else
-        API_LVL=$(wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=tokens&token=$API_TOKEN" "$API_URL/tokens/validate" -O -)
+        API_LVL=$(wget --no-check-certificate -qU "$API_UA" --header "X-Androidacy-Token: $API_TOKEN" --header "Accept-Language: $API_LANG" "$API_URL/tokens/validate" -O -)
         if test $? -ne 0; then
             log 'WARN' "Got invalid response when trying to validate token!"
             # Restart process on validation failure
@@ -108,7 +108,7 @@ getList() {
             echo "Error! Access denied for beta."
             abort
         fi
-        response=$(wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&token=$API_TOKEN&category=$cat" "$API_URL/downloads/list" -O -)
+        response=$(wget --no-check-certificate -qU "$API_UA" --header "X-Androidacy-Token: $API_TOKEN" --header "Accept-Language: $API_LANG" "$API_URL/downloads/list?app=$app&category=$cat" -O -)
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"
@@ -144,7 +144,7 @@ downloadFile() {
         else
             local endpoint='downloads/paid'
         fi
-        wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/$endpoint" -O "$location"
+        wget --no-check-certificate -qU "$API_UA" --header "X-Androidacy-Token: $API_TOKEN" --header "Accept-Language: $API_LANG" "$API_URL/$endpoint?app=$app&category=$cat&request=$file&format=$format" -O "$location"
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"
@@ -169,7 +169,7 @@ updateChecker() {
     else
         local cat=$1
         local app=$API_APP
-        response=$(wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&token=$API_TOKEN" "$API_URL/downloads/updates" -O -)
+        response=$(wget --no-check-certificate -qU "$API_UA" --header "X-Androidacy-Token: $API_TOKEN" --header "Accept-Language: $API_LANG" "$API_URL/downloads/updates?app=$app&category=$cat" -O -)
         sleep $sleep
         # shellcheck disable=SC2001
         response=$(parseJSON "$response" "version")
@@ -193,7 +193,7 @@ getChecksum() {
         local file=$2
         local format=$3
         local app=$API_APP
-        res=$(wget --no-check-certificate -qU "$API_UA" --header "Accept-Language: $API_LANG" --post-data "app=$app&category=$cat&request=$file&format=$format&token=$API_TOKEN" "$API_URL/checksum/get" -O -)
+        res=$(wget --no-check-certificate -qU "$API_UA" --header "X-Androidacy-Token: $API_TOKEN" --header "Accept-Language: $API_LANG" "$API_URL/checksum/get?app=$app&category=$cat&request=$file&format=$format" -O -)
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
             echo "API request failed! Assuming API is down and aborting!"

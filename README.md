@@ -1,15 +1,11 @@
 # Webview Switcher - An Androidacy Project
 
-![Logo](https://www.androidacy.com/wp-content/uploads/rsz_cropped-adobe_post_20210202_00133408277657334196729-1024x576-1.png)
-
-<br>
-
 ## Links
 
 - [Downloads](https://www.androidacy.com/?f=wvm_rdme)
 - [Website](https://www.androidacy.com/?utm_source=WebviewManager)
-- [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager)
-* [Upstream repository](https://github.com/androidacy/WebviewSwitcher). All development is done here until stable release.
+- [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager&utm_medium=github)
+* [Upstream repository](https://github.com/Androidacy/WebviewSwitcher). All development is done here until stable release.
 
 ### Be sure to check out our new module, Font Manager!
 
