@@ -3,7 +3,7 @@
 # Title: Androidacy API shell client
 # Description: Provides an interface to the Androidacy API
 # License: AOSL
-# Version: 2.0.1
+# Version: 2.1.7
 # Author: Androidacy or it's partners
 
 # JSON parser
@@ -13,23 +13,27 @@ parseJSON() {
 
 # Initiliaze the API
 initClient() {
-    log 'INFO' "Initializing API with paramaters: $1, $2"
-    if test "$#" -ne 2; then
-        echo "Illegal number of parameters passed. Expected two, got $#"
-        abort
-    else
-        export API_URL='https://api2.androidacy.com'
-        if test "$1" = 'fm'; then
-            export API_FN="FontManager"
-        elif test "$1" = 'wvm'; then
-            export API_FN="WebviewManager"
-        fi
-        export API_V=$2
-        export API_APP=$1
-        buildClient
-        initTokens
-        export __API_INIT_DONE=true
+    # We need to get the module codename and version
+    # We have to extract this from module.prop
+    # Make sure $MODPATH is set
+    if [ -z "$MODPATH" ]; then
+        echo "MODPATH is not set! Can't initialize client."
+        exit 1
     fi
+    export MODULE_CODENAME MODULE_VERSION MODULE_VERSIONCODE API_FAILED
+    API_FAILED=0
+    MODULE_CODENAME=$(grep "id=" "$MODPATH"/module.prop | cut -d"=" -f2)
+    MODULE_VERSION=$(grep "version=" "$MODPATH"/module.prop | cut -d"=" -f2)
+    MODULE_VERSIONCODE=$(grep "versionCode=" "$MODPATH"/module.prop | cut -d"=" -f2)
+    log 'INFO' "Initializing API with paramaters: $1, $2"
+    # Warn if they pass arguments to initClient, as this is legacy behaviour
+    if [ "$1" != "" ] || [ "$2" != "" ]; then
+        log 'WARN' "initClient() has been called with arguments, this is legacy behaviour and will be removed in the future"
+    fi
+    export API_URL='https://api2.androidacy.com'
+    buildClient
+    initTokens
+    export __API_INIT_DONE=true
 }
 
 # Build client requests
@@ -69,7 +73,16 @@ validateTokens() {
         API_LVL=$(wget --no-check-certificate -qU "$API_UA" --header "X-Androidacy-Token: $API_TOKEN" --header "Accept-Language: $API_LANG" "$API_URL/tokens/validate" -O -)
         if test $? -ne 0; then
             log 'WARN' "Got invalid response when trying to validate token!"
-            # Restart process on validation failure
+            # Restart process on validation failure. Make sure we only do this 3 times!!
+            if [ "$API_FAILED" -lt 3 ]; then
+                API_FAILED=$((API_FAILED + 1))
+                log 'INFO' "Restarting process in $API_FAILED"
+                sleep 1
+                initTokens
+            else
+                log 'ERROR' "Failed to validate token after $API_FAILED attempts. Aborting."
+                abort
+            fi
             rm -f '/sdcard/androidacy.json'
             sleep 1
             initTokens
@@ -102,7 +115,7 @@ getList() {
             echo "Tried to call getList without first initializing the API client!"
             abort
         fi
-        local app=$API_APP
+        local app=$MODULE_CODENAME
         local cat=$1
         if test "$app" = 'beta' && test API_LVL -lt 4; then
             echo "Error! Access denied for beta."
@@ -138,7 +151,7 @@ downloadFile() {
         local file=$2
         local format=$3
         local location=$4
-        local app=$API_APP
+        local app=$MODULE_CODENAME
         if test "$API_LVL" -lt 2; then
             local endpoint='downloads/free'
         else
@@ -150,7 +163,7 @@ downloadFile() {
             echo "API request failed! Assuming API is down and aborting!"
             abort
         fi
-      sleep $sleep
+        sleep $sleep
     fi
 }
 
@@ -167,8 +180,8 @@ updateChecker() {
             abort
         fi
     else
-        local cat=$1
-        local app=$API_APP
+        local cat=$1 || 'self'
+        local app=$MODULE_CODENAME
         response=$(wget --no-check-certificate -qU "$API_UA" --header "X-Androidacy-Token: $API_TOKEN" --header "Accept-Language: $API_LANG" "$API_URL/downloads/updates?app=$app&category=$cat" -O -)
         sleep $sleep
         # shellcheck disable=SC2001
@@ -192,7 +205,7 @@ getChecksum() {
         local cat=$1
         local file=$2
         local format=$3
-        local app=$API_APP
+        local app=$MODULE_CODENAME
         res=$(wget --no-check-certificate -qU "$API_UA" --header "X-Androidacy-Token: $API_TOKEN" --header "Accept-Language: $API_LANG" "$API_URL/checksum/get?app=$app&category=$cat&request=$file&format=$format" -O -)
         if test $? -ne 0; then
             log 'ERROR' "Couldn't contact API. Is it offline or blocked?"

@@ -33,7 +33,7 @@ it_failed() {
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
   sleep 2
-  am start -a android.intent.action.VIEW -d "https://www.androidacy.com/contact/?f=wvm_install_fail" &>/dev/null
+  am start -a android.intent.action.VIEW -d "https://www.androidacy.com/contact/?f=wvm%20$MODULE_VERSION%20install%20fail" &>/dev/null
 sleep 0.15
   exit 1
 }

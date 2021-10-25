@@ -1,6 +1,6 @@
 id=bromitewebview
 name=Webview Manager
-version=10.1.4
-versionCode=5015
+version=10.2.1
+versionCode=5016
 author=Androidacy
-description=Change System WebView and default browser systemless-ly. Block ads and fingerprinting, increase privacy, and more. Website and how to get support: https://www.androidacy.com/?f=wmv%20prop
+description=Change System WebView and default browser systemless-ly. Block ads and fingerprinting, increase privacy, and more. Website and how to get support: https://www.androidacy.com/?f=wmv%20prop. Check out our new magisk module repo: https://www.androidacy.com/modules-repo/?f=wmv%20prop
