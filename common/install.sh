@@ -10,13 +10,14 @@ ui_print "ⓘ Your device is a $(echo "$DEVICE" | sed 's#%20#\ #g') with android
 ui_print "Checking for module updates..."
 updateChecker 'self'
 newVersion=$response
-if test "$(grep 'versionCode=' "$MODPATH"/module.prop | sed 's/versionCode=//')" -ne "$newVersion"; then
+log 'INFO' "Running update check with module $MODULE_VERSIONCODE and server version $newVersion"
+if test $MODULE_VERSIONCODE -lt $newVersion; then
 	ui_print "Module update found! Please download the latest update manually, and flash in magisk manager."
 	ui_print "Attempting to launch downloads page..."
 	sleep 2
-	am start -a android.intent.action.VIEW -d "https://www.androidacy.com/downloads/?f=wvmanager%20uppdate" &>/dev/null
+	am start -a android.intent.action.VIEW -d "https://www.androidacy.com/downloads/?f=wvmanager+update&view=%2540Magisk-Modules%2540Webview_Manager" &>/dev/null
 	ui_print "Exiting now.!"
-	abort
+	exit 1
 fi
 VERSIONFILE="$EXT_DATA/version.txt"
 VEN=/system/vendor
