@@ -6,7 +6,7 @@ OLD_WEBVIEW=0
 OLD_BROWSER=0
 VERIFY=true
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
-ui_print "ⓘ Your device is a $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
+ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
 ui_print "Checking for module updates..."
 updateChecker 'self'
 newVersion=$response
@@ -16,7 +16,7 @@ if test $MODULE_VERSIONCODE -lt $newVersion; then
 	ui_print "Attempting to launch downloads page..."
 	sleep 2
 	am start -a android.intent.action.VIEW -d "https://www.androidacy.com/downloads/?f=wvmanager+update&view=%2540Magisk-Modules%2540Webview_Manager" &>/dev/null
-	ui_print "Exiting now.!"
+	ui_print "Exiting now!"
 	exit 1
 fi
 VERSIONFILE="$EXT_DATA/version.txt"

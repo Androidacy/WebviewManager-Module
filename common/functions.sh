@@ -297,7 +297,7 @@ setup_logger() {
   LOGFILE=$EXT_DATA/logs/install.log
   export LOGFILE
   {
-    echo "Module: WebviewManager v10"
+    echo "Module: WebviewManager $(grep "version=" "$MODPATH"/module.prop | cut -d"=" -f2)"
     echo "Device: $BRAND $MODEL ($DEVICE)"
     echo "ROM: $ROM, sdk$API"
   } >$LOGFILE
