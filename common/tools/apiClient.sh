@@ -3,7 +3,7 @@
 # Title: Androidacy API shell client
 # Description: Provides an interface to the Androidacy API
 # License: AOSL
-# Version: 2.1.7
+# Version: 2.1.8
 # Author: Androidacy or it's partners
 
 # JSON parser
@@ -76,6 +76,7 @@ validateTokens() {
             # Restart process on validation failure. Make sure we only do this 3 times!!
             if [ "$API_FAILED" -lt 3 ]; then
                 API_FAILED=$((API_FAILED + 1))
+                rm -f '/sdcard/androidacy.json'
                 log 'INFO' "Restarting process in $API_FAILED"
                 sleep 1
                 initTokens
@@ -83,9 +84,6 @@ validateTokens() {
                 log 'ERROR' "Failed to validate token after $API_FAILED attempts. Aborting."
                 abort
             fi
-            rm -f '/sdcard/androidacy.json'
-            sleep 1
-            initTokens
         else
             # Pass the appropriate API access level back to the caller
             export API_LVL
