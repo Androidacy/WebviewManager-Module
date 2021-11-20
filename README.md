@@ -5,7 +5,8 @@
 - [Downloads](https://www.androidacy.com/?f=wvm_rdme)
 - [Website](https://www.androidacy.com/?utm_source=WebviewManager)
 - [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager&utm_medium=github)
-* [Upstream repository](https://github.com/Androidacy/WebviewSwitcher). All development is done here until stable release.
+- [Upstream repository](https://github.com/Androidacy/WebviewSwitcher). All development is done here until stable release.
+- **NEW** [Androidacy Modules Repository](https://www.androidacy.com/modules-repo/?f=repo)
 
 ### Be sure to check out our new module, Font Manager!
 
