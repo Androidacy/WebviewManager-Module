@@ -309,7 +309,7 @@ setup_logger() {
 
 setup_logger
 
-ui_print  "ⓘ PLEASE NOTE: This module requires interent access!"
+ui_print  "ⓘ PLEASE NOTE: This module requires internet access!"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
 alias aapt='$MODPATH/common/tools/$ARCH/aapt'
