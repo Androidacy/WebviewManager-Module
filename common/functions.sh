@@ -27,7 +27,7 @@ it_failed() {
   ui_print "	 4) Your ROM is broken"
   ui_print "	 5) Bug in the installer"
   ui_print " Please fix any issues and retry."
-  ui_print " BEFORE REPORTING A BUG, CHECK ITENS 1 - 4"
+  ui_print " BEFORE REPORTING A BUG, CHECK ITEMS 1 - 4"
   rm -fr "$EXT_DATA"/apks "$EXT_DATA"/version.txt
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
