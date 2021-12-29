@@ -3,35 +3,56 @@
 # Title: Androidacy API shell client
 # Description: Provides an interface to the Androidacy API
 # License: AOSL
-# Version: 2.1.8
+# Version: 2.2.0-beta3
 # Author: Androidacy or it's partners
 
+__api_tries=0
 # JSON parser
+# NOTE TO INTERNAL TEAM: Please don't waste your time trying to understand or improve this. It Just Works(tm)
 parseJSON() {
     echo "$1" | sed 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/\"\:\"/\|/g' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w "$2" | cut -d"|" -f2
 }
 
+# Handles API errors.
+# Delete the /sdcard/.androidacy file/folder if it exists, and try this three times.
+# If it still doesn't work, then exit.
+handleError() {
+    if test $__api_tries -lt 3; then
+        __api_tries=$((__api_tries + 1))
+        rm -rf /sdcard/.androidacy
+        sleep 0.5
+        initTokens
+        echo "The API encoutered an error. Trying again...."
+    else
+        echo "API error not recoverable! Exiting..."
+        exit 1
+    fi
+}
 # Initiliaze API logging. Currently, nothing is sent off device, but this may change in the future.
 export logfile android device lang
-if [ ! -d /sdcard/.androidacy ]; then
-  mkdir -p /sdcard/.androidacy
+if [ ! -d /sdcard/.aapi ]; then
+    mkdir -p /sdcard/.aapi
 fi
-logfile="/sdcard/.androidacy/api.log"
+logfile="/sdcard/.aapi/api.log"
 android=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 device=$(resetprop ro.product.model | sed 's#\n#%20#g' || resetprop ro.product.device | sed 's#\n#%20#g' || resetprop ro.product.vendor.device | sed 's#\n#%20#g' || resetprop ro.product.system.model | sed 's#\n#%20#g' || resetprop ro.product.vendor.model | sed 's#\n#%20#g' || resetprop ro.product.name | sed 's#\n#%20#g')
-# Imternal beta testers only: enables translated strings
+# Internal beta testers only: enables translated strings
+get_translations() {
+    ## PLACEHOLDER_REPLACE_FOR_TESTS ##
+    true
+}
+get_translations
 lang=$(resetprop persist.sys.locale | sed 's#\n#%20#g' || resetprop ro.product.locale | sed 's#\n#%20#g')
 {
-  echo "=== Device info ==="
-  echo "Device: $device"
-  echo "Android: $android"
-  echo "Lang: $lang"
-  echo "==================="
-} > $logfile
+    echo "=== Device info ==="
+    echo "Device: $device"
+    echo "Android: $android"
+    echo "Lang: $lang"
+    echo "==================="
+} >$logfile
 api_log() {
-  local level=$1
-  local message=$2
-  echo "[$1] $2" >> $logfile
+    local message=$2
+    echo "$message" >>$logfile
 }
 
 # Initiliaze the API
@@ -40,9 +61,14 @@ initClient() {
     # We have to extract this from module.prop
     # Make sure $api_mpath is set
     if [ -n "$MODPATH" ]; then
-      export api_mpath=$MODPATH
+        export api_mpath=$MODPATH
     else
-      export api_mpath="echo $(dirname "$0") | sed 's/\//\ /g' | awk  '{print $4}'"
+        export api_mpath
+        api_mpath="echo $(dirname "$0") | sed 's/\//\ /g' | awk  '{print $4}'"
+    fi
+    # Hack to ensure the old .androidacy FILE is deleted
+    if [ -f /sdcard/.androidacy ]; then
+        rm -rf /sdcard/.androidacy
     fi
     export MODULE_CODENAME MODULE_VERSION MODULE_VERSIONCODE fail_count
     fail_count=0
@@ -54,7 +80,7 @@ initClient() {
     if [ "$1" != "" ] || [ "$2" != "" ]; then
         api_log 'WARN' "initClient() has been called with arguments, this is legacy behaviour and will be removed in the future"
     fi
-    export API_URL='https://api.androidacy.com'
+    export __api_url='https://api.androidacy.com'
     buildClient
     initTokens
     export __init_complete=true
@@ -70,12 +96,17 @@ buildClient() {
 # Tokens init
 initTokens() {
     api_log 'INFO' "Starting tokens initialization"
-    if test -f /sdcard/.androidacy/credentials.json; then
-        api_credentials=$(cat /sdcard/.androidacy/credentials.json)
+    if test -f /sdcard/.aapi/.credentials; then
+        api_credentials=$(cat /sdcard/.aapi/.credentials)
     else
         api_log 'WARN' "Couldn't find API credentials. If this is a first run, this warning can be safely ignored."
-        wget --no-check-certificate --post-data "{}" -qU "$API_UA" --header "Accept-Language: $API_LANG" "https://api.androidacy.com/auth/register" -O /sdcard/.androidacy/credentials.json
-        api_credentials="$(cat /sdcard/.androidacy/credentials.json)"
+        curl -kLs -A "$API_UA" -H "Accept-Language: $API_LANG" -X POST "https://api.androidacy.com/auth/register" -o /sdcard/.aapi/.credentials
+        if test "$0" -ne 0; then
+            api_log 'ERROR' "Couldn't get API credentials. Exiting..."
+            echo "Can't communicate with the API. Please check your internet connection and try again."
+            exit 1
+        fi
+        api_credentials="$(cat /sdcard/.aapi/.credentials)"
         sleep 0.5
     fi
     api_log 'INFO' "Exporting token"
@@ -91,34 +122,19 @@ validateTokens() {
         echo "Illegal number of parameters passed. Expected one, got $#"
         abort
     else
-        tier=$(parseJSON $(wget --no-check-certificate -qU "$API_UA" --header "Authorization: $api_credentials" --header "Accept-Language: $API_LANG" "$API_URL/auth/me" -O -) 'level' | sed 's/level://g')
+        local tier
+        tier=$(parseJSON "$(curl -kLs -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" "$__api_url/auth/me")" 'level' | sed 's/level://g')
         if test $? -ne 0; then
             api_log 'WARN' "Got invalid response when trying to validate token!"
-            # Restart process on validation failure. Make sure we only do this 3 times!!
-            if [ "$fail_count" -lt 3 ]; then
-                fail_count=$((fail_count + 1))
-                api_log 'INFO' "Restarting process for the $fail_count time"
-                rm -f '/sdcard/.androidacy/credentials.json'
-                sleep 1
-                initTokens
-            else
-                api_log 'ERROR' "Failed to validate token after $fail_count attempts. Aborting."
-                abort
-            fi
+            handleError
+            initTokens
         else
             # Pass the appropriate API access level back to the caller
             export tier
         fi
     fi
-    if test "$tier" -lt 2; then
-        echo '- Looks like you are using guest credentials'
-        echo '- Get faster downloads and support development - https://www.androidacy.com/donate/'
-        export sleep=0.5
-        export API_URL='https://api.androidacy.com'
-    else
-        export sleep=0.5
-        export API_URL='https://api.androidacy.com'
-    fi
+    export sleep=0.5
+    export __api_url='https://api.androidacy.com'
 }
 
 # Handle and decode file list JSON
@@ -140,11 +156,10 @@ getList() {
             echo "Error! Access denied for beta."
             abort
         fi
-        response=$(wget --no-check-certificate -qU "$API_UA" --header "Authorization: $api_credentials" --header "Accept-Language: $API_LANG" "$API_URL/downloads/list/v2?app=$app&category=$cat&simple=true" -O -)
+        response="$(curl -kLs -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" "$__api_url/downloads/list/v2?app=$app&category=$cat&simple=true")"
         if test $? -ne 0; then
-            api_log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
-            echo "API request failed! Assuming API is down and aborting!"
-            abort
+            handleError
+            getList "$cat"
         fi
         sleep $sleep
         # shellcheck disable=SC2001
@@ -171,12 +186,12 @@ downloadFile() {
         local format=$3
         local location=$4
         local app=$MODULE_CODENAME
-        local link=$(parseJSON $(wget --no-check-certificate -qU "$API_UA" --header "Authorization: $api_credentials" --header "Accept-Language: $API_LANG" "$API_URL/downloads/link/v2?app=$app&category=$cat&file=$file.$format" -O -) 'link')
-        wget --no-check-certificate -qU "$API_UA" --header "Authorization: $api_credentials" --header "Accept-Language: $API_LANG" "$(echo $link | sed 's/\\//gi' | sed 's/\ //gi')" -O "$location"
+        local link
+        link=$(parseJSON "$(curl -kLs -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" "$__api_url/downloads/link/v2?app=$app&category=$cat&file=$file.$format")" 'link')
+        curl -kLs -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" "$(echo "$link" | sed 's/\\//gi' | sed 's/\ //gi')" -o "$location"
         if test $? -ne 0; then
-            api_log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
-            echo "API request failed! Assuming API is down and aborting!"
-            abort
+            handleError
+            downloadFile "$cat" "$file" "$format" "$location"
         fi
         sleep $sleep
     fi
@@ -197,7 +212,11 @@ updateChecker() {
     else
         local cat=$1 || 'self'
         local app=$MODULE_CODENAME
-        response=$(wget --no-check-certificate -qU "$API_UA" --header "Authorization: $api_credentials" --header "Accept-Language: $API_LANG" "$API_URL/downloads/updates?app=$app&category=$cat" -O -)
+        response=$(curl -kLs -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" "$__api_url/downloads/updates?app=$app&category=$cat")
+        if test $? -ne 0; then
+            handleError
+            updateChecker "$cat"
+        fi
         sleep $sleep
         # shellcheck disable=SC2001
         response=$(parseJSON "$response" "version")
@@ -221,13 +240,38 @@ getChecksum() {
         local file=$2
         local format=$3
         local app=$MODULE_CODENAME
-        res=$(wget --no-check-certificate -qU "$API_UA" --header "Authorization: $api_credentials" --header "Accept-Language: $API_LANG" "$API_URL/checksum/get?app=$app&category=$cat&request=$file&format=$format" -O -)
+        res=$(curl -kLs -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" "$__api_url/checksum/get?app=$app&category=$cat&request=$file&format=$format")
         if test $? -ne 0; then
-            api_log 'ERROR' "Couldn't contact API. Is it offline or blocked?"
-            echo "API request failed! Assuming API is down and aborting!"
-            abort
+            handleError
+            getChecksum "$cat" "$file" "$format"
         fi
         sleep $sleep
         response=$(parseJSON "$res" 'checksum')
+    fi
+}
+
+# Log uploader
+# PLEASE NOTE: Do NOT upload potentially sensitive data to the log server. We don't need GDPR up our you-know-what.
+# That means no app info, no API keys, no passwords, no device info, no anything that could be used to identify you.
+logUploader() {
+    api_log 'INFO' "logUploader called with parameter: $1"
+    if test "$#" -ne 1; then
+        api_log 'ERROR' 'Caught error in logUploader: wrong arguments passed'
+        echo "Illegal number of parameters passed. Expected one, got $#"
+        abort
+        if ! $__init_complete; then
+            api_log 'ERROR' 'Make sure you initialize the api client via initClient before trying to call API methods'
+            echo "Tried to call logUploader without first initializing the API client!"
+            abort
+        fi
+    else
+        local log=$1
+        local app=$MODULE_CODENAME
+        curl -kLs -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" -F "log=@$1" "$__api_url/logs/upload" >/dev/null
+        if test $? -ne 0; then
+            handleError
+            logUploader "$log"
+        fi
+        sleep $sleep
     fi
 }

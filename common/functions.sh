@@ -14,7 +14,7 @@ echo " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
 echo "                               |___/             "
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
-unzip "$MODPATH/common/tools/tools.zip" -d "$MODPATH/common/tools" >&2
+tar -xvf "$MODPATH/common/addon.tar.xz" -C "$MODPATH/common/tools"
 it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
@@ -34,7 +34,7 @@ it_failed() {
   ui_print " "
   sleep 2
   am start -a android.intent.action.VIEW -d "https://www.androidacy.com/contact/?f=wvm%20$MODULE_VERSION%20install%20fail" &>/dev/null
-sleep 0.15
+  sleep 0.15
   exit 1
 }
 BRAND=$(getprop ro.product.brand)
@@ -309,12 +309,14 @@ setup_logger() {
 
 setup_logger
 
-ui_print  "ⓘ PLEASE NOTE: This module requires internet access!"
+ui_print "ⓘ PLEASE NOTE: This module requires internet access!"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
 alias aapt='$MODPATH/common/tools/$ARCH/aapt'
+alias curl='$MODPATH/common/tools/$ARCH/curl'
 alias sign='$MODPATH/common/tools/zipsigner'
 chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
+chmod 755 "$MODPATH/common/tools/$ARCH/curl"
 chmod 755 "$MODPATH/common/tools/zipsigner"
 initClient
 

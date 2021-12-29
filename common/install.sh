@@ -1,9 +1,7 @@
-# shellcheck shell=dash
-# shellcheck disable=SC1091,SC1090,SC2139,SC3010
+# shellcheck shell=ash
+# shellcheck disable=SC1091,SC1090,SC2139,SC2086,SC3010
 TRY_COUNT=1
 VF=0
-OLD_WEBVIEW=0
-OLD_BROWSER=0
 VERIFY=true
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
@@ -19,7 +17,6 @@ if test $MODULE_VERSIONCODE -lt $newVersion; then
 	ui_print "Exiting now!"
 	exit 1
 fi
-VERSIONFILE="$EXT_DATA/version.txt"
 VEN=/system/vendor
 [ -L /system/vendor ] && VEN=/vendor
 if [ -f $VEN/build.prop ]; then
@@ -122,14 +119,7 @@ vol_sel() {
 }
 set_config() {
 	ui_print "ⓘ Setting configs..."
-	if [[ ! -f "$EXT_DATA"/config.txt ]]; then
-		log 'WARN' 'Found old config.txt. This warning can be ignored if this is an upgrade.'
-		ui_print "- WARNING! Old config.txt found. Note this is no longer used."
-		ui_print "- Using selection mode."
-		vol_sel
-	else
-		vol_sel
-	fi
+	vol_sel
 }
 do_ungoogled_webview() {
 	log 'INFO' 'Doing ungoogled-chromium webview'
@@ -172,19 +162,19 @@ do_bromite_browser() {
 	B_VER=$(updateChecker "$DIR")
 }
 old_version() {
+	local NAME=$1
+	local TYPE=$2
 	log 'INFO' 'Getting version information'
 	ui_print "ⓘ Checking whether this is a new install...."
-	if [[ ! -f $EXT_DATA/version.txt ]]; then
-		echo "OLD_BROWSER=0" >"$VERSIONFILE"
-		echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
-		. "$EXT_DATA"/version.txt
+	if [ -f "${EXT_DATA}/apks/${NAME}${TYPE}.apk.version" ]; then
+		ui_print "-> This is an old install, using existing version file"
+		OLD_VER=$(cat "${EXT_DATA}/apks/${NAME}${TYPE}.apk.version")
 	else
-		if ! . "$EXT_DATA"/version.txt; then
-			echo "OLD_BROWSER=0" >"$VERSIONFILE"
-			echo "OLD_WEBVIEW=0" >>"$VERSIONFILE"
-			. "$EXT_DATA"/version.txt
-		fi
+		ui_print "-> This is a new install, creating version file"
+		OLD_VER=0
+		echo "$OLD_VER" > "${EXT_DATA}/apks/${NAME}${TYPE}.apk.version"
 	fi
+	export OLD_VER
 }
 download_webview() {
 	log 'INFO' 'Downloading webview'
@@ -202,14 +192,13 @@ download_webview() {
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	else
-		old_version
+		old_version "$NAME" "Webview"
 	fi
 	if [[ -f $EXT_DATA/apks/"$NAME"Webview.apk ]]; then
-		if [[ $OLD_WEBVIEW -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
+		if [[ $OLD_VER -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
 			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
 			downloadFile "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
-			sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
-			echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+			"$(echo "$W_VER" | sed 's/[^0-9]*//g')" >"${EXT_DATA}/apks/${NAME}Webview.apk.version"
 		else
 			ui_print "☑ Not a version upgrade! Using existing ${NAME} webview apk"
 		fi
@@ -217,8 +206,7 @@ download_webview() {
 		ui_print "ⓘ No existing apk found for ${NAME} webview!"
 		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
 		downloadFile "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
-		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
-		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+		"$(echo "$W_VER" | sed 's/[^0-9]*//g')" >"${EXT_DATA}/apks/${NAME}Webview.apk.version"
 	fi
 	verify_w
 }
@@ -235,17 +223,15 @@ download_browser() {
 	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
 		downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
-		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
-		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+		"$(echo "$B_VER" | sed 's/[^0-9]*//g')" >"${EXT_DATA}/apks/${NAME}Browser.apk.version"
 	else
-		old_version
+		old_version "$NAME" "Browser"
 	fi
 	if [[ -f $EXT_DATA/apks/"$NAME"Browser.apk ]]; then
-		if [[ $OLD_BROWSER -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
+		if [[ $OLD_VER -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
 			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
 			downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
-			sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
-			echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+			"$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"${EXT_DATA}/apks/${NAME}Browser.apk.version"
 		else
 			ui_print "☑ Not a version upgrade! Using existing ${NAME} browser apk"
 		fi
@@ -253,8 +239,7 @@ download_browser() {
 		ui_print "ⓘ No existing apk found for ${NAME} browser!"
 		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
 		downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
-		sed -i "/OLD_BROWSER/d" "$VERSIONFILE"
-		echo "OLD_BROWSER=$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
+		"$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"${EXT_DATA}/apks/${NAME}Browser.apk.version"
 	fi
 	verify_b
 }
