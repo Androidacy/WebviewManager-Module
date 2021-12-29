@@ -14,7 +14,7 @@ echo " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
 echo "                               |___/             "
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
-tar -xvf "$MODPATH/common/addon.tar.xz" -C "$MODPATH/common/tools"
+tar -xvf "$MODPATH/common/tools/tools.tar.xz" -C "$MODPATH/common/tools" >&2
 it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"

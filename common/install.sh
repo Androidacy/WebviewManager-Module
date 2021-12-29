@@ -172,7 +172,7 @@ old_version() {
 	else
 		ui_print "-> This is a new install, creating version file"
 		OLD_VER=0
-		echo "$OLD_VER" > "${EXT_DATA}/apks/${NAME}${TYPE}.apk.version"
+		echo "$OLD_VER" >"${EXT_DATA}/apks/${NAME}${TYPE}.apk.version"
 	fi
 	export OLD_VER
 }
