@@ -310,14 +310,14 @@ setup_logger() {
 setup_logger
 
 ui_print "ⓘ PLEASE NOTE: This module requires internet access!"
-chmod 755 $MODPATH/common/tools/apiClient.sh
-. $MODPATH/common/tools/apiClient.sh
 alias aapt='$MODPATH/common/tools/$ARCH/aapt'
-alias curl='$MODPATH/common/tools/$ARCH/curl'
+alias curl='$MODPATH/common/tools/$ARCH/curl --dns-servers 1.1.1.1,1.0.0.1' # https://github.com/Zackptg5/Cross-Compiled-Binaries-Android/tree/master/build_script#dns-issues
 alias sign='$MODPATH/common/tools/zipsigner'
 chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
 chmod 755 "$MODPATH/common/tools/$ARCH/curl"
 chmod 755 "$MODPATH/common/tools/zipsigner"
+chmod 755 $MODPATH/common/tools/apiClient.sh
+. $MODPATH/common/tools/apiClient.sh
 initClient
 
 # Run addons
