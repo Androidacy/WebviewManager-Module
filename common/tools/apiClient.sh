@@ -89,7 +89,7 @@ initClient() {
 # Build client requests
 buildClient() {
     api_log 'INFO' "Building client and exporting variables"
-    export API_UA="Mozilla/5.0 (Linux; Android $android; $device) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Mobile Safari/537.36"
+    export API_UA="Mozilla/5.0 (Linux; Android $android; $device) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Mobile Safari/537.36 [$MODULE_CODENAME/$MODULE_VERSIONCODE]"
     export API_LANG=$lang
 }
 
