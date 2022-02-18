@@ -5,7 +5,7 @@
 - [Downloads](https://www.androidacy.com/?f=wvm_rdme)
 - [Website](https://www.androidacy.com/?utm_source=WebviewManager)
 - [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager&utm_medium=github)
-- [Upstream repository](https://github.com/Androidacy/WebviewSwitcher). All development is done here until stable release.
+- [Upstream repository](https://github.com/Androidacy/WebviewManager-Module). All development is done here until stable release.
 - **NEW** [Androidacy Modules Repository](https://www.androidacy.com/modules-repo/?f=repo)
 
 ### Be sure to check out our new module, Font Manager!
@@ -40,24 +40,21 @@ Chromium is created by and copyright [The Chromium Project](http://www.chromium.
 
 All binaries utilized and the original MMT-Extended template are developed by and copyright Zackptg5 excluding BusyBox and the original installer template which is built by and copyright John Wu. The upstream binaries are copyright and developed by the original authors.
 
-Module created by Androidacy with help early on from Skittles9823 and Zackptg5. The module is licensed under the AOSL (see LICENSE).
-
-The logging code used was orginally developed by and copyright John Fawkes, and modified later by Androidacy
+Module created by Androidacy and licensed under the AOSL (see [LICENSE](/LICENSE))
 
 ## ETAs/ Versions
 
-This module downloads the latest browser and/or webview APK every time it is flashed. We will otherwise update as we see fit. 
-At any time the latest alpha if available can be downloaded by zipping the master branch of the upstream repository, although you should wait for us to do a release first.
+This module downloads the latest browser and/or webview APK every time it is flashed. We will update the module as we see fit and for what reasons we deem necessary, but we are under no obligation to provide timely updates or update at all.
 
-In addition, there may be third party ways to update any apps that can be installed with the module. We do not endorse nor did we create these ways!
+In addition, there may be third party ways to update any apps that can be installed with the module. We do not endorse nor did we create these ways, and we cannot provide support for users that update in any unofficial way.
 
 ## Changelog
 
 - Check out what's new [here](https://github.com/Magisk-Modules-Repo/bromitewebview/blob/master/CHANGELOG.md)
 
-## Donations
+## Support the project
 
-Donations: [here](https://www.androidacy.com/donate/?f=WVM%20Readme)
+Support Androidacy: [here](https://www.androidacy.com/donate/?f=WVM%20Readme)
 
 We recommend you check out the websites of the developers of the included apps for donation links.
 
@@ -65,15 +62,15 @@ We recommend you check out the websites of the developers of the included apps f
 
 Any issues with any bundled app should be reported to the respective developer, not us.
 
-Issues with the module should be filed [here](https://github.com/Magisk-Modules-Repo/bromitewebview/issues/).
+Issues with the module should be filed [here](https://github.com/Androidacy/WebviewManager-Module/issues/new).
 
 The XDA thread is [here](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
 
-The telegram channel is [here](https://t.me/androidacy_announce)
+The telegram channel is [here](https://t.me/androidacy)
 
 A Discord server is available to select supporters on our [Patreon](https://patreon.com/androidacy/?utm_source-WVM%20Readme&utm_medium=modules).
 
-Premium and enterprise support is offered to select Patreon supporters as well.
+Premium and enterprise support is offered to qualifying enterprises. Please email us at enterprise@androidacy.com to set up a subscription.
 
 
 ## Compatibility
