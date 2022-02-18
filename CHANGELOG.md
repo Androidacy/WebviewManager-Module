@@ -1,6 +1,14 @@
 
 # Changelog
 
+### 10.0...10.4.1
+
+- Support new bromite package name
+- Serious refactoring
+- Remove all offline-only install logic
+- Improve security
+- Switch to cURL and fix issues
+- Support AndroidacyAPI v5
 ### 9.1
 
 - Remove recovery install completely. It's been broken for awhile now anyway.

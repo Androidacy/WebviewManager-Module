@@ -124,6 +124,7 @@ set_config() {
 do_ungoogled_webview() {
 	log 'INFO' 'Doing ungoogled-chromium webview'
 	NAME="Ungoogled-Chromium"
+	WV_PKG="com.android.webview"
 	DIR='ugc-w'
 	W_VER=$(updateChecker "$DIR")
 }
@@ -140,6 +141,7 @@ do_ungoogled_browser() {
 do_vanilla_webview() {
 	log 'INFO' 'Doing chromium webview'
 	NAME="Chromium"
+	WV_PKG="com.android.webview"
 	DIR=chrm
 	W_VER=$(updateChecker "$DIR")
 }
@@ -152,6 +154,7 @@ do_vanilla_browser() {
 do_bromite_webview() {
 	log 'INFO' 'Doing bromite webview'
 	NAME="Bromite"
+	WV_PKG="org.bromite.webview"
 	DIR=brm
 	W_VER=$(updateChecker "$DIR")
 }
@@ -310,10 +313,15 @@ verify_b() {
 create_overlay() {
 	log 'INFO' 'Creating overlays'
 	cd "$TMPDIR" || return
+	# We have to replace ##WV_NAME## with the name of the webview and ##WV_PKG## with the package name of the webview
 	ui_print "ⓘ Fixing system webview whitelist"
 	if [[ "${API}" -ge "29" ]]; then
+		sed -i "s/##WV_NAME##/${NAME}/g" "$MODPATH"/common/overlay10/res/xml/config_webview_packages.xml
+		sed -i "s/##WV_PKG##/${WV_PKG}/g" "$MODPATH"/common/overlay10/res/xml/config_webview_packages.xml
 		aapt p -f -v -M "$MODPATH"/common/overlay10/AndroidManifest.xml -I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay10/res -F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
 	else
+		sed -i "s/##WV_NAME##/${NAME}/g" "$MODPATH"/common/overlay9/res/xml/config_webview_packages.xml
+		sed -i "s/##WV_PKG##/${WV_PKG}/g" "$MODPATH"/common/overlay9/res/xml/config_webview_packages.xml
 		aapt p -f -v -M "$MODPATH"/common/overlay9/AndroidManifest.xml -I /system/framework/framework-res.apk -S "$MODPATH"/common/overlay9/res -F "$MODPATH"/unsigned.apk >"$MODPATH"/logs/aapt.log
 	fi
 	if [[ -f "$MODPATH"/unsigned.apk ]]; then
