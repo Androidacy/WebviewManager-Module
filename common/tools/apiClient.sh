@@ -3,7 +3,7 @@
 # Title: Androidacy API shell client
 # Description: Provides an interface to the Androidacy API
 # License: AOSL
-# Version: 2.2.0-beta3
+# Version: 2.3.1
 # Author: Androidacy or it's partners
 
 __api_tries=0
@@ -19,7 +19,7 @@ parseJSON() {
 handleError() {
     if test $__api_tries -lt 3; then
         __api_tries=$((__api_tries + 1))
-        rm -rf /sdcard/.aapi
+        rm -rf /sdcard/.aapi/.credentials
         sleep 0.5
         initTokens
         echo "The API encoutered an error. Trying again...."
@@ -111,6 +111,7 @@ initTokens() {
     fi
     api_log 'INFO' "Exporting token"
     export api_credentials
+    sleep 1
     validateTokens "$api_credentials"
 }
 
@@ -133,7 +134,11 @@ validateTokens() {
             export tier
         fi
     fi
-    export sleep=0.5
+    if test $tier -lt 3; then
+        export sleep=1
+    else
+        export sleep=0.25
+    fi
     export __api_url='https://api.androidacy.com'
 }
 
@@ -188,6 +193,7 @@ downloadFile() {
         local app=$MODULE_CODENAME
         local link
         link=$(parseJSON "$(curl -kLsS -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" "$__api_url/downloads/link/v2?app=$app&category=$cat&file=$file.$format")" 'link')
+        sleep $sleep
         curl -kLsS -A "$API_UA" -b "USER=$api_credentials" -H "Accept-Language: $API_LANG" "$(echo "$link" | sed 's/\\//gi' | sed 's/\ //gi')" -o "$location"
         if test $? -ne 0; then
             handleError
