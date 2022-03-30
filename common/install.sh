@@ -3,6 +3,7 @@
 TRY_COUNT=1
 VF=0
 VERIFY=true
+config_file="$EXT_DATA/config.conf"
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
 ui_print "Checking for module updates..."
@@ -27,95 +28,115 @@ fi
 vol_sel() {
 	log 'INFO' "Entering config"
 	ui_print "ⓘ Starting config mode...."
-	ui_print "ⓘ Volume up to accept the current choice, and down to move to next option"
-	sleep 2
-	ui_print "-> Do you want to install only webview?"
-	unset INSTALL
-	if chooseport; then
-		INSTALL=0
-	fi
-	if [[ -z $INSTALL ]]; then
-		ui_print "-> How about only browser?"
-		if chooseport; then
-			INSTALL=1
+	ui_print "ⓘ Press volume up now"
+	if [[ $KEYCHECK_FAIL != 'true' ]]; then
+		ui_print "ⓘ Press volume down now"
+		if [[ $KEYCHECK_FAIL == 'true' ]]; then
+			ui_print "Trying to find config file..."
+			export KEYCHECK_FAIL='true'
+			config_file_parse
 		fi
 	fi
-	if [[ -z $INSTALL ]]; then
-		ui_print "-> How about both browser and webview?"
-		if chooseport; then
-			INSTALL=2
-		fi
-	fi
-	if [[ -z $INSTALL ]]; then
-		ui_print "-> No valid choice, Using just webview"
-		INSTALL=0
-	fi
-	sel_web() {
-		unset WEBVIEW
-		ui_print "-> Please choose your webview."
-		ui_print "  1. Bromite"
-		if chooseport; then
-			WEBVIEW=0
-		fi
-		if [[ -z $WEBVIEW ]]; then
-			ui_print "  2. Chromium"
+	if [[ $KEYCHECK_FAIL != 'true' ]]; then
+		ui_print "ⓘ Press volume up to select, volume down for next option"
+		sel_web() {
+			unset WEBVIEW
+			ui_print "-> Please choose your webview."
+			ui_print "-> None"
+			if chooseport; then
+				WEBVIEW=0
+			fi
+			ui_print "  1. Bromite (default)"
 			if chooseport; then
 				WEBVIEW=1
 			fi
-		fi
-		if [[ -z $WEBVIEW ]]; then
-			ui_print "  3. Ungoogled Chromium"
-			if chooseport; then
-				WEBVIEW=2
+			if [[ -z $WEBVIEW ]]; then
+				ui_print "  2. Chromium"
+				if chooseport; then
+					WEBVIEW=2
+				fi
 			fi
-		fi
-		if [[ -z $WEBVIEW ]]; then
-			ui_print "-> No valid choice, using bromite"
-			WEBVIEW=0
-		fi
-	}
-	sel_browser() {
-		unset BROWSER
-		ui_print "-> Please choose your browser."
-		ui_print "  1. Bromite"
-		if chooseport; then
-			BROWSER=0
-		fi
-		if [[ -z $BROWSER ]]; then
-			ui_print "  2. Chromium"
+			if [[ -z $WEBVIEW ]]; then
+				ui_print "  3. Ungoogled Chromium"
+				if chooseport; then
+					WEBVIEW=3
+				fi
+			fi
+			if [[ -z $WEBVIEW ]]; then
+				ui_print "-> No valid choice, using bromite"
+				WEBVIEW=1
+			fi
+		}
+		sel_browser() {
+			unset BROWSER
+			ui_print "-> Please choose your browser."
+			ui_print "-> None"
+			if chooseport; then
+				BROWSER=0
+			fi
+			ui_print "  1. Bromite"
 			if chooseport; then
 				BROWSER=1
 			fi
-		fi
-		if [[ -z $BROWSER ]]; then
-			ui_print "  3. Ungoogled Chromium"
-			if chooseport; then
-				BROWSER=2
+			if [[ -z $BROWSER ]]; then
+				ui_print "  2. Chromium"
+				if chooseport; then
+					BROWSER=2
+				fi
 			fi
-		fi
-		if [[ -z $BROWSER ]]; then
-			ui_print "  4. Ungoogled Chromium (extensions support version)?"
-			if chooseport; then
-				BROWSER=3
+			if [[ -z $BROWSER ]]; then
+				ui_print "  3. Ungoogled Chromium"
+				if chooseport; then
+					BROWSER=3
+				fi
 			fi
-		fi
-		if [[ -z $BROWSER ]]; then
-			ui_print "-> No valid choice, using bromite"
-			BROWSER=0
-		fi
-	}
-	if [[ "$INSTALL" -eq 0 ]]; then
+			if [[ -z $BROWSER ]]; then
+				ui_print "  4. Ungoogled Chromium (extensions support version) [LEGACY]?"
+				if chooseport; then
+					BROWSER=4
+				fi
+			fi
+			if [[ -z $BROWSER ]]; then
+				ui_print "-> No valid choice, using bromite"
+				BROWSER=1
+			fi
+		}
 		sel_web
-	fi
-	if [[ "$INSTALL" -eq 2 ]]; then
-		sel_web
-		sel_browser
-	fi
-	if [[ "$INSTALL" -eq 1 ]]; then
 		sel_browser
 	fi
 	log 'INFO' "User chose browser option $BROWSER, webview $WEBVIEW"
+	# Edit the config file accordingly
+	sed -i 's/^BROWSER=.*/BROWSER='"$BROWSER"'/gi' $config_file
+	sed -i 's/^WEBVIEW=.*/WEBVIEW='"$WEBVIEW"'/gi' $config_file
 	ui_print "ⓘ Config complete! Proceeding."
+}
+config_file_parse() {
+	# Check if config file exists
+	if [[ ! -f $config_file ]]; then
+		cp -f "$MODDIR/config.conf" "$config_file"
+		ui_print "Config file created at $config_file"
+		ui_print "Proceeding with default settings: Bromite webview, Bromite browser"
+		ui_print "If you want to change this, please edit the config file and reinsatll the module."
+	else
+		# Parse config file
+		local config_file_content
+		config_file_content=$(cat "$config_file")
+		local config_file_lines
+		config_file_lines=$(echo "$config_file_content" | wc -l)
+		local config_file_line
+		# Loop through each line, checking if it contains either BROWSER= or WEBVIEW=
+		for i in $(seq 1 $config_file_lines); do
+			config_file_line=$(echo "$config_file_content" | sed -n "$i"p)
+			if [[ $config_file_line == *"BROWSER="* ]]; then
+				export BROWSER
+				BROWSER=$(echo "$config_file_line" | cut -d '=' -f 2 | sed 's/^[0-9]*//')
+			fi
+			if [[ $config_file_line == *"WEBVIEW="* ]]; then
+				export WEBVIEW
+				WEBVIEW=$(echo "$config_file_line" | cut -d '=' -f 2 | sed 's/^[0-9]*//')
+			fi
+		done
+	fi
 }
 set_config() {
 	ui_print "ⓘ Setting configs..."
@@ -162,6 +183,24 @@ do_bromite_browser() {
 	log 'INFO' 'Doing bromite browser'
 	NAME="Bromite"
 	DIR=brm
+	B_VER=$(updateChecker "$DIR")
+}
+do_brave_browser() {
+	log 'INFO' 'Doing brave browser'
+	NAME="Brave"
+	DIR=brv
+	B_VER=$(updateChecker "$DIR")
+}
+do_firefox_browser() {
+	log 'INFO' 'Doing firefox browser'
+	NAME="Firefox"
+	DIR=ff
+	B_VER=$(updateChecker "$DIR")
+}
+do_kiwi_browser() {
+	log 'INFO' 'Doing kiwi browser'
+	NAME="Kiwi"
+	DIR=kiw
 	B_VER=$(updateChecker "$DIR")
 }
 old_version() {
@@ -251,7 +290,7 @@ verify_w() {
 	ui_print "ⓘ Verifying ${NAME} webview files..."
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
-		O_S=$(md5sum "$NAME"Webview.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
+		O_S=$(/data/adb/magisk/busybox sha256sum "$NAME"Webview.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
 		getChecksum "$DIR" "webview${ARCH}" "apk"
 		# shellcheck disable=SC2154
 		T_S=$(echo "$response" | tr -d '[:space:]')
@@ -283,7 +322,7 @@ verify_b() {
 	ui_print "ⓘ Verifying ${NAME} browser files..."
 	if $VERIFY; then
 		cd "$EXT_DATA"/apks || return
-		O_S=$(md5sum "$NAME"Browser.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
+		O_S=$(/data/adb/magisk/busybox sha256sum "$NAME"Browser.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
 		getChecksum "$DIR" "browser${ARCH}" "apk"
 		T_S=$(echo "$response" | tr -d '[:space:]')
 		if [ "$T_S" != "$O_S" ]; then
@@ -486,24 +525,24 @@ else
 fi
 ui_print ' '
 ui_print "ⓘ Some stock apps have been systemlessly debloated"
-sleep 0.15
+sleep 0.25
 ui_print "ⓘ Anything debloated is known to cause conflicts"
-sleep 0.15
+sleep 0.25
 ui_print "ⓘ Such as Chrome, Google WebView, etc"
-sleep 0.15
+sleep 0.25
 ui_print "ⓘ It is recommended not to reinstall them"
-sleep 0.15
+sleep 0.25
 ui_print " "
-sleep 0.15
+sleep 0.25
 ui_print ">>> Webview Manager | By Androidacy <<<"
-sleep 0.15
+sleep 0.25
 ui_print " "
-sleep 0.15
+sleep 0.25
 ui_print "☑ Donate at https://www.androidacy.com/donate/"
-sleep 0.15
+sleep 0.25
 ui_print "☑ Website, how to get support and blog is at https://www.androidacy.com"
-sleep 0.15
+sleep 0.25
 ui_print "☑ Install apparently succeeded, please reboot ASAP"
 am start -a android.intent.action.VIEW -d "https://www.androidacy.com/install-done/?f=wvm_module&r=wmi&v=$MODULE_VERSION" &>/dev/null
-sleep 0.15
+sleep 0.25
 ui_print " "

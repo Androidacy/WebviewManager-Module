@@ -22,9 +22,9 @@ handleError() {
         rm -rf /sdcard/.aapi/.credentials
         sleep 0.5
         initTokens
-        echo "The API encoutered an error. Trying again...."
+        echo "[WARNING] We encountered an error. Trying again..."
     else
-        echo "API error not recoverable! Exiting..."
+        echo "[ERROR] Looks like we hit a snag. Please try again later, and if this error persists, please contact Androidacy support."
         exit 1
     fi
 }
@@ -134,7 +134,7 @@ validateTokens() {
             export tier
         fi
     fi
-    if test $tier -lt 3; then
+    if test "$tier" -lt 3; then
         export sleep=1
     else
         export sleep=0.25
