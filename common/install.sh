@@ -29,13 +29,20 @@ vol_sel() {
 	log 'INFO' "Entering config"
 	ui_print "ⓘ Starting config mode...."
 	ui_print "ⓘ Press volume up now"
-	if [[ $KEYCHECK_FAIL != 'true' ]]; then
+	export KEYCHECK_FAIL=false
+	test1=chooseport
+	if test !$KEYCHECK_FAIL && test $test1; then
 		ui_print "ⓘ Press volume down now"
-		if [[ $KEYCHECK_FAIL == 'true' ]]; then
+		test2=chooseport
+		# Ensure both that KEYCHECK_FAIL is not true and that test2 is false or 0
+		if test $KEYCHECK_FAIL || test !$test2; then
+			ui_print "Volume key not detected. Falling back to config file..."
 			config_file_parse
 		fi
+	else
+		config_file_parse
 	fi
-	if [[ $KEYCHECK_FAIL != 'true' ]]; then
+	if test !$KEYCHECK_FAIL; then
 		ui_print "ⓘ Press volume up to select, volume down for next option"
 		sel_web() {
 			unset WEBVIEW
