@@ -14,7 +14,7 @@ if test $MODULE_VERSIONCODE -lt $newVersion; then
 	ui_print "Module update found! Please download the latest update manually, and flash in magisk manager."
 	ui_print "Attempting to launch downloads page..."
 	sleep 2
-	am start -a android.intent.action.VIEW -d "https://www.androidacy.com/downloads/?f=wvmanager+update&view=%2540Magisk-Modules%2540Webview_Manager" &>/dev/null
+	am start -a android.intent.action.VIEW -d "https://www.androidacy.com/modules-repo/?utm_source=webvoewmanager&utm_medium=repo&utm_campaign=update_module#bromitewebview"
 	ui_print "Exiting now!"
 	exit 1
 fi
