@@ -18,7 +18,7 @@ chooseport_legacy() {
       echo "Volume key could not be detected!"
       echo "Falling back to config file..."
       export KEYCHECK_FAIL=true
-      return 1
+      return 0
     else
       error=true
       echo "Volume key not detected. Try again"
