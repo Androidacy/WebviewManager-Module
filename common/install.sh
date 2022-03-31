@@ -32,8 +32,6 @@ vol_sel() {
 	if [[ $KEYCHECK_FAIL != 'true' ]]; then
 		ui_print "ⓘ Press volume down now"
 		if [[ $KEYCHECK_FAIL == 'true' ]]; then
-			ui_print "Trying to find config file..."
-			export KEYCHECK_FAIL='true'
 			config_file_parse
 		fi
 	fi
