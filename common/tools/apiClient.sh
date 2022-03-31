@@ -2,8 +2,8 @@
 
 # Title: Androidacy API shell client
 # Description: Provides an interface to the Androidacy API
-# License: AOSL
-# Version: 2.3.1
+# License: AOSL (Androidacy Open Source License)
+# Version: 2.4.1
 # Author: Androidacy or it's partners
 
 __api_tries=0
@@ -81,9 +81,22 @@ initClient() {
         api_log 'WARN' "initClient() has been called with arguments, this is legacy behaviour and will be removed in the future"
     fi
     export __api_url='https://api.androidacy.com'
+    ping_api
     buildClient
     initTokens
     export __init_complete=true
+}
+
+ping_api() {
+    # Ping the API to ensure it's up
+    # This is a simple GET request, and we don't care about the response
+    # If it fails, we'll try again later
+    api_log 'INFO' "Pinging API"
+    code=$(curl -s -o /dev/null -w "%{http_code}" "$__api_url/ping")
+    if [ "$code" != "204" ]; then
+        api_log 'ERROR' "API is not responding. Code: $code"
+        abort "API is unreachable. Please try again later."
+    fi
 }
 
 # Build client requests

@@ -30,16 +30,18 @@ vol_sel() {
 	ui_print "ⓘ Starting config mode...."
 	ui_print "ⓘ Press volume up now"
 	export KEYCHECK_FAIL=false
+	export USED_CONFIG=false
 	if chooseport; then
 		ui_print "ⓘ Press volume down now"
-		if test $KEYCHECK_FAIL || chooseport; then
+		if $KEYCHECK_FAIL || chooseport; then
 			ui_print "Volume key not detected. Falling back to config file..."
 			config_file_parse
 		fi
 	else
+		ui_print "Volume key not detected or wrong key detected. Falling back to config file..."
 		config_file_parse
 	fi
-	if test !$KEYCHECK_FAIL; then
+	if ! $KEYCHECK_FAIL && ! $USED_CONFIG; then
 		ui_print "ⓘ Press volume up to select, volume down for next option"
 		sel_web() {
 			unset WEBVIEW
@@ -99,15 +101,15 @@ vol_sel() {
 		}
 		sel_web
 		sel_browser
-                if test $WEBVIEW -ne 0; then
-                	download_webview
-                fi
-                if test $BROWSER -ne 0; then
-               		download_browser
-                fi
-                if test $WEBVIEW -eq 0 && $BROWSER -eq 0; then
-               		abort "No valid choice, bailing out!"
-                fi
+		if test $WEBVIEW -ne 0; then
+			download_webview
+		fi
+		if test $BROWSER -ne 0; then
+			download_browser
+		fi
+		if test $WEBVIEW -eq 0 && $BROWSER -eq 0; then
+			abort "No valid choice, bailing out!"
+		fi
 	fi
 	log 'INFO' "User chose browser option $BROWSER, webview $WEBVIEW"
 	# Edit the config file accordingly
@@ -122,26 +124,26 @@ config_file_parse() {
 		ui_print "Config file created at $config_file"
 		ui_print "Proceeding with default settings: Bromite webview, Bromite browser"
 		ui_print "If you want to change this, please edit the config file and reinsatll the module."
+		export BROWSER
+		export WEBVIEW
+		BROWSER=1
+		WEBVIEW=1
+		export USED_CONFIG=true
 	else
-		# Parse config file
-		local config_file_content
-		config_file_content=$(cat "$config_file")
-		local config_file_lines
-		config_file_lines=$(echo "$config_file_content" | wc -l)
-		local config_file_line
-		# Loop through each line, checking if it contains either BROWSER= or WEBVIEW=
-		for i in $(seq 1 $config_file_lines); do
-			config_file_line=$(echo "$config_file_content" | sed -n "$i"p)
-			if [[ $config_file_line == *"BROWSER="* ]]; then
-				export BROWSER
-				BROWSER=$(echo "$config_file_line" | cut -d '=' -f 2 | sed 's/^[0-9]*//')
-			fi
-			if [[ $config_file_line == *"WEBVIEW="* ]]; then
-				export WEBVIEW
-				WEBVIEW=$(echo "$config_file_line" | cut -d '=' -f 2 | sed 's/^[0-9]*//')
-			fi
-		done
+		export BROWSER
+		export WEBVIEW
+		get_config_value 'BROWSER'
+		BROWSER=$value
+		get_config_value 'WEBVIEW'
+		WEBVIEW=$value
+		export USED_CONFIG=true
 	fi
+}
+get_config_value() {
+	local key=$1
+	unset value
+	export value
+	value=$(<$config_file grep "^$key=" | cut -d '=' -f 2)
 }
 set_config() {
 	ui_print "ⓘ Setting configs..."
