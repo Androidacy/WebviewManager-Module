@@ -30,12 +30,9 @@ vol_sel() {
 	ui_print "ⓘ Starting config mode...."
 	ui_print "ⓘ Press volume up now"
 	export KEYCHECK_FAIL=false
-	test1=chooseport
-	if test !$KEYCHECK_FAIL && test $test1; then
+	if chooseport; then
 		ui_print "ⓘ Press volume down now"
-		test2=chooseport
-		# Ensure both that KEYCHECK_FAIL is not true and that test2 is false or 0
-		if test $KEYCHECK_FAIL || test !$test2; then
+		if test $KEYCHECK_FAIL || chooseport; then
 			ui_print "Volume key not detected. Falling back to config file..."
 			config_file_parse
 		fi
@@ -108,6 +105,15 @@ vol_sel() {
 		}
 		sel_web
 		sel_browser
+                if test $WEBVIEW -ne 0; then
+                	download_webview
+                fi
+                if test $BROWSER -ne 0; then
+               		download_browser
+                fi
+                if test $WEBVIEW -eq 0 && $BROWSER -eq 0; then
+               		abort "No valid choice, bailing out!"
+                fi
 	fi
 	log 'INFO' "User chose browser option $BROWSER, webview $WEBVIEW"
 	# Edit the config file accordingly
