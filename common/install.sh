@@ -93,12 +93,6 @@ vol_sel() {
 				fi
 			fi
 			if [[ -z $BROWSER ]]; then
-				ui_print "  4. Ungoogled Chromium (extensions support version) [LEGACY]?"
-				if chooseport; then
-					BROWSER=4
-				fi
-			fi
-			if [[ -z $BROWSER ]]; then
 				ui_print "-> No valid choice, using bromite"
 				BROWSER=1
 			fi
@@ -232,9 +226,9 @@ old_version() {
 download_webview() {
 	log 'INFO' 'Downloading webview'
 	cd "$TMPDIR" || return
-	if [[ $WEBVIEW -eq 0 ]]; then
+	if [[ $WEBVIEW -eq 1 ]]; then
 		do_bromite_webview
-	elif [[ $WEBVIEW -eq 1 ]]; then
+	elif [[ $WEBVIEW -eq 2 ]]; then
 		do_vanilla_webview
 	else
 		do_ungoogled_webview
@@ -266,9 +260,9 @@ download_webview() {
 download_browser() {
 	og 'INFO' 'Downloading browser'
 	cd "$TMPDIR" || return
-	if [[ $BROWSER -eq 0 ]]; then
+	if [[ $BROWSER -eq 1 ]]; then
 		do_bromite_browser
-	elif [[ $BROWSER -eq 1 ]]; then
+	elif [[ $BROWSER -eq 2 ]]; then
 		do_vanilla_browser
 	else
 		do_ungoogled_browser
