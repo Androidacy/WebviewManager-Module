@@ -10,13 +10,13 @@
 
 ### Be sure to check out our new module, Font Manager!
 
-- Downloads are [here](https://www.androidacy.com/?f=fm_upsl)
+- Downloads are [here](https://www.androidacy.com/magisk-modules-repo/#fontrevival)
 - The source is [here](https://github.com/Androidacy/FontManager-Module)
 - XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
 
 ## What is this?
 
-With this module, you can install several different default browsers and webviews. Take a peak in [config.txt](https://github.com/androidacy/WebviewSwitcher/blob/master/config.txt) for more information!
+With this module, you can install several different default browsers and webviews. Choices are presented during install.
 
 Different webviews and browser have additional advantages to the default ones: they are often more up to date, secure, privacy friendly, and better performing!
 
@@ -75,11 +75,11 @@ Premium and enterprise support is offered to qualifying enterprises. Please emai
 
 ## Compatibility
 
-- Android 7.x to 11.0. 
-  - Some heavily customized stock ROMs may have issues. This is especially true on android 11!
+- Android 7.x to 12.0. 
+  - Some heavily customized stock ROMs may have issues.
   - MIUI is not officially supported for the aforementioned reason. Some people have had success with debloating the stock bloatware.
   - OneUI users: make sure Secure Folder is disabled before installing.
-- Magisk v20.1+ required
-- **Required: flash through magisk manager**
+- Magisk v24.0+ required
+- **Required: flash through magisk manager or FoxMMM**
 	- TWRP installs are not supported!
 - SELinux enforcing/permissive

@@ -113,8 +113,8 @@ vol_sel() {
 	fi
 	log 'INFO' "User chose browser option $BROWSER, webview $WEBVIEW"
 	# Edit the config file accordingly
-	sed -i 's/^BROWSER=.*/BROWSER='"$BROWSER"'/gi' $config_file
-	sed -i 's/^WEBVIEW=.*/WEBVIEW='"$WEBVIEW"'/gi' $config_file
+	$USED_CONFIG || sed -i 's/^BROWSER=.*/BROWSER='"$BROWSER"'/gi' $config_file
+	$USED_CONFIG || sed -i 's/^WEBVIEW=.*/WEBVIEW='"$WEBVIEW"'/gi' $config_file
 	ui_print "ⓘ Config complete! Proceeding."
 }
 config_file_parse() {
@@ -124,6 +124,7 @@ config_file_parse() {
 		ui_print "Config file created at $config_file"
 		ui_print "Proceeding with default settings: Bromite webview, Bromite browser"
 		ui_print "If you want to change this, please edit the config file and reinsatll the module."
+		sleep 3
 		export BROWSER
 		export WEBVIEW
 		BROWSER=1
@@ -192,23 +193,20 @@ do_bromite_browser() {
 	DIR=brm
 	B_VER=$(updateChecker "$DIR")
 }
-do_brave_browser() {
-	log 'INFO' 'Doing brave browser'
-	NAME="Brave"
-	DIR=brv
-	B_VER=$(updateChecker "$DIR")
+# Get the available list of webviews and browsers
+get_available_list() {
+	local available_wv_list
+	getList "webviews"
+	available_wv_list=$value
+	local available_b_list
+	getList "browsers"
+	available_b_list=$value
+	export available_wv_list
+	export available_b_list
 }
-do_firefox_browser() {
-	log 'INFO' 'Doing firefox browser'
-	NAME="Firefox"
-	DIR=ff
-	B_VER=$(updateChecker "$DIR")
-}
-do_kiwi_browser() {
-	log 'INFO' 'Doing kiwi browser'
-	NAME="Kiwi"
-	DIR=kiw
-	B_VER=$(updateChecker "$DIR")
+# Iterate over webviews and browsers, prompting the user to choose one: chooseport being true means the user chose that, false means move on
+sel_web_v2() {
+	local list=$available_wv_list
 }
 old_version() {
 	local NAME=$1
@@ -396,47 +394,19 @@ create_overlay() {
 	cp_ch "$MODPATH"/common/WebviewOverlay.apk "$MODPATH""$OLP"
 	echo "$OLP" >"$MODPATH"/overlay.txt
 }
-set_path() {
-	log 'INFO' 'Running debloater'
-	ui_print "ⓘ Detecting and systemlessly debloating conflicting packages"
-	paths=$(cmd package dump com.android.webview | grep codePath)
-	A=${paths##*=}
-	unset paths
-	K=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i webview | grep -iv lib | grep -iv stub | grep -iv google)
-	L=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i webview | grep -iv lib | grep -i stub | grep -iv google)
-	paths=$(cmd package dump com.google.android.webview | grep codePath)
-	B=${paths##*=}
-	unset paths
-	I=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -iv stub | grep -iv overlay)
-	H=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -i stub | grep -iv overlay)
-	G=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i google | grep -i webview | grep -iv lib | grep -iv stub | grep -i overlay)
-	paths=$(cmd package dump com.android.chrome | grep codePath)
-	C=${paths##*=}
-	J=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i chrome | grep -iv lib | grep -iv stub)
-	F=$(find /system /vendor /product /system_ext -type d 2>/dev/null | grep -i chrome | grep -iv lib | grep -i stub)
-	unset paths
-	paths=$(cmd package dump com.android.browser | grep codePath)
-	D=${paths##*=}
-	unset paths
-	paths=$(cmd package dump org.lineageos.jelly | grep codePath)
-	E=${paths##*=}
-}
 extract_webview() {
 	log 'INFO' 'Extracting webview package'
 	WPATH="/system/app/${NAME}Webview"
 	ui_print "ⓘ Installing ${NAME} Webview"
-	for i in "$A" "$H" "$I" "$B" "$G" "$K" "$L"; do
-		if [[ -n "$i" ]]; then
-			mktouch "$MODPATH""$i"/.replace
+	# Replace all existing webviews. This is a workaround for the fact that the ROMs may prefer to use a different webview
+	for i in "com.android.chrome" "com.android.webview" "com.google.android.webview"; do
+		local path
+		unsanitized_path=$(cmd package dump "$i" | grep codePath)
+		path=${unsanitized_path##*=}
+		if [ -d "$path" ]; then
+			mktouch "$MODPATH""$PATH"/.replace
 		fi
 	done
-	if [[ "${API}" -lt "29" ]]; then
-		for i in "$J" "$F" "$C"; do
-			if [[ -n "$i" ]]; then
-				mktouch "$MODPATH""$i"/.replace
-			fi
-		done
-	fi
 	mktouch "$MODPATH"$WPATH/.replace
 	cp_ch "$EXT_DATA"/apks/"$NAME"Webview.apk "$MODPATH"$WPATH/webview.apk || cp_ch "$EXT_DATA"/apks/webview.apk "$MODPATH"$WPATH/webview.apk
 	cp "$MODPATH"$WPATH/webview.apk "$TMPDIR"/webview.zip
@@ -451,9 +421,12 @@ extract_browser() {
 	log 'INFO' 'Extracting browser package'
 	BPATH="/system/app/${NAME}Browser"
 	ui_print "ⓘ Installing ${NAME} Browser"
-	for i in "$J" "$F" "$C" "$E" "$D"; do
-		if [[ -n "$i" ]]; then
-			mktouch "$MODPATH""$i"/.replace
+	for i in "com.android.chrome" "com.android.browser" "org.lineageos.jelly"; do
+		local path
+		unsanitized_path=$(cmd package dump "$i" | grep codePath)
+		path=${unsanitized_path##*=}
+		if [ -d "$path" ]; then
+			mktouch "$MODPATH""$PATH"/.replace
 		fi
 	done
 	mktouch "$MODPATH""$BPATH"/.replace
@@ -467,13 +440,10 @@ extract_browser() {
 }
 online_install() {
 	ui_print "☑ Awesome, you have internet"
-	set_path
-	if [[ $INSTALL -eq 0 ]]; then
+	if [[ $WEBVIEW -ne 0 ]]; then
 		download_webview
-	elif [[ $INSTALL -eq 1 ]]; then
-		download_browser
-	elif [[ $INSTALL -eq 2 ]]; then
-		download_webview
+	fi
+	if [[ $BROWSER -ne 0 ]]; then
 		download_browser
 	fi
 }
