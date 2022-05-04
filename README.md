@@ -1,18 +1,14 @@
-# Webview Switcher - An Androidacy Project
+# Webview Manager
+### The premier systemless solution for changing default browser and WebView. 
+## Support
 
-## Links
+[![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fandroidacy_discussions)](https://telegram.dog/androidacy_discussions)
+[![Telegram Channel](https://img.shields.io/endpoint?color=neon&style=flat&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fandroidacy)](https://telegram.dog/androidacy)
+[![XDA-Developers](https://img.shields.io/badge/XDA--Developers-%23AC6E2F.svg?style=flat&logo=XDA-Developers&logoColor=white)](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
 
-- [Downloads](https://www.androidacy.com/?f=wvm_rdme)
-- [Website](https://www.androidacy.com/?utm_source=WebviewManager)
-- [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager&utm_medium=github)
-- [Upstream repository](https://github.com/Androidacy/WebviewManager-Module). All development is done here until stable release.
-- **NEW** [Androidacy Modules Repository](https://www.androidacy.com/modules-repo/?f=repo)
+A Discord server is available to select supporters on our [Patreon](https://patreon.com/androidacy/?utm_source-WVM%20Readme&utm_medium=modules).
 
-### Be sure to check out our new module, Font Manager!
-
-- Downloads are [here](https://www.androidacy.com/magisk-modules-repo/#fontrevival)
-- The source is [here](https://github.com/Androidacy/FontManager-Module)
-- XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
+Premium and enterprise support is offered to qualifying enterprises. Please email us at enterprise@androidacy.com to set up a subscription.
 
 ## What is this?
 
@@ -28,7 +24,7 @@ The latest update should now work on all ROMs Android v7.0+. ROMs versions 5.x t
 
 Webview is a shared component between apps to display web content instead of directing to a browser. It's like a minimal browser, but for non-browsers that display web content in any other way than sending you to a browser or custom tab, apps that use it include email, wewbview wrapper apps, or even some banking apps. Even the Google app uses a webview.
 
-**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE'S OWN WEBVIEW**. We can't fix that and any issues on it will be closed and ignored. Complain to the app developer, not us. We're not even sure why this happens or if/how they check.
+**PLEASE NOTE SOME APPS WON'T WORK WITHOUT GOOGLE'S OWN WEBVIEW**. We can't fix that and any issues on it will be closed and ignored. Complain to the app developer, not us. Specifically, GMS based sign in with Google won't work with Bromite or Ungoogled Chromium as they neuter most Google APIs. 
 
 ## Credits
 
@@ -58,24 +54,29 @@ Support Androidacy: [here](https://www.androidacy.com/donate/?f=WVM%20Readme)
 
 We recommend you check out the websites of the developers of the included apps for donation links.
 
-## Support
+## Links
+
+- [Downloads](https://www.androidacy.com/?f=wvm_rdme)
+- [Website](https://www.androidacy.com/?utm_source=WebviewManager)
+- [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager&utm_medium=github)
+- [Upstream repository](https://github.com/Androidacy/WebviewManager-Module). All development is done here until stable release.
+- **NEW** [Androidacy Modules Repository](https://www.androidacy.com/modules-repo/?f=repo)
+
+### Be sure to check out our new module, Font Manager!
+
+- Downloads are [here](https://www.androidacy.com/magisk-modules-repo/#fontrevival)
+- The source is [here](https://github.com/Androidacy/FontManager-Module)
+- XDA thread is [here](https://forum.xda-developers.com/t/magisk-module-fontrevival-for-emojis-and-fonts.4194631/)
+
+## Third party support
 
 Any issues with any bundled app should be reported to the respective developer, not us.
 
 Issues with the module should be filed [here](https://github.com/Androidacy/WebviewManager-Module/issues/new).
 
-The XDA thread is [here](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
-
-The telegram channel is [here](https://t.me/androidacy)
-
-A Discord server is available to select supporters on our [Patreon](https://patreon.com/androidacy/?utm_source-WVM%20Readme&utm_medium=modules).
-
-Premium and enterprise support is offered to qualifying enterprises. Please email us at enterprise@androidacy.com to set up a subscription.
-
-
 ## Compatibility
 
-- Android 7.x to 12.0. 
+- Android 7.x to 12.1. 
   - Some heavily customized stock ROMs may have issues.
   - MIUI is not officially supported for the aforementioned reason. Some people have had success with debloating the stock bloatware.
   - OneUI users: make sure Secure Folder is disabled before installing.
