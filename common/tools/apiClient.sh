@@ -89,13 +89,11 @@ initClient() {
 
 ping_api() {
     # Ping the API to ensure it's up
-    # This is a simple GET request, and we don't care about the response
-    # If it fails, we'll try again later
     api_log 'INFO' "Pinging API"
-    code=$(curl -s -o /dev/null -w "%{http_code}" "$__api_url/ping")
-    if [ "$code" != "204" ]; then
+    code=$(curl -A "Mozilla/5.0 (Linux; Android $android; $device) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Mobile Safari/537.36 [$MODULE_CODENAME/$MODULE_VERSIONCODE]" -s -o /dev/null -w "%{http_code}" "$__api_url/ping")
+    if [ "$code" != "204" || "$code" != "200" ]; then
         api_log 'ERROR' "API is not responding. Code: $code"
-        abort "API is unreachable. Please try again later."
+        abort "API is unreachable. Check your connection and try again later."
     fi
 }
 
