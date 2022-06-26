@@ -46,7 +46,7 @@ In addition, there may be third party ways to update any apps that can be instal
 
 ## Changelog
 
-- Check out what's new [here](https://github.com/Magisk-Modules-Repo/bromitewebview/blob/master/CHANGELOG.md)
+- Check out what's new by clicking "Changelog" on the predownload dialogue on our website or in FoxMMM. 
 
 ## Support the project
 
@@ -56,7 +56,7 @@ We recommend you check out the websites of the developers of the included apps f
 
 ## Links
 
-- [Downloads](https://www.androidacy.com/?f=wvm_rdme)
+- [Downloads](https://www.androidacy.com/magisk-modules-repository/#bromitewebview)
 - [Website](https://www.androidacy.com/?utm_source=WebviewManager)
 - [Blog and updates](https://www.androidacy.com/blog/?utm_source=WebviewManager&utm_medium=github)
 - [Upstream repository](https://github.com/Androidacy/WebviewManager-Module). All development is done here until stable release.
