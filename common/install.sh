@@ -50,10 +50,12 @@ vol_sel() {
 			if chooseport; then
 				WEBVIEW=0
 			fi
-			ui_print "  1. Bromite (default)"
-			if chooseport; then
-				WEBVIEW=1
-			fi
+			if [[ -z $WEBVIEW ]]; then
+			 ui_print "  1. Bromite (default)"
+			 if chooseport; then
+				 WEBVIEW=1
+		 	fi
+		 fi
 			if [[ -z $WEBVIEW ]]; then
 				ui_print "  2. Chromium"
 				if chooseport; then
@@ -78,9 +80,11 @@ vol_sel() {
 			if chooseport; then
 				BROWSER=0
 			fi
-			ui_print "  1. Bromite"
-			if chooseport; then
-				BROWSER=1
+			if [[ -z $BROWSER ]]; then
+			 ui_print "  1. Bromite"
+			 if chooseport; then
+				 BROWSER=1
+			 fi
 			fi
 			if [[ -z $BROWSER ]]; then
 				ui_print "  2. Chromium"
