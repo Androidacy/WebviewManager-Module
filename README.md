@@ -6,9 +6,7 @@
 [![Telegram Channel](https://img.shields.io/endpoint?color=neon&style=flat&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fandroidacy)](https://telegram.dog/androidacy)
 [![XDA-Developers](https://img.shields.io/badge/XDA--Developers-%23AC6E2F.svg?style=flat&logo=XDA-Developers&logoColor=white)](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
 
-A Discord server is available to select supporters on our [Patreon](https://patreon.com/androidacy/?utm_source-WVM%20Readme&utm_medium=modules).
-
-Premium and enterprise support is offered to qualifying enterprises. Please email us at enterprise@androidacy.com to set up a subscription.
+Premium and direct support is offered to those on the top tier [membership](https://www.androidacy.com/membership-join/?f=WebView%20Manager%20Readme)
 
 ## What is this?
 
@@ -48,9 +46,9 @@ In addition, there may be third party ways to update any apps that can be instal
 
 - Check out what's new by clicking "Changelog" on the predownload dialogue on our website or in FoxMMM. 
 
-## Support the project
+## Support Us - And unlock cool benefits. 
 
-Support Androidacy: [here](https://www.androidacy.com/donate/?f=WVM%20Readme)
+Support Androidacy: [here](https://www.androidacy.com/donate/?f=WVM%20Readme). Bear in mind, a premium API token will also remove the 1.5MB/s download restrictions! 
 
 We recommend you check out the websites of the developers of the included apps for donation links.
 
