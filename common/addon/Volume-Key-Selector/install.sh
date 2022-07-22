@@ -34,14 +34,14 @@ chooseport() {
     local count=0
     while true; do
       timeout $delay /system/bin/getevent -lqc 1 2>&1 >$TMPDIR/events &
-      sleep 0.5
+      sleep 1
       count=$((count + 1))
       if ($(grep -q 'KEY_VOLUMEUP *DOWN' $TMPDIR/events)); then
         return 0
       elif ($(grep -q 'KEY_VOLUMEDOWN *DOWN' $TMPDIR/events)); then
         return 1
       fi
-      [ $count -gt 6 ] && break
+      [ $count -gt 5 ] && break
     done
     if $error; then
       # abort "Volume key not detected!"
