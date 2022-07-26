@@ -5,24 +5,9 @@ ASH_STANDALONE=1
 SH=$(readlink -f "$0")
 MODDIR=$(dirname "$SH")
 it_failed() {
-	ui_print " "
-	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
-	ui_print " "
-	ui_print " Uh-oh, the installer encountered an issue!"
-	ui_print " It's probably one of these reasons:"
-	ui_print "       1) Installer is corrupt"
-	ui_print "       2) You didn't follow instructions"
-	ui_print "       3) You have an unstable internet connection"
-	ui_print "       4) Your ROM is broken"
-	ui_print "       5) There's a *tiny* chance we screwed up"
-	ui_print " Please fix any issues and retry."
-	ui_print " If you feel this is a bug or need assistance, head to our telegram"
 	mv "${EXT_DATA}"/logs "${TMPDIR}"
 	rm -rf "${EXT_DATA:?}"/*
 	mv "${TMPDIR}"/logs "${EXT_DATA}"/
-	ui_print " "
-	ui_print "⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠⚠"
-	ui_print " "
 	exit 1
 }
 INSTALL=false
