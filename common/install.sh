@@ -239,7 +239,7 @@ download_webview() {
 	fi
 	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} webview, attempt number ${TRY_COUNT}, please be patient..."
-		downloadFile "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
+		makeDownloadRequest "/modules/webviewmanager/webview/download/$DIR" "GET" "arch=$ARCH" "${EXT_DATA}/apks/${NAME}Webview.apk"
 		sed -i "/OLD_WEBVIEW/d" "$VERSIONFILE"
 		echo "OLD_WEBVIEW=$(echo "$W_VER" | sed 's/[^0-9]*//g')" >>"$VERSIONFILE"
 	else
@@ -248,7 +248,7 @@ download_webview() {
 	if [[ -f $EXT_DATA/apks/"$NAME"Webview.apk ]]; then
 		if [[ $OLD_VER -lt "$(echo "$W_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
 			ui_print "ⓘ Downloading update for ${NAME} webview, please be patient..."
-			downloadFile "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
+			makeDownloadRequest "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 			"$(echo "$W_VER" | sed 's/[^0-9]*//g')" >"${EXT_DATA}/apks/${NAME}Webview.apk.version"
 		else
 			ui_print "☑ Not a version upgrade! Using existing ${NAME} webview apk"
@@ -256,13 +256,13 @@ download_webview() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} webview!"
 		ui_print "ⓘ Downloading ${NAME} webview, please be patient..."
-		downloadFile "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
+		makeDownloadRequest "$DIR" "webview${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Webview.apk"
 		"$(echo "$W_VER" | sed 's/[^0-9]*//g')" >"${EXT_DATA}/apks/${NAME}Webview.apk.version"
 	fi
 	verify_w
 }
 download_browser() {
-	og 'INFO' 'Downloading browser'
+	log 'INFO' 'Downloading browser'
 	cd "$TMPDIR" || return
 	if [[ $BROWSER -eq 1 ]]; then
 		do_bromite_browser
@@ -273,7 +273,7 @@ download_browser() {
 	fi
 	if [[ "$VF" -eq 1 ]]; then
 		ui_print "ⓘ Redownloading ${NAME} browser, please be patient..."
-		downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
+		makeDownloadRequest "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 		"$(echo "$B_VER" | sed 's/[^0-9]*//g')" >"${EXT_DATA}/apks/${NAME}Browser.apk.version"
 	else
 		old_version "$NAME" "Browser"
@@ -281,7 +281,7 @@ download_browser() {
 	if [[ -f $EXT_DATA/apks/"$NAME"Browser.apk ]]; then
 		if [[ $OLD_VER -lt "$(echo "$B_VER" | sed 's/[^0-9]*//g' | tr -d '.')" ]]; then
 			ui_print "ⓘ Downloading update for ${NAME} browser, please be patient..."
-			downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
+			makeDownloadRequest "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 			"$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"${EXT_DATA}/apks/${NAME}Browser.apk.version"
 		else
 			ui_print "☑ Not a version upgrade! Using existing ${NAME} browser apk"
@@ -289,7 +289,7 @@ download_browser() {
 	else
 		ui_print "ⓘ No existing apk found for ${NAME} browser!"
 		ui_print "ⓘ Downloading ${NAME} browser, please be patient..."
-		downloadFile "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
+		makeDownloadRequest "$DIR" "browser${ARCH}" "apk" "${EXT_DATA}/apks/${NAME}Browser.apk"
 		"$(echo "$B_VER" | sed 's/[^0-9]*//g')" >>"${EXT_DATA}/apks/${NAME}Browser.apk.version"
 	fi
 	verify_b
