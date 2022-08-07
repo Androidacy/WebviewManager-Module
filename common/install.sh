@@ -1,5 +1,6 @@
 # shellcheck shell=ash
 # shellcheck disable=SC1091,SC1090,SC2139,SC2086,SC3010
+abort "Deprecated install script. Please use common/install-new.sh"
 TRY_COUNT=1
 VF=0
 VERIFY=true
