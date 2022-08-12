@@ -3,7 +3,7 @@
 TRY_COUNT=1
 VF=0
 VERIFY=true
-config_file="$EXT_DATA/config.conf"
+config_file="$EXT_DATA/config.json"
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
 ui_print "Checking for module updates..."
@@ -81,6 +81,7 @@ volume_key_setup() {
         webview_type="chromium"
         webview=true
         webview_custom=false
+        webview_package="org.bromite.chrome"
         webview_chosen=true
     fi
     if [ "$webview_chosen" = false ]; then
@@ -90,6 +91,7 @@ volume_key_setup() {
             webview_type="bromite"
             webview=true
             webview_custom=false
+            webview_package="org.bromite.bromite"
             webview_chosen=true
         fi
     fi
@@ -182,7 +184,73 @@ volume_key_setup() {
         abort "Browser as webview selected, but no browser selected"
     fi
 }
+# Downloads a webview using makeDownloadRequest and then extracts it using unzip.
+download_webview() {
+    # Make sure which was passed as first argument and type as second arg
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        ui_print "No webview type passed to download_webview"
+        abort "No webview type passed to download_webview"
+    fi
+    local type=$2
+    local which=$1
+    $can_use_fmmm_apis && showLoading || echo ""
+    ui_print "Downloading webview..."
+    # Make a temporary directory to download the webview to
+    webview_tmp_dir="/data/local/tmp/$which-tmp"
+    if [ -d "$webview_tmp_dir" ]; then
+        rm -rf $webview_tmp_dir
+        mkdir -p $webview_tmp_dir
+    else
+        mkdir -p $webview_tmp_dir
+    fi
+    makeDownloadRequest "/modules/webviemanager/$which/download/$type" 'GET' "arch=$ARCH" $webview_tmp_dir/$type.apk
+    # Next, verify and install the webview
+    if [ ! -f "$webview_tmp_dir/$type.apk" ]; then
+        ui_print "Download failed"
+        abort "Download failed"
+    fi
+    $can_use_fmmm_apis && hideLoading || echo ""
+    ui_print "Download successful"
+    verify_and_install_webview $webview_tmp_dir/$type.apk $which $type
+}
+# Verifies and installs a webview
+verify_and_install_webview() {
+    # Make sure which was passed as second argument and type as third arg
+    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+        ui_print "No webview type passed to verify_and_install_webview"
+        abort "No webview type passed to verify_and_install_webview"
+    fi
+    local type=$3
+    local which=$2
+    local apk=$1
+    ui_print "Verifying download..."
+    $can_use_fmmm_apis && showLoading || echo ""
+    # Get the SHA256 hash of the webview
+    local sha256
+    sha256=$(/data/adb/magisk/busybox sha256sum $apk | /data/adb/magisk/busybox awk "{print $1}")
+    # POST the hash to the server to get the hash of the webview to compare with
+    local status
+    status=$(makeJSONRequest "/modules/webviemanager/verify/$which/$type" 'POST' "arch=$ARCH&client_hash=$sha256" 'verified')
+    # Make sure status is true
+    if [ "$status" = "true" ]; then
+        ui_print "Verification successful"
+        $can_use_fmmm_apis && hideLoading || echo ""
+        ui_print "Installing webview..."
+        $can_use_fmmm_apis && showLoading || echo ""
+        # Install the webview
+        mkdir -p $MODPATH/system/app/$type
+        cp_ch $apk $MODPATH/system/app/$type/$type.apk
+        touch $MODPATH/system/app/$type/.replace
+        $can_use_fmmm_apis && hideLoading || echo ""
+        ui_print "Installation complete"
+    else
+        ui_print "Verification failed"
+        abort "Verification failed"
+    fi
+}
 ## Install logic
+# Master switch for allowing FoxMMM APIs to be used
+export can_use_fmmm_apis
 if [ -n "$MMM_EXT_SUPPORT" ]; then
     #!useExt
     ui_print "Installing in FoxMMM mode..."
