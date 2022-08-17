@@ -63,7 +63,11 @@ verify_config() {
     ignore_config=true
     . $config_file
   fi
-  ui_prinrt "Verified config."
+  # If ignore_config is still false, set USE_CONFIG to true so we skip volume key config
+  if [ "$ignore_config" != true ]; then
+    USE_CONFIG=true
+  fi
+  ui_print "Verified config."
   $can_use_fmmm_apis && hideLoading || echo ""
 }
 # Volume key selection logic
@@ -252,6 +256,30 @@ verify_and_install_webview() {
     ui_print "Verification failed"
     abort "Verification failed"
   fi
+}
+# Set the values in config.json to what the user selected
+set_config_values() {
+  # Make sure which was passed as second argument and type as third arg
+  if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    ui_print "No webview type passed to set_config_values"
+    abort "No webview type passed to set_config_values"
+  fi
+
+  # Make sure config.json exists
+  if [ ! -f "$config_file" ]; then
+    ui_print "No config.json found"
+    abort "No config.json found"
+  fi
+  # Set the values in the config.json
+  $can_use_fmmm_apis && showLoading || echo ""
+  # Use sed to set the values in the config.json
+  # Loop through WEBVIEW, BROWSER, WEBVIEW_TYPE, and BROWSER_TYPE
+  for i in WEBVIEW BROWSER WEBVIEW_TYPE BROWSER_TYPE; do
+    # Set the value in the config.json
+    sed -i "s/\"$i\":.*/\"$i\": \"$1\",/" $config_file
+  done
+  $can_use_fmmm_apis && hideLoading || echo ""
+  ui_print "Config values set"
 }
 ## Install logic
 # Master switch for allowing FoxMMM APIs to be used
