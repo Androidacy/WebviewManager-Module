@@ -3,6 +3,7 @@
 TRY_COUNT=1
 VF=0
 VERIFY=true
+USE_CONFIG=false
 config_file="$EXT_DATA/config.json"
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
@@ -257,14 +258,26 @@ verify_and_install_webview() {
     abort "Verification failed"
   fi
 }
+# Sets a single config value in the config file
+set_config_value() {
+  # Make sure which was passed as first argument and value as second arg
+  if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "No config value passed to set_config_value"
+  else
+    local key=$1
+    local value=$2
+    echo "Setting $key to $value"
+    # Edit the conig.json
+    # Hacky way of ensuring we have valid JSON, but if $1 is BROWSER_TYPE, don't add a comma at the end
+    if [ "$key" = "BROWSER_TYPE" ]; then
+      sed -i "s/\"$key\":.*/\"$key\": \"$value\"/g" $config_file
+    else
+      sed -i "s/\"$key\":.*/\"$key\": \"$value\",/g" $config_file
+    fi
+  fi
+}
 # Set the values in config.json to what the user selected
 set_config_values() {
-  # Make sure which was passed as second argument and type as third arg
-  if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
-    ui_print "No webview type passed to set_config_values"
-    abort "No webview type passed to set_config_values"
-  fi
-
   # Make sure config.json exists
   if [ ! -f "$config_file" ]; then
     ui_print "No config.json found"
@@ -275,9 +288,12 @@ set_config_values() {
   # Use sed to set the values in the config.json
   # Loop through WEBVIEW, BROWSER, WEBVIEW_TYPE, and BROWSER_TYPE
   for i in WEBVIEW BROWSER WEBVIEW_TYPE BROWSER_TYPE; do
-    # Set the value in the config.json
-    sed -i "s/\"$i\":.*/\"$i\": \"$1\",/" $config_file
+    # Set the value in the config.json by replacing the line containing the key with the new value
+    # Get value of the variable $i is set to
+    value=$(eval echo \$$i)
+    set_config_value $i $value
   done
+  # Remove comma from second to last line in config.json
   $can_use_fmmm_apis && hideLoading || echo ""
   ui_print "Config values set"
 }
@@ -308,4 +324,20 @@ else
   ui_print "ⓘ Config file found! If you don't want to use it, delete it and restart the installation."
   ui_print "ⓘ Verifying config file..."
   verify_config
+  if $USE_CONFIG; then
+    ui_print "ⓘ Using config file..."
+    # Set the values in the config.json to the values in the config file
+    set_config_values
+  else
+    ui_print "ⓘ Starting setup..."
+    volume_key_setup
+  fi
+  if $webview; then
+    ui_print "ⓘ Setting up webviews..."
+    verify_and_install_webview 'webview' $webview_type
+  fi
+  if $browser; then
+    ui_print "ⓘ Setting up browser..."
+    verify_and_install_webview 'browser' $browser_type
+  fi
 fi
