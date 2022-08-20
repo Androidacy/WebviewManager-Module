@@ -78,6 +78,28 @@ volume_key_setup() {
   $can_use_fmmm_apis && clearTerminal || echo ""
   webview_chosen=false
   need_browser_choice=false
+  # First test the volume keys. Make user press up, then down, and make sure KEYCHECK_FAIL is not true.
+  ui_print "📈 Press volume up."
+  if chooseport; then
+    if $KEYCHECK_FAIL; then
+      ui_print "- Vol keys Timed Out -"
+      abort "⚠ Timed out waiting for volume key events"
+    fi
+    ui_print "📉 Press volume down."
+    if ! chooseport; then
+      if $KEYCHECK_FAIL; then
+        ui_print "- Vol keys Timed Out -"
+        abort "⚠ Timed out waiting for volume key events"
+      fi
+      ui_print "  👍 Setup volume keys successful!"
+    else
+      ui_print "  👎 Setup volume keys failed!"
+      abort "⚠ Unable to configure volume keys."
+    fi
+  else
+    ui_print "  👎 Setup volume keys failed!"
+    abort "⚠ Unable to configure volume keys."
+  fi
   ui_print "Please select the webview you want to use. Custom and none can be selected after other options are shown."
   ui_print "Option 1: Chromium"
   # chooseport is how we detect volume key presses, we use it to detect which option is selected. Up is true, down is false
@@ -258,6 +280,41 @@ verify_and_install_webview() {
     abort "Verification failed"
   fi
 }
+# Detect and debloat any existing webview
+detect_and_debloat() {
+  for item in "com.android.webvview" "com.google.android.webview" "org.mozilla.webview_shell" "com.android.chrome"; do
+    local is_installed path
+    is_installed=$(cmd package dump "$i" | grep codePath)
+    if [ -n "$is_installed" ]; then
+      path_name=$(echo $i | awk -F\. '{print $1}')
+      ui_print "Webview $item detected"
+      ui_print "Debloating $item"
+      path=${is_installed##*=}
+      mktouch $MODPATH/$path_name/.replace
+    fi
+  done
+}
+# This is actually really cool because all overlay generation is server side - we just need to tell the server what to make an overlay for by including sdk version, arch, which webview we used, and send over our framework-res.apk
+# This may take a minute or two, because it's 50mb+ uploads+downloads, but for now we don't throttle this part of the processs which depending on resulting server load may change. Nonethelss, moving generation server side leads to more consistent results and opens up a lot more scalable possibilities for the future.
+generate_overlay() {
+  # Dynamically determine overlay path. Order of preference is /product/overlay -> /system_ext/overlay -> /system/overlay
+  if [ -d /product/overlay ]; then
+    device_overlay_path="$MODPTH/product/overlay"
+  elif [ -d /system_ext/overlay ]; then 
+    device_overlay_path="$MODPATH/system_ext/overlay"
+  elif [ -d /system/overlay ]; then 
+    device_overlay_path="$MODPATH/system/overlay"
+  else
+    ui_print "Unable to find a correct overlay path. Weird."
+    abort "Device has no valid overlay path?"
+  fi
+  $can_use_fmmm_apis && showLoading || echo ""
+  ui_print "Installing system overlay..."
+  if [  ! -d $device_overlay_path ]; then
+    mkdir -p $device_overlay_path
+  fi
+  makeDownloadRequest "/modules/webviemanager/$which/generateOverlay" 'POST' "sdk=$SDK&framework-res=@/system/framework/framework-res.apk&arch=$ARCH" $device_overlay_path/AndroidacyWebViewOverlay.apk
+}
 # Sets a single config value in the config file
 set_config_value() {
   # Make sure which was passed as first argument and value as second arg
@@ -335,6 +392,7 @@ else
   if $webview; then
     ui_print "ⓘ Setting up webviews..."
     verify_and_install_webview 'webview' $webview_type
+    detect_and_debloat
   fi
   if $browser; then
     ui_print "ⓘ Setting up browser..."
