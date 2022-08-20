@@ -314,6 +314,16 @@ generate_overlay() {
     mkdir -p $device_overlay_path
   fi
   makeDownloadRequest "/modules/webviemanager/$which/generateOverlay" 'POST' "sdk=$SDK&framework-res=@/system/framework/framework-res.apk&arch=$ARCH" $device_overlay_path/AndroidacyWebViewOverlay.apk
+  if [ -f $device_overlay_path/AndroidacyWebViewOverlay.apk ]; then
+    $can_use_fmmm_apis && hideLoading || echo ""
+    ui_print "Overlay installed!"
+    ui_print ""
+    ui_print "Enjoy using a modern, updated webview! This should greatly improve browser"
+    ui_print "and app performance and stability."
+  else
+    ui_print "Overlay installation failed - this may be due to your device not supporting this feature"
+    ui_print "Continuing, but compatibility is not guaranteed"
+  fi
 }
 # Sets a single config value in the config file
 set_config_value() {
