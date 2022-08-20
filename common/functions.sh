@@ -1,6 +1,6 @@
 # shellcheck shell=ash
-# shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091
-# LETS FUCKING GOOOOOOO
+# shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091,3020
+
 echo " __        __     _            _                 "
 echo " \ \      / /___ | |__ __   __(_)  ___ __      __"
 echo "  \ \ /\ / // _ \| '_ \\\\\ \ / /| | / _ \\\\\ \ /\ / /"
@@ -310,12 +310,6 @@ setup_logger() {
 setup_logger
 
 ui_print "ⓘ PLEASE NOTE: This module requires internet access!"
-alias aapt='$MODPATH/common/tools/$ARCH/aapt'
-alias curl='$MODPATH/common/tools/$ARCH/curl --dns-servers 1.1.1.1,1.0.0.1' # https://github.com/Zackptg5/Cross-Compiled-Binaries-Android/tree/master/build_script#dns-issues
-alias sign='$MODPATH/common/tools/zipsigner'
-chmod 755 "$MODPATH/common/tools/$ARCH/aapt"
-chmod 755 "$MODPATH/common/tools/$ARCH/curl"
-chmod 755 "$MODPATH/common/tools/zipsigner"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
 initClient
