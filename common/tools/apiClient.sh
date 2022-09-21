@@ -5,13 +5,13 @@ if [ ! "$(command -v wget)" ]; then
     ui_print "wget not found! Please make sure Magisk is installed correctly."
     abort "Unable to install without wget."
 fi
-if ! wget https://staging-api.androidacy.com/build/assets/mm-sdk/"$ARCH".zip -O "$TMPDIR"/mm-sdk.zip; then
+if ! wget https://production-api.androidacy.com/build/assets/mm-sdk/"$ARCH".zip -O "$TMPDIR"/mm-sdk.zip; then
     ui_print "Failed to download the needed SDK modules. Please ensure nothing is blocking *.androidacy.com and you're connected to the internet."
     abort "Unable to install."
 fi
 # Verify the checksum against known good. Digest is downloaded from the server too. No remote execution risk, or at least this mitigates it unless we're being MITMed.
 # But in that case, you've got much larger issues to worry about than a script.
-if ! wget https://staging-api.androidacy.com/build/assets/mm-sdk/"$ARCH".zip.digest -O "$TMPDIR"/mm-sdk.digest; then
+if ! wget https://production-api.androidacy.com/build/assets/mm-sdk/"$ARCH".zip.digest -O "$TMPDIR"/mm-sdk.digest; then
     abort "Unable to continue without a digest file."
 fi
 existing_digest=$(sha256sum "$TMPDIR"/mm-sdk.zip | cut -d ' ' -f1)
