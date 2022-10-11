@@ -3,4 +3,6 @@ name=Webview Manager
 version=10.5.3
 versionCode=5057
 author=Androidacy
-description=Change your WebView and browser systemless-ly. Block ads and fingerprinting, increase privacy, and more. Website and how to get support: https://www.androidacy.com/?f=wmv%20prop. Check out our new magisk module repo: https://www.androidacy.com/modules-repo/?f=wmv%20prop
+description=Change your WebView and browser systemless-ly. Block ads and fingerprinting, increase privacy, and more. Website @ androidacy.com
+donate=https://www.androidacy.com/membership-join/?f=module-prop
+support=https://t.me/androidacy
