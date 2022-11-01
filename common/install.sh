@@ -297,65 +297,15 @@ download_browser() {
 verify_w() {
 	log 'INFO' 'Verifying webview'
 	ui_print "ⓘ Verifying ${NAME} webview files..."
-	if $VERIFY; then
-		cd "$EXT_DATA"/apks || return
-		O_S=$(/data/adb/magisk/busybox sha256sum "$NAME"Webview.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
-		getChecksum "$DIR" "webview${ARCH}" "apk"
-		# shellcheck disable=SC2154
-		T_S=$(echo "$response" | tr -d '[:space:]')
-		if [ "$T_S" != "$O_S" ]; then
-			log 'ERROR' 'Invalid webview file digest'
-			ui_print "⚠ Verification failed, retrying download"
-			rm -f "$EXT_DATA"/apks/*Webview.apk
-			TRY_COUNT=$((TRY_COUNT + 1))
-			VF=1
-			if [[ ${TRY_COUNT} -gt 3 ]]; then
-				it_failed
-			else
-				cd "$TMPDIR" || return
-				download_webview
-			fi
-		else
-			ui_print "☑ Verified successfully. Proceeding..."
-			VF=0
-			rm -fr -- *"$ARCH"*.apk
-			extract_webview
-		fi
-	else
-		ui_print "⚠ ${NAME} cannot be verified, as they don't publish sha256sums."
-	fi
+	ui_print "Verification is temporarily disabled!"
+	extract_webview
 	cd "$TMPDIR" || return
 }
 verify_b() {
 	log 'INFO' 'Verifying browser'
 	ui_print "ⓘ Verifying ${NAME} browser files..."
-	if $VERIFY; then
-		cd "$EXT_DATA"/apks || return
-		O_S=$(/data/adb/magisk/busybox sha256sum "$NAME"Browser.apk | sed "s/\ $NAME.*//" | tr -d '[:space:]')
-		getChecksum "$DIR" "browser${ARCH}" "apk"
-		T_S=$(echo "$response" | tr -d '[:space:]')
-		if [ "$T_S" != "$O_S" ]; then
-			log 'ERROR' 'Invalid browser file digest'
-			ui_print "⚠ Verification failed, retrying download"
-			rm -f "$EXT_DATA"/apks/*Browser.apk
-			TRY_COUNT=$((TRY_COUNT + 1))
-			VF=1
-			if [[ ${TRY_COUNT} -gt 3 ]]; then
-				it_failed
-			else
-				cd "$TMPDIR" || return
-				download_browser
-			fi
-		else
-			ui_print "☑ Verified successfully. Proceeding..."
-			VF=0
-			rm -fr -- *"$ARCH"*.apk
-			extract_browser
-		fi
-	else
-		ui_print "⚠ ${NAME} cannot be verified, as they don't publish sha256sums."
-		extract_browser
-	fi
+	ui_print "Verification is temporarily disabled!"
+	extract_browser
 	cd "$TMPDIR" || return
 }
 create_overlay() {
