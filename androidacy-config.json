@@ -2,6 +2,7 @@
   "optimized_delivery": true,
   "allow_api_functions": true,
   "verify_signatures": true,
+  "check_updates": true,
   "author": {
     "name": "Androidacy",
     "email": "opensource@androidacy.com"
