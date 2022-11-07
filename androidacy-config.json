@@ -1,0 +1,10 @@
+{
+  "optimized_delivery": true,
+  "allow_api_functions": true,
+  "verify_signatures": true,
+  "author": {
+    "name": "Androidacy",
+    "email": "opensource@androidacy.com"
+  },
+  "allow_experiments": true
+}
