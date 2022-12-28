@@ -4,16 +4,15 @@ TRY_COUNT=1
 VF=0
 VERIFY=true
 USE_CONFIG=false
-config_file="$EXT_DATA/config.json"
+config_file="$EXT_DATA/config.sh"
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
 ui_print "Checking for module updates..."
-isUpdated
-verifyModule
 # if $ARCH is not arm or arm64 we abort
 if [ "$ARCH" != arm ] && [ "$ARCH" != arm64 ]; then
   abort "✖ Your device isn't supported. ARCH found: [$ARCH], supported: [arm, arm64]."
 fi
+. "$MODPATH/common/tools/apiClient.sh"
 ## Functions
 # Make sure all config values are what we expect them to be
 verify_config() {
@@ -368,6 +367,23 @@ set_config_values() {
   $can_use_fmmm_apis && hideLoading || echo ""
   ui_print "Config values set"
 }
+isUpdated() {
+  local ourVersion
+  # Get our current version defined in module.prop
+  ourVersion=$(grep_prop versionCode $TMPDIR/module.prop)
+  # Request the api for the version number of bromiewebview (our codename)
+  local status
+  status=$(parseJSON "versionCheck" "version=$ourVersion&device=$DEVICE&sdk=$SDK" "GET" ".status")
+  # If status is "error", then our version is out of date
+  if [ "$status" = "error" ]; then
+    ui_print "You are running an outdated version of this module"
+    ui_print "Update to get the latest and greatest features!"
+    # Launch browser with update url
+    am start -a android.intent.action.VIEW -d "https://www.androidacy.com/magisk-modules-repository/#bromiewebview" >/dev/null
+    abort
+  fi
+}
+isUpdated
 ## Install logic
 # Master switch for allowing FoxMMM APIs to be used
 export can_use_fmmm_apis
@@ -387,7 +403,6 @@ if [ -f $config_file ]; then
 else
   cp_ch "$MODPATH/common/config.json" $config_file
   ignore_config=true
-  . $config_file
 fi
 if [ "$ignore_config" = true ]; then
   ui_print "ⓘ Config file not found, starting setup..."
