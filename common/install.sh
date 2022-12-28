@@ -10,6 +10,10 @@ ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, wit
 ui_print "Checking for module updates..."
 isUpdated
 verifyModule
+# if $ARCH is not arm or arm64 we abort
+if [ "$ARCH" != arm ] && [ "$ARCH" != arm64 ]; then
+  abort "✖ Your device isn't supported. ARCH found: [$ARCH], supported: [arm, arm64]."
+fi
 ## Functions
 # Make sure all config values are what we expect them to be
 verify_config() {

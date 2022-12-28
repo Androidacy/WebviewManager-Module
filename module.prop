@@ -1,7 +1,7 @@
 id=bromitewebview
 name=Webview Manager
-version=11.0.1_beta1
-versionCode=5060
+version=11.0.1_alpha1
+versionCode=6001
 author=Androidacy
 description=Change your WebView and browser systemless-ly. Block ads and fingerprinting, increase privacy, and more. Website @ androidacy.com
 donate=https://www.androidacy.com/membership-join/
