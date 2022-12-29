@@ -2,8 +2,8 @@
 VERSION="1.1"
 
 # Ensure wget is installed as we'll be using it
-if ! which wget >/dev/null 2>&1; then
-    echo "wget not found. Your magisk installation may be corrupt. Please uninstall and reinstall Magisk."
+if ! wget --version >/dev/null; then
+    echo "wget not found. Your magisk installation may be corrupt. Please reinstall Magisk."
     exit 1
 fi
 

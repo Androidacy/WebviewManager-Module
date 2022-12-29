@@ -1,5 +1,5 @@
 # shellcheck shell=ash
-# shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091,3020
+# shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091,SC3020
 
 echo " __        __     _            _                 "
 echo " \ \      / /___ | |__ __   __(_)  ___ __      __"
@@ -13,8 +13,6 @@ echo " | |  | || (_| || | | || (_| || (_| ||  __/| |   "
 echo " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
 echo "                               |___/             "
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
-[ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
-tar -xvf "$MODPATH/common/tools/tools.tar.xz" -C "$MODPATH/common/tools" >&2
 it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
