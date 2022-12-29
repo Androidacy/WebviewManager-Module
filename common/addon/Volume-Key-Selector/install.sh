@@ -7,8 +7,8 @@ chooseport_legacy() {
   [ "$1" ] && local delay=$1 || local delay=3
   local error=false
   while true; do
-    timeout 0 $MODPATH/common/addon/Volume-Key-Selector/tools/$ARCH32/keycheck
-    timeout $delay $MODPATH/common/addon/Volume-Key-Selector/tools/$ARCH32/keycheck
+    timeout 0 $MODPATH/common/addon/Volume-Key-Selector/tools/$ARCH/keycheck
+    timeout $delay $MODPATH/common/addon/Volume-Key-Selector/tools/$ARCH/keycheck
     local sel=$?
     if [ $sel -eq 42 ]; then
       return 0

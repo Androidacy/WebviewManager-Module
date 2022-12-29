@@ -1,4 +1,5 @@
 #!/data/adb/magisk/busybox ash
+# bashsupport disable=SpellCheckingInspection
 # shellcheck shell=dash
 # shellcheck disable=SC2034
 ASH_STANDALONE=1
