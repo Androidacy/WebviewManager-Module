@@ -1,18 +1,17 @@
-# shellcheck shell=ash
+# shellcheck shell=ksh
 # shellcheck disable=SC1091,SC1090,SC2139,SC2086,SC3010,SC2034
+
 TRY_COUNT=1
 VF=0
 VERIFY=true
-USE_CONFIG=false
 config_file="$EXT_DATA/config.sh"
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
-ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
 ui_print "Checking for module updates..."
 # if $ARCH is not arm or arm64 we abort
 if [ "$ARCH" != arm ] && [ "$ARCH" != arm64 ]; then
   abort "✖ Your device isn't supported. ARCH found: [$ARCH], supported: [arm, arm64]."
 fi
-. "$MODPATH/common/tools/apiClient.sh"
+. ./tools/apiClient.sh
 ## Functions
 # Make sure all config values are what we expect them to be
 verify_config() {
@@ -20,56 +19,36 @@ verify_config() {
   $can_use_fmmm_apis && clearTerminal || echo ""
   ui_print "Verifying config..."
   $can_use_fmmm_apis && showLoading || echo ""
-  # Use jq to parse each value
-  browser=$(jq -r '.BROWSER' $config_file)
-  webview=$(jq -r '.WEBVIEW' $config_file)
-  webview_custom=$(jq -r '.WEBVIEW_CUSTOM' $config_file)
-  browser_custom=$(jq -r '.BROWSER_CUSTOM' $config_file)
-  webview_type=$(jq -r '.WEBVIEW_TYPE' $config_file)
-  browser_type=$(jq -r '.BROWSER_TYPE' $config_file)
-  # If any value is invalid, we discard the config and start over
-  # Make sure browser, webview, webview_custom, and browser_custom are set to either true or false
-  if [ "$browser" != true ] && [ "$browser" != false ]; then
-    ui_print "ⓘ BROWSER value invalid, discarding config..."
-    cp_ch "$MODPATH/common/config.json" $config_file
-    ignore_config=true
-    . $config_file
-  fi
-  if [ "$webview" != true ] && [ "$webview" != false ]; then
-    ui_print "ⓘ WEBVIEW value invalid, discarding config..."
-    cp_ch "$MODPATH/common/config.json" $config_file
-    ignore_config=true
-    . $config_file
-  fi
-  if [ "$webview_custom" != true ] && [ "$webview_custom" != false ]; then
-    ui_print "ⓘ WEBVIEW_CUSTOM value invalid, discarding config..."
-    cp_ch "$MODPATH/common/config.json" $config_file
-    ignore_config=true
-    . $config_file
-  fi
-  if [ "$browser_custom" != true ] && [ "$browser_custom" != false ]; then
-    ui_print "ⓘ BROWSER_CUSTOM value invalid, discarding config..."
-    cp_ch "$MODPATH/common/config.json" $config_file
-    ignore_config=true
-    . $config_file
-  fi
-  # Make sure WEBVIEW_TYPE is either "chromium", "bromite", or "browser"
-  if [ "$webview_type" != "chromium" ] && [ "$webview_type" != "bromite" ] && [ "$webview_type" != "browser" ]; then
-    ui_print "ⓘ WEBVIEW_TYPE value invalid, discarding config..."
-    cp_ch "$MODPATH/common/config.json" $config_file
-    ignore_config=true
-    . $config_file
-  fi
-  # Make sure BROWSER_TYPE is either "chromium", "bromite", "brave", or "kiwi"
-  if [ "$browser_type" != "chromium" ] && [ "$browser_type" != "bromite" ] && [ "$browser_type" != "brave" ] && [ "$browser_type" != "kiwi" ]; then
-    ui_print "ⓘ BROWSER_TYPE value invalid, discarding config..."
-    cp_ch "$MODPATH/common/config.json" $config_file
-    ignore_config=true
-    . $config_file
-  fi
-  # If ignore_config is still false, set USE_CONFIG to true so we skip volume key config
-  if [ "$ignore_config" != true ]; then
-    USE_CONFIG=true
+  # So far everything is valid
+  . "$config_file"
+  # If USE_CUSTOM_CONFIG=false, then the user's config will not be used.
+  if $USE_CUSTOM_CONFIG; then
+    # Browser must be false, or set to chromium, brave, kiwi, or bromite
+    if [ "$BROWSER_CONFIG" = false ] || [ $BROWSER_CONFIG = chromium ] || [ $BROWSER_CONFIG = brave ] || [ $BROWSER_CONFIG = kiwi ] || [ $BROWSER_CONFIG = bromite ]; then
+      $can_use_fmmm_apis && hideLoading || echo ""
+      ui_print "Verified browser."
+      $can_use_fmmm_apis && showLoading || echo ""
+      browser=true
+    else
+      $can_use_fmmm_apis && hideLoading || echo ""
+      abort "⚠ BROWSER value was not valid."
+    fi
+    # Next, webview must be false, or set to chromium, mulch, or bromite
+    if [ "$WEBVIEW_CONFIG" = false ] || [ $WEBVIEW_CONFIG = chromium ] || [ $WEBVIEW_CONFIG = bromite ] || [ $WEBVIEW_CONFIG = mulch ]; then
+      $can_use_fmmm_apis && hideLoading || echo ""
+      ui_print "Verified webview choice."
+      $can_use_fmmm_apis && showLoading || echo ""
+      webview=true
+    else
+      $can_use_fmmm_apis && hideLoading || echo ""
+      abort "⚠ WEBVIEW value was not valid."
+    fi
+    # If both are false it's an invalid config
+    if [ "$browser" = false ] && [ "$webview" = false ]; then
+      $can_use_fmmm_apis && hideLoading || echo ""
+      abort "⚠ BROWSER and WEBVIEW were both set to false or invalid values."
+    fi
+    set_info "$BROWSER_CONFIG" "$WEBVIEW_CONFIG"
   fi
   ui_print "Verified config."
   $can_use_fmmm_apis && hideLoading || echo ""
@@ -125,9 +104,21 @@ volume_key_setup() {
       webview_chosen=true
     fi
   fi
-  # Option 3 is to try to use browser as webview
+  # Option 3 is mulch
   if [ "$webview_chosen" = false ]; then
-    ui_print "Option 3: Browser as webview"
+    ui_print "Option 3: Mulch"
+    if chooseport; then
+      ui_print "Chose Mulch"
+      webview_type="mulch"
+      webview=true
+      webview_custom=false
+      webview_package="com.android.webview"
+      webview_chosen=true
+    fi
+  fi
+  # Option 4 is to try to use browser as webview
+  if [ "$webview_chosen" = false ]; then
+    ui_print "Option 4: Browser as webview"
     if chooseport; then
       ui_print "Chose Browser as webview"
       webview_type="browser"
@@ -135,16 +126,6 @@ volume_key_setup() {
       webview_custom=false
       webview_chosen=true
       need_browser_choice=true
-    fi
-  fi
-  if [ "$webview_chosen" = false ]; then
-    ui_print "Option 4: Custom"
-    if chooseport; then
-      ui_print "Chose Custom"
-      webview_type="custom"
-      webview=true
-      webview_custom=true
-      webview_chosen=true
     fi
   fi
   if [ "$webview_chosen" = false ]; then
@@ -214,7 +195,77 @@ volume_key_setup() {
     abort "Browser as webview selected, but no browser selected"
   fi
 }
-# Downloads a webview using makeDownloadRequest and then extracts it using unzip.
+set_info() {
+  # Similar to above, set some variables based on the passed in WEBVIEW_CONFIG and BROWSER_CONFIG strings
+  if [ "$2" = "CHROMIUM" ]; then
+    webview_type="chromium"
+    webview=true
+    webview_custom=false
+    webview_package="org.bromite.chrome"
+    webview_chosen=true
+  elif [ "$2" = "BROMITE" ]; then
+    webview_type="bromite"
+    webview=true
+    webview_custom=false
+    webview_package="org.bromite.bromite"
+    webview_chosen=true
+  elif [ "$2" = "BROWSER" ]; then
+    webview_type="browser"
+    webview=true
+    webview_custom=false
+    webview_chosen=true
+  elif [ "$2" = "MULCH" ]; then
+    webview_type="mulch"
+    webview=true
+    webview_custom=false
+    webview_package="com.android.webview"
+    webview_chosen=true
+  elif [ "$2" = "NONE" ]; then
+    webview=false
+    webview_custom=false
+    webview_chosen=true
+  else
+    ui_print "Unknown WEBVIEW_CONFIG value passed in... bailing"
+    abort "Unknown value for WEBVIEW_CONFIG passed in."
+  fi
+  # Same for browser
+  if [ "$1" = "CHROMIUM" ]; then
+    browser_type="chromium"
+    browser=true
+    browser_custom=false
+    browser_package="org.bromite.chrome"
+    browser_chosen=true
+  elif [ "$1" = "BROMITE" ]; then
+    browser_type="bromite"
+    browser=true
+    browser_custom=false
+    browser_package="org.bromite.bromite"
+    browser_chosen=true
+  elif [ "$1" = "BROWSER" ]; then
+    browser_type="browser"
+    browser=true
+    browser_custom=false
+    browser_chosen=true
+  elif [ "$1" = "CUSTOM" ]; then
+    browser_type="custom"
+    browser=true
+    browser_custom=true
+    browser_chosen=true
+  elif [ "$1" = "NONE" ]; then
+    if $need_browser_choice; then
+      ui_print "You chose to use browser as webview but no browser was selected. Bailing."
+      abort "Browser as webview selected, but no browser selected."
+    else
+      browser=false
+      browser_custom=false
+      browser_chosen=true
+    fi
+  else
+    ui_print "Unknown BROWSER_CONFIG value passed in... bailing"
+    abort "Unknown value for BROWSER_CONFIG passed in."
+  fi
+}
+# Downloads a webview using makeFileRequest and then extracts it using unzip.
 download_webview() {
   # Make sure which was passed as first argument and type as second arg
   if [ -z "$1" ] || [ -z "$2" ]; then
@@ -233,7 +284,7 @@ download_webview() {
   else
     mkdir -p $webview_tmp_dir
   fi
-  makeDownloadRequest "/modules/webviemanager/$which/download/$type" 'GET' "arch=$ARCH" $webview_tmp_dir/$type.apk
+  makeFileRequest "/modules/webviemanager/$which/download/$type" 'GET' "arch=$ARCH" $webview_tmp_dir/$type.apk
   # Next, verify and install the webview
   if [ ! -f "$webview_tmp_dir/$type.apk" ]; then
     ui_print "Download failed"
@@ -298,14 +349,14 @@ detect_and_debloat() {
   done
 }
 # This is actually really cool because all overlay generation is server side - we just need to tell the server what to make an overlay for by including sdk version, arch, which webview we used, and send over our framework-res.apk
-# This may take a minute or two, because it's 50mb+ uploads+downloads, but for now we don't throttle this part of the processs which depending on resulting server load may change. Nonethelss, moving generation server side leads to more consistent results and opens up a lot more scalable possibilities for the future.
+# This may take a minute or two, because it's 50mb+ uploads+downloads, but for now we don't throttle this part of the process which depending on resulting server load may change. Nonetheless, moving generation server side leads to more consistent results and opens up a lot more scalable possibilities for the future.
 generate_overlay() {
   # Dynamically determine overlay path. Order of preference is /product/overlay -> /system_ext/overlay -> /system/overlay
   if [ -d /product/overlay ]; then
-    device_overlay_path="$MODPTH/product/overlay"
-  elif [ -d /system_ext/overlay ]; then 
+    device_overlay_path="$MODPATH/product/overlay"
+  elif [ -d /system_ext/overlay ]; then
     device_overlay_path="$MODPATH/system_ext/overlay"
-  elif [ -d /system/overlay ]; then 
+  elif [ -d /system/overlay ]; then
     device_overlay_path="$MODPATH/system/overlay"
   else
     ui_print "Unable to find a correct overlay path. Weird."
@@ -313,10 +364,10 @@ generate_overlay() {
   fi
   $can_use_fmmm_apis && showLoading || echo ""
   ui_print "Installing system overlay..."
-  if [  ! -d $device_overlay_path ]; then
+  if [ ! -d $device_overlay_path ]; then
     mkdir -p $device_overlay_path
   fi
-  makeDownloadRequest "/modules/webviemanager/$which/generateOverlay" 'POST' "sdk=$SDK&framework-res=@/system/framework/framework-res.apk&arch=$ARCH" $device_overlay_path/AndroidacyWebViewOverlay.apk
+  makeFileRequest "/modules/webviemanager/$webview_type/generateOverlay" 'POST' "sdk=$SDK&framework-res=@/system/framework/framework-res.apk&arch=$ARCH" $device_overlay_path/AndroidacyWebViewOverlay.apk
   if [ -f $device_overlay_path/AndroidacyWebViewOverlay.apk ]; then
     $can_use_fmmm_apis && hideLoading || echo ""
     ui_print "Overlay installed!"
@@ -328,52 +379,36 @@ generate_overlay() {
     ui_print "Continuing, but compatibility is not guaranteed"
   fi
 }
-# Sets a single config value in the config file
-set_config_value() {
-  # Make sure which was passed as first argument and value as second arg
-  if [ -z "$1" ] || [ -z "$2" ]; then
-    echo "No config value passed to set_config_value"
-  else
-    local key=$1
-    local value=$2
-    echo "Setting $key to $value"
-    # Edit the conig.json
-    # Hacky way of ensuring we have valid JSON, but if $1 is BROWSER_TYPE, don't add a comma at the end
-    if [ "$key" = "BROWSER_TYPE" ]; then
-      sed -i "s/\"$key\":.*/\"$key\": \"$value\"/g" $config_file
-    else
-      sed -i "s/\"$key\":.*/\"$key\": \"$value\",/g" $config_file
-    fi
-  fi
-}
-# Set the values in config.json to what the user selected
+# Set the values in config.sh to what the user selected
 set_config_values() {
-  # Make sure config.json exists
+  # Make sure config.sh exists
   if [ ! -f "$config_file" ]; then
-    ui_print "No config.json found"
-    abort "No config.json found"
+    ui_print "No config.sh found"
+    abort "No config.sh found"
   fi
-  # Set the values in the config.json
+  # Set the values in the config.sh
   $can_use_fmmm_apis && showLoading || echo ""
-  # Use sed to set the values in the config.json
+  # Use sed to set the values in the config.sh
   # Loop through WEBVIEW, BROWSER, WEBVIEW_TYPE, and BROWSER_TYPE
   for i in WEBVIEW BROWSER WEBVIEW_TYPE BROWSER_TYPE; do
-    # Set the value in the config.json by replacing the line containing the key with the new value
+    # Set the value in the config.sh by replacing the line containing the key with the new value
     # Get value of the variable $i is set to
     value=$(eval echo \$$i)
     set_config_value $i $value
   done
-  # Remove comma from second to last line in config.json
+  # Remove comma from second to last line in config.sh
   $can_use_fmmm_apis && hideLoading || echo ""
   ui_print "Config values set"
 }
+
+# Checks for updates
 isUpdated() {
   local ourVersion
   # Get our current version defined in module.prop
   ourVersion=$(grep_prop versionCode $TMPDIR/module.prop)
-  # Request the api for the version number of bromiewebview (our codename)
+  # Request the api for the version number of bromitewebview (our codename)
   local status
-  status=$(parseJSON "versionCheck" "version=$ourVersion&device=$DEVICE&sdk=$SDK" "GET" ".status")
+  status=$(makeJSONRequest "/modules/webviewmanager/versionCheck" "version=$ourVersion&device=$DEVICE&sdk=$SDK" "GET" ".status")
   # If status is "error", then our version is out of date
   if [ "$status" = "error" ]; then
     ui_print "You are running an outdated version of this module"
@@ -388,7 +423,6 @@ isUpdated
 # Master switch for allowing FoxMMM APIs to be used
 export can_use_fmmm_apis
 if [ -n "$MMM_EXT_SUPPORT" ]; then
-  #!useExt
   ui_print "Installing in FoxMMM mode..."
   can_use_fmmm_apis=true
 else
@@ -401,7 +435,7 @@ if [ -f $config_file ]; then
   . $config_file
   ignore_config=false
 else
-  cp_ch "$MODPATH/common/config.json" $config_file
+  cp_ch "$MODPATH/common/config.sh" $config_file
   ignore_config=true
 fi
 if [ "$ignore_config" = true ]; then
@@ -412,7 +446,7 @@ else
   verify_config
   if $USE_CONFIG; then
     ui_print "ⓘ Using config file..."
-    # Set the values in the config.json to the values in the config file
+    # Set the values in the config.sh to the values in the config file
     set_config_values
   else
     ui_print "ⓘ Starting setup..."

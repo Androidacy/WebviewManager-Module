@@ -67,12 +67,16 @@ initAPISDK() {
 }
 
 # Makes a request that is expected to return JSON and then tries to parse it and return in a format that can be used in other shell scripts
+# $1: The URL to make the request to
+# $2: The data to send to the server
+# $3: The HTTP method to use
+# $4: The JSON key to parse
 makeJSONRequest() {
     # Arguments should be path with variables, data to send, method and key to get value of
     if [ "$#" -ne 4 ]; then
         __doing_it_wrong "makeJSONRequest" "$(echo "$@" | tr ',' ' ')"
     fi
-    local url, method, request_params, value, data
+    local url, method, request_params, value
     # Build URL
     url="https://production-api.androidacy.com""$1"
     # Show what request to servers
@@ -99,6 +103,10 @@ makeJSONRequest() {
 }
 
 # Makes a request that is expected to return a file. Downloads it to a specified path
+# $1: The URL to make the request to
+# $2: The HTTP method to use
+# $3: The data to send to the server
+# $4: The path to save the file to
 makeFileRequest() {
     # Arguments should be path, method, data and fileToSave to
     if [ "$#" -ne 3 ]; then
