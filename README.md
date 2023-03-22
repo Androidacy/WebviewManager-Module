@@ -1,5 +1,8 @@
-# Webview Manager
-### The premier systemless solution for changing default browser and WebView. 
+# Webview manager
+### The ultimate systemless solution for changing default browser and WebView
+
+**Do not directly download this repo.** Download from our website or FoxMMM only.
+
 ## Support
 
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fandroidacy_discussions)](https://telegram.dog/androidacy_discussions)

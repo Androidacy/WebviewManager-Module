@@ -50,7 +50,8 @@ initAPISDK() {
     USER_AGENT="Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; ${ANDROID_OEM} ${ANDROID_MODEL}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Mobile Safari/537.36 AndroidacySDK/${VERSION} (https://www.androidacy.com)"
 
     # Make a call to our servers /auth/me to check if the API key and Client ID is valid
-    if ! curl -s -o- --content-disposition --user-agent="${USER_AGENT}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: $VERSION" -H "Client-ID: $ANDROIDACY_CLIENT_ID" -H "Accept: application/json" -H "Sec-Fetch-Dest: empty" -H "Cookie: device_id=${DEVICE_ID}" --keep-session-cookies --save-cookies=cookies.txt https://production-api.androidacy.com/auth/me >/dev/null 2>&1; then
+    curl -s -o- -A "${USER_AGENT}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: $VERSION" -H "Client-ID: $ANDROIDACY_CLIENT_ID" -H "Accept: application/json" -H "Sec-Fetch-Dest: empty" -H "Cookie: device_id=${DEVICE_ID}" -c cookies.txt https://production-api.androidacy.com/auth/me >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
         echo "API Key or Client ID is invalid or exceeded usage limits. Please redownload the module from official sources and try again."
         abort
     fi
@@ -84,7 +85,7 @@ makeJSONRequest() {
     fi
     # Same headers and options as init request, except add the form encoded data
     export value
-    value=$(curl -s -o- -H "Accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ""${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" --user-agent="${USER_AGENT}" -H "Cookie: device_id=$DEVICE_ID" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
+    value=$(curl -s -o- -H "Accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ""${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Cookie: device_id=$DEVICE_ID" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid JSON response. Please try again later."
@@ -115,7 +116,7 @@ makeFileRequest() {
         url="$url""?""$3"
     fi
     # Same headers and options as init request, except add the form encoded data
-    curl -X "$2" -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ""${VERSION}" -H "Client-ID: ""${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" --user-agent="${USER_AGENT}" -H "Cookie: device_id=""${DEVICE_ID}" -c cookies.txt "$headers" "$request_params" "$url" -o "$4"
+    curl -X "$2" -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ""${VERSION}" -H "Client-ID: ""${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Cookie: device_id=""${DEVICE_ID}" -c cookies.txt "$headers" "$request_params" "$url" -o "$4"
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid file response. Please try again later."
