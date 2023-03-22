@@ -50,6 +50,10 @@ abort() {
   rm -fr $TMPDIR 2>/dev/null
   it_failed
 }
+unzip "$MODPATH"/common/tools/tools.zip -q -d "$MODPATH"/common/tools
+chmod -R a+rx "$MODPATH"/common/tools
+alias jq="$MODPATH"/common/tools/jq-"$ARCH"
+alias curl="$MODPATH/common/tools/curl-$ARCH --dns-servers 1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"
 detect_ext_data() {
   if touch /sdcard/.rw && rm /sdcard/.rw; then
     export EXT_DATA="/sdcard/WebviewManager"
@@ -310,7 +314,7 @@ setup_logger
 ui_print "ⓘ PLEASE NOTE: This module requires internet access!"
 chmod 755 $MODPATH/common/tools/apiClient.sh
 . $MODPATH/common/tools/apiClient.sh
-initClient
+initAPISDK
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then

@@ -11,7 +11,7 @@ ui_print "Checking for module updates..."
 if [ "$ARCH" != arm ] && [ "$ARCH" != arm64 ]; then
   abort "✖ Your device isn't supported. ARCH found: [$ARCH], supported: [arm, arm64]."
 fi
-. ./tools/apiClient.sh
+
 ## Functions
 # Make sure all config values are what we expect them to be
 verify_config() {
@@ -440,6 +440,7 @@ else
 fi
 if [ "$ignore_config" = true ]; then
   ui_print "ⓘ Config file not found, starting setup..."
+  volume_key_setup
 else
   ui_print "ⓘ Config file found! If you don't want to use it, delete it and restart the installation."
   ui_print "ⓘ Verifying config file..."

@@ -1,28 +1,18 @@
 # shellcheck shell=ash
 VERSION="1.1"
 
-# Ensure wget is installed as we'll be using it
-if ! wget --version >/dev/null; then
-    echo "wget not found. Your magisk installation may be corrupt. Please reinstall Magisk."
-    exit 1
+# Ensure curl is installed as we'll be using it
+if ! curl --version >/dev/null; then
+    echo "curl not found. Your magisk installation may be corrupt. Please reinstall Magisk."
+    abort
 fi
 
 # Attempt to ping productions API. If we cannot, it means our API is down or users don't have internet.
-if ! wget -q --spider https://production-api.androidacy.com/ping; then
-    echo "Unable to ping API server. Please try again later."
-    exit 1
+  curl -sL https://production-api.androidacy.com/ping
+  if [ $? -ne 0 ]; then
+    echo "Unable to ping API server: $?. Please try again later."
+    abort
 fi
-
-# Next, download jq from production.
-# jq is a tool for parsing JSON for a bash script.
-wget --content-disposition https://production-api.androidacy.com/build/assets/mm-sdk/"${ARCH}".zip
-# Unzip the file
-unzip "${ARCH}".zip
-# Clean up
-rm jq.zip
-# Alias the binary
-# shellcheck disable=SC2139
-alias jq=./jq-"${ARCH}"
 
 # Wrap jq in a parseJSON function so that the logic is hidden
 parseJSON() { jq "$1" 2>/dev/null; }
@@ -48,7 +38,7 @@ initAPISDK() {
     if [ "$#" -ge 1 ]; then
         __doing_it_wrong "initAPISDK" "$(echo "$@" | tr ',' ' ')"
     fi
-    export ANDROID_VERSION, ANDROID_OEM, ANDROID_MODEL, USER_AGENT, DEVICE_ID
+    export ANDROID_VERSION ANDROID_OEM ANDROID_MODEL USER_AGENT DEVICE_ID
     ANDROID_VERSION=$(getprop ro.build.version.release | cut -d '.' -f 1)
     ANDROID_OEM=$(getprop ro.product.manufacturer)
     ANDROID_MODEL=$(getprop ro.product.model)
@@ -60,7 +50,7 @@ initAPISDK() {
     USER_AGENT="Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; ${ANDROID_OEM} ${ANDROID_MODEL}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Mobile Safari/537.36 AndroidacySDK/${VERSION} (https://www.androidacy.com)"
 
     # Make a call to our servers /auth/me to check if the API key and Client ID is valid
-    if ! wget -qO- --content-disposition --user-agent="${USER_AGENT}" --header="Authorization: Bearer ${ANDROIDACY_API_KEY}" --header="X-Android-SDK-Version: $VERSION" --header="X-Client-ID: $ANDROIDACY_CLIENT_ID" --header="Accept: application/json" --header="Sec-Fetch-Dest: empty" --header "Cookie: device_id=${DEVICE_ID}" --keep-session-cookies --save-cookies=cookies.txt https://production-api.androidacy.com/auth/me >/dev/null 2>&1; then
+    if ! curl -s -o- --content-disposition --user-agent="${USER_AGENT}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: $VERSION" -H "Client-ID: $ANDROIDACY_CLIENT_ID" -H "Accept: application/json" -H "Sec-Fetch-Dest: empty" -H "Cookie: device_id=${DEVICE_ID}" --keep-session-cookies --save-cookies=cookies.txt https://production-api.androidacy.com/auth/me >/dev/null 2>&1; then
         echo "API Key or Client ID is invalid or exceeded usage limits. Please redownload the module from official sources and try again."
         abort
     fi
@@ -94,7 +84,7 @@ makeJSONRequest() {
     fi
     # Same headers and options as init request, except add the form encoded data
     export value
-    value=$(wget -qO- --read-timeout=8 --content-disposition --header="Accept: application/json" --header="Content-Type: multipart/form-data" --header="Authorization: Bearer ""${ANDROIDACY_API_KEY}" --header="X-Android-SDK-Version: ${VERSION}" --header="X-Client-ID: ${ANDROIDACY_CLIENT_ID}" --header="Sec-Fetch-Dest: empty" --user-agent="${USER_AGENT}" --header="Cookie: device_id=$DEVICE_ID" --keep-session-cookies --save-cookies=cookies.txt "$request_params" "$url" | parseJSON "$4")
+    value=$(curl -s -o- -H "Accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ""${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" --user-agent="${USER_AGENT}" -H "Cookie: device_id=$DEVICE_ID" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid JSON response. Please try again later."
@@ -125,7 +115,7 @@ makeFileRequest() {
         url="$url""?""$3"
     fi
     # Same headers and options as init request, except add the form encoded data
-    wget -X "$2" --quiet --continue --content-disposition --header="Accept: application/octet-stream" --header="X-Android-SDK-Version: ""${VERSION}" --header="X-Client-ID: ""${ANDROIDACY_CLIENT_ID}" --header "Sec-Fetch-Dest: empty" --user-agent="${USER_AGENT}" --header="Cookie: device_id=""${DEVICE_ID}" --keep-session-cookies --save-cookies=cookies.txt "$headers" "$request_params" "$url" -O "$4"
+    curl -X "$2" -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ""${VERSION}" -H "Client-ID: ""${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" --user-agent="${USER_AGENT}" -H "Cookie: device_id=""${DEVICE_ID}" -c cookies.txt "$headers" "$request_params" "$url" -o "$4"
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid file response. Please try again later."

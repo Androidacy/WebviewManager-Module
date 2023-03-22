@@ -1,25 +1,38 @@
-   Copyright 2021 Androidacy. All rights reserved unless otherwise specified.
+Androidacy Open Source License v3
 
-   This work is licensed under the Androidacy Open Source License, hereafter referred to as the "AOSL".
+Preamble
 
-   Androidacy believes strongly in the power of both free and open source software, and as such, our software is offered that way. We hereby grant you the license to look at, reuse, and share our works, with some limitations and requirements.
+The Androidacy Open Source License v3 (hereinafter referred to as "AOSL v3") is a legal agreement between you (hereinafter referred to as "Licensee") and the copyright holder of the software (hereinafter referred to as "Licensor") for the use of the software and its associated documentation (hereinafter collectively referred to as "Software"). By exercising any rights to the Software provided here, you accept and agree to be bound by the terms of this License.
 
-   Androidacy hereby grants you a irrevocable license to:
-   - Obtain the publicly available source code of our Application
-   - Modify the source as you see fit for personal use
-   - Suggest changes to Androidacy, who is under no obligation to make them
+Definitions
+1.1. "Derivative Work" means any work that is based on, incorporates, or modifies the whole or any part of the Software, including but not limited to translations, adaptations, extensions, improvements, updates, or any other form of alteration or transformation.
 
-   Under the terms of this license, you may not:
-   - Resell our works, modified or unmodified, for a profit
-   - Rebrand our work as your own
-   - Republish our unmodified Software on any unofficial sources or mirror it
-   - Request private source code.
-   - Use this Software to harm or otherwise damage Androidacy or any of our clients
-   
-   Androidacy will make a best effort to include the source code of any components of the Software; however, we are under no obligation to, and will only publish code as we see fit. We also reserve the right to monetize our work as we see fit.
+1.2. "Verbatim Work" means an unmodified copy of the Software in its entirety, without any changes or alterations, or with insignificant changes or alterations.
 
-   In addition, if you use an open source compenent by Androidacy in your project, you are hereby obligated to share the source code and any modifications you make to it. You must also credit Androidacy for any code you reuse.
+Grant of License
+Subject to the terms and conditions of this AOSL v3, the Licensor hereby grants the Licensee a worldwide, royalty-free, non-exclusive, perpetual license to:
 
-   THIS SOFTWARE IS OFFERED "AS-IS", WITH NO WARRANTIES EXPRESSED OR IMPLIED. IT IS OFFERED IN THE HOPE THAT IS FOUND USEFUL, BUT ANDROIDACY MAKES NO WARRANTIES OF MERCHANTABILITY FOR ANY PURPOSE WHATSOEVER.
+2.1. Use, copy, modify, and create Derivative Works of the Software for personal, academic, research, or non-commercial purposes;
 
-   
+2.2. Use and distribute Verbatim Works for personal, academic, research, or non-commercial purposes, only with the prior written permission of the Licensor;
+
+2.3. Publish, display, and perform the Software or Derivative Works for personal, academic, research, or non-commercial purposes;
+
+Restrictions
+3.1. The Licensee shall not sell, rent, lease, sublicense, distribute, or otherwise transfer any Derivative Works for any commercial purposes;
+
+3.2. The Licensee shall not redistribute Verbatim Works without the prior written permission of the Licensor;
+
+3.3. The Licensee shall not use the Androidacy name, logo, trademarks, or any other works associated with the Licensor in any Derivative Works, promotional materials, or any other materials without the express written permission of the Licensor;
+
+Termination
+This License and the rights granted hereunder will terminate automatically upon any breach of the terms of this AOSL v3 by the Licensee.
+
+Disclaimer of Warranty
+The Software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the Licensor be liable for any claim, damages, or other liability arising from, out of, or in connection with the Software or the use or other dealings in the Software.
+
+Limitation of Liability
+In no event shall the Licensor be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this Software, even if advised of the possibility of such damage.
+
+Miscellaneous
+This AOSL v3 shall be governed by and interpreted in accordance with the laws of the jurisdiction where the Licensor is located. If any provision of this AOSL v3 is found to be unenforceable or invalid, that provision shall be limited or eliminated to the minimum extent necessary so that this AOSL v3 shall otherwise remain in full force and effect and enforceable.
