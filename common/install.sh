@@ -5,6 +5,8 @@ TRY_COUNT=1
 VF=0
 VERIFY=true
 config_file="$EXT_DATA/config.sh"
+export webview=false
+export browser=false
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 ui_print "Checking for module updates..."
 # if $ARCH is not arm or arm64 we abort
@@ -60,6 +62,7 @@ volume_key_setup() {
   $can_use_fmmm_apis && clearTerminal || echo ""
   webview_chosen=false
   need_browser_choice=false
+  KEYCHECK_FAIL=false
   # First test the volume keys. Make user press up, then down, and make sure KEYCHECK_FAIL is not true.
   ui_print "📈 Press volume up."
   if chooseport; then
@@ -161,17 +164,7 @@ volume_key_setup() {
     fi
   fi
   if [ "$browser_chosen" = false ]; then
-    ui_print "Option 3: Browser as browser"
-    if chooseport; then
-      ui_print "Chose Browser as browser"
-      browser_type="browser"
-      browser=true
-      browser_custom=false
-      browser_chosen=true
-    fi
-  fi
-  if [ "$browser_chosen" = false ]; then
-    ui_print "Option 4: Custom"
+    ui_print "Option 3: Custom"
     if chooseport; then
       ui_print "Chose Custom"
       browser_type="custom"
@@ -182,7 +175,7 @@ volume_key_setup() {
   fi
   if [ "$need_browser_choice" = false ]; then
     if [ "$browser_chosen" = false ]; then
-      ui_print "Option 5: None"
+      ui_print "Option 4: None"
       if chooseport; then
         ui_print "Chose None"
         browser=false
@@ -452,6 +445,9 @@ else
   else
     ui_print "ⓘ Starting setup..."
     volume_key_setup
+  fi
+  if [ ! $webview && ! $browser ]; then
+    abort "Nothing chosen!"
   fi
   if $webview; then
     ui_print "ⓘ Setting up webviews..."
