@@ -394,6 +394,7 @@ fi
 # Set permissions
 ui_print " "
 ui_print "ⓘ Setting Permissions"
+set +x
 set_perm_recursive $MODPATH 0 0 0755 0644
 if [ -d $MODPATH/system/vendor ]; then
   set_perm_recursive $MODPATH/system/vendor 0 0 0755 0644 u:object_r:vendor_file:s0
@@ -405,6 +406,7 @@ if [ -d $MODPATH/system/vendor ]; then
   done
 fi
 set_permissions
+set -x 2
 
 # Complete install
 cleanup

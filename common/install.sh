@@ -182,7 +182,9 @@ volume_key_setup() {
         browser_custom=false
         browser_chosen=true
       fi
-    fi
+    fi 
+    ui_print "ⓘ Saving config"
+    ui_print "ⓘ Saving config"
   else
     ui_print "You chose to use browser as webview, but did not select a browser. Bailing."
     abort "Browser as webview selected, but no browser selected"
@@ -190,30 +192,30 @@ volume_key_setup() {
 }
 set_info() {
   # Similar to above, set some variables based on the passed in WEBVIEW_CONFIG and BROWSER_CONFIG strings
-  if [ "$2" = "CHROMIUM" ]; then
+  if [ "$2" = "chromium" ]; then
     webview_type="chromium"
     webview=true
     webview_custom=false
     webview_package="org.bromite.chrome"
     webview_chosen=true
-  elif [ "$2" = "BROMITE" ]; then
+  elif [ "$2" = "bromite" ]; then
     webview_type="bromite"
     webview=true
     webview_custom=false
     webview_package="org.bromite.bromite"
     webview_chosen=true
-  elif [ "$2" = "BROWSER" ]; then
+  elif [ "$2" = "browser" ]; then
     webview_type="browser"
     webview=true
     webview_custom=false
     webview_chosen=true
-  elif [ "$2" = "MULCH" ]; then
+  elif [ "$2" = "mulch" ]; then
     webview_type="mulch"
     webview=true
     webview_custom=false
     webview_package="com.android.webview"
     webview_chosen=true
-  elif [ "$2" = "NONE" ]; then
+  elif [ "$2" = "none" ]; then
     webview=false
     webview_custom=false
     webview_chosen=true
@@ -222,29 +224,29 @@ set_info() {
     abort "Unknown value for WEBVIEW_CONFIG passed in."
   fi
   # Same for browser
-  if [ "$1" = "CHROMIUM" ]; then
+  if [ "$1" = "chromium" ]; then
     browser_type="chromium"
     browser=true
     browser_custom=false
     browser_package="org.bromite.chrome"
     browser_chosen=true
-  elif [ "$1" = "BROMITE" ]; then
+  elif [ "$1" = "bromite" ]; then
     browser_type="bromite"
     browser=true
     browser_custom=false
     browser_package="org.bromite.bromite"
     browser_chosen=true
-  elif [ "$1" = "BROWSER" ]; then
+  elif [ "$1" = "browser" ]; then
     browser_type="browser"
     browser=true
     browser_custom=false
     browser_chosen=true
-  elif [ "$1" = "CUSTOM" ]; then
+  elif [ "$1" = "custom" ]; then
     browser_type="custom"
     browser=true
     browser_custom=true
     browser_chosen=true
-  elif [ "$1" = "NONE" ]; then
+  elif [ "$1" = "none" ]; then
     if $need_browser_choice; then
       ui_print "You chose to use browser as webview but no browser was selected. Bailing."
       abort "Browser as webview selected, but no browser selected."
@@ -252,7 +254,8 @@ set_info() {
       browser=false
       browser_custom=false
       browser_chosen=true
-    fi
+    fi 
+    # return 0;
   else
     ui_print "Unknown BROWSER_CONFIG value passed in... bailing"
     abort "Unknown value for BROWSER_CONFIG passed in."
@@ -445,16 +448,17 @@ else
   else
     ui_print "ⓘ Starting setup..."
     volume_key_setup
+    ui_print "ⓘ Completed volume key setup"
   fi
   if [ ! $webview && ! $browser ]; then
     abort "Nothing chosen!"
   fi
-  if $webview; then
+  if [ $webview ]; then
     ui_print "ⓘ Setting up webviews..."
     verify_and_install_webview 'webview' $webview_type
     detect_and_debloat
   fi
-  if $browser; then
+  if [ $browser ]; then
     ui_print "ⓘ Setting up browser..."
     verify_and_install_webview 'browser' $browser_type
   fi
