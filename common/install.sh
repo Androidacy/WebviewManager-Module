@@ -8,7 +8,7 @@ config_file="$EXT_DATA/config.sh"
 export webview=false
 export browser=false
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
-ui_print "Checking for module updates..."
+# ui_print "Checking for module updates..."
 # if $ARCH is not arm or arm64 we abort
 if [ "$ARCH" != arm ] && [ "$ARCH" != arm64 ]; then
   abort "✖ Your device isn't supported. ARCH found: [$ARCH], supported: [arm, arm64]."
@@ -63,6 +63,7 @@ volume_key_setup() {
   webview_chosen=false
   need_browser_choice=false
   KEYCHECK_FAIL=false
+  export webview_type webview browser_type browser
   # First test the volume keys. Make user press up, then down, and make sure KEYCHECK_FAIL is not true.
   ui_print "📈 Press volume up."
   if chooseport; then
@@ -184,7 +185,15 @@ volume_key_setup() {
       fi
     fi 
     ui_print "ⓘ Saving config"
-    ui_print "ⓘ Saving config"
+    if [ $webview ]; then
+      ui_print "ⓘ Setting up webviews..."
+      download_webview 'webview' $webview_type
+      detect_and_debloat
+    fi 
+    if [ $browser ]; then
+      ui_print "ⓘ Setting up browser..."
+      download_webview 'browser' $browser_type
+    fi
   else
     ui_print "You chose to use browser as webview, but did not select a browser. Bailing."
     abort "Browser as webview selected, but no browser selected"
@@ -265,7 +274,6 @@ set_info() {
 download_webview() {
   # Make sure which was passed as first argument and type as second arg
   if [ -z "$1" ] || [ -z "$2" ]; then
-    ui_print "No webview type passed to download_webview"
     abort "No webview type passed to download_webview"
   fi
   local type=$2
@@ -294,7 +302,6 @@ download_webview() {
 verify_and_install_webview() {
   # Make sure which was passed as second argument and type as third arg
   if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
-    ui_print "No webview type passed to verify_and_install_webview"
     abort "No webview type passed to verify_and_install_webview"
   fi
   local type=$3
@@ -448,18 +455,9 @@ else
   else
     ui_print "ⓘ Starting setup..."
     volume_key_setup
-    ui_print "ⓘ Completed volume key setup"
+    ui_print "ⓘ Completed setup"
   fi
   if [ ! $webview && ! $browser ]; then
     abort "Nothing chosen!"
-  fi
-  if [ $webview ]; then
-    ui_print "ⓘ Setting up webviews..."
-    verify_and_install_webview 'webview' $webview_type
-    detect_and_debloat
-  fi
-  if [ $browser ]; then
-    ui_print "ⓘ Setting up browser..."
-    verify_and_install_webview 'browser' $browser_type
   fi
 fi

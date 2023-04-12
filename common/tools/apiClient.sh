@@ -1,5 +1,5 @@
 # shellcheck shell=ash
-VERSION="1.1"
+VERSION="1.2"
 
 # Ensure curl is installed as we'll be using it
 if ! curl --version >/dev/null; then
@@ -39,18 +39,18 @@ initAPISDK() {
         __doing_it_wrong "initAPISDK" "$(echo "$@" | tr ',' ' ')"
     fi
     export ANDROID_VERSION ANDROID_OEM ANDROID_MODEL USER_AGENT DEVICE_ID
-    ANDROID_VERSION=$(getprop ro.build.version.release | cut -d '.' -f 1)
-    ANDROID_OEM=$(getprop ro.product.manufacturer)
-    ANDROID_MODEL=$(getprop ro.product.model)
+    ANDROID_VERSION=$(resetprop ro.build.version.release | cut -d '.' -f 1)
+    ANDROID_OEM=$(resetprop ro.product.manufacturer)
+    ANDROID_MODEL=$(resetprop ro.product.model)
 
     # Generate a device ID to uniquely identify our device
     # We do this by hashing othe device model, serial number and device OEM
-    DEVICE_ID=$(echo "$(getprop ro.product.model)""$(getprop ro.product.serial)""$(getprop ro.product.manufacturer)" | sha256sum | cut -d ' ' -f 1)
+    DEVICE_ID=$(echo "$(resetprop ro.product.model)""$(resetprop ro.product.serial)""$(resetprop ro.product.manufacturer)" | sha256sum | cut -d ' ' -f 1)
 
     USER_AGENT="Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; ${ANDROID_OEM} ${ANDROID_MODEL}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Mobile Safari/537.36 AndroidacySDK/${VERSION} (https://www.androidacy.com)"
 
     # Make a call to our servers /auth/me to check if the API key and Client ID is valid
-    curl -s -o- -A "${USER_AGENT}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: $VERSION" -H "Client-ID: $ANDROIDACY_CLIENT_ID" -H "Accept: application/json" -H "Sec-Fetch-Dest: empty" -H "Cookie: device_id=${DEVICE_ID}" -c cookies.txt https://production-api.androidacy.com/auth/me >/dev/null 2>&1
+    curl -s -o- -A "${USER_AGENT}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: $VERSION" -H "Client-ID: $ANDROIDACY_CLIENT_ID" -H "Accept: application/json" -H "Sec-Fetch-Dest: empty" -H "Device-ID: ${DEVICE_ID}" -c cookies.txt https://production-api.androidacy.com/auth/me >/dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo "API Key or Client ID is invalid or exceeded usage limits. Please redownload the module from official sources and try again."
         abort
@@ -85,7 +85,7 @@ makeJSONRequest() {
     fi
     # Same headers and options as init request, except add the form encoded data
     export value
-    value=$(curl -s -o- -H "Accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ""${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Cookie: device_id=$DEVICE_ID" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
+    value=$(curl -s -o- -H "Accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ""${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: $DEVICE_ID" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid JSON response. Please try again later."
@@ -100,7 +100,7 @@ makeJSONRequest() {
 # $4: The path to save the file to
 makeFileRequest() {
     # Arguments should be path, method, data and fileToSave to
-    if [ "$#" -ne 3 ]; then
+    if [ "$#" -ne 4 ]; then
         __doing_it_wrong "makeFileRequest" "$(echo "$@" | tr ',' ' ')"
     fi
     local url method
@@ -116,7 +116,7 @@ makeFileRequest() {
         url="$url""?""$3"
     fi
     # Same headers and options as init request, except add the form encoded data
-    curl -X "$2" -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ""${VERSION}" -H "Client-ID: ""${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Cookie: device_id=""${DEVICE_ID}" -c cookies.txt "$headers" "$request_params" "$url" -o "$4"
+    curl -X "$2" -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ""${VERSION}" -H "Client-ID: ""${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ""${DEVICE_ID}" -c cookies.txt "$headers" "$request_params" "$url" -o "$4"
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid file response. Please try again later."

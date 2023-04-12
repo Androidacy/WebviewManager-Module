@@ -305,7 +305,8 @@ setup_logger() {
   } >$LOGFILE
   if test -f /sdcard/.androidacy-debug; then
     set -x 2
-  fi
+  fi 
+  set -o pipefail
   exec 2>>$LOGFILE
 }
 
