@@ -2,3 +2,9 @@ __MACOSX
 .DS_Store
 /*.zip
 
+/.idea/.gitignore
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/WebviewManager-Module.iml
+/.idea/libraries/zipsigner_3_0_dexed.xml
