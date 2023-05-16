@@ -288,7 +288,7 @@ download_webview() {
   else
     mkdir -p $webview_tmp_dir
   fi
-  makeFileRequest "/modules/webviewmanager/$which/download/$type" 'GET' "arch=$ARCH" $webview_tmp_dir/$type.apk
+  makeFileRequest "/modules/webviewmanager/$which/download/$type" 'GET' "arch=$ARCH" "$webview_tmp_dir/$type.apk"
   # Next, verify and install the webview
   if [ ! -f "$webview_tmp_dir/$type.apk" ]; then
     ui_print "Download failed"
@@ -311,7 +311,12 @@ verify_and_install_webview() {
   $can_use_fmmm_apis && showLoading || echo ""
   # Get the SHA256 hash of the webview
   local sha256
-  sha256=$(/data/adb/magisk/busybox sha256sum $apk | /data/adb/magisk/busybox awk "{print $1}")
+  # use busybox from magisk to get sha256sum
+  if [ -f "/sbin/sha256sum" ]; then
+    sha256=$(/sbin/sha256sum $apk | cut -d' ' -f1)
+  else
+    sha256=$(sha256sum $apk | cut -d' ' -f1)
+  fi
   # POST the hash to the server to get the hash of the webview to compare with
   local status
   status=$(makeJSONRequest "/modules/webviewmanager/verify/$which/$type" 'POST' "arch=$ARCH&client_hash=$sha256" 'verified')

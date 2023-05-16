@@ -1,5 +1,6 @@
 # shellcheck shell=ash
 VERSION="1.3"
+
 # Ensure curl is installed as we'll be using it
 if ! curl --version >/dev/null; then
     echo "curl not found. Your magisk installation may be corrupt. Please reinstall Magisk."
@@ -8,12 +9,25 @@ fi
 
 # Attempt to ping productions API. If we cannot, it means our API is down or users don't have internet.
 if ! curl -sL https://production-api.androidacy.com/ping; then
-    echo "Unable to ping API server: $msg. Please try again later."
+    echo "Unable to ping API server: $?. Please try again later."
     abort
 fi
 
 # Wrap jq in a parseJSON function so that the logic is hidden
-parseJSON() { jq "$1" 2>/dev/null; }
+parseJSON() {
+  echo "$1 $2"
+  local pattern
+  # prepend . if not present
+  first_char="$(printf %.1s "$1")"
+  if [ "$first_char" != "." ]; then
+    pattern=".$1"
+  else
+    pattern="$1"
+  fi
+  local json
+  json=$(cat)
+  jq "$pattern" "$json" 2>/dev/null;
+}
 
 # Ensure ANDROIDACY_API_KEY and ANDROIDACY_CLIENT_ID are both set, otherwise, exit
 if [ -z "$ANDROIDACY_API_KEY" ] || [ -z "$ANDROIDACY_CLIENT_ID" ]; then
@@ -102,7 +116,10 @@ makeFileRequest() {
     fi
     local url method
     local request_params=""
-    local headers=""
+    # param 4 is the file to save to. it cannot be empty or -
+    if [ -z "$4" ] || [ "$4" = "-" ]; then
+        __doing_it_wrong "makeFileRequest" "$(echo "$@" | tr ',' ' ')"
+    fi
     # Build URL
     url="https://production-api.androidacy.com""$1"
     # For POST requests, send data as form encoded data. For GET requests, attach data as parameters in the URL
@@ -113,7 +130,7 @@ makeFileRequest() {
         url="$url""?""$3"
     fi
     # Same headers and options as init request, except add the form encoded data
-    curl -X "$2" -sL -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ""${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt "$headers" "$request_params" "$url" -o "$4"
+    curl -X "$2" -sL -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ""${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt "$request_params" "$url" > "$4"
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid file response. Please try again later."

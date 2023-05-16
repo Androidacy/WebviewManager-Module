@@ -1,5 +1,6 @@
+# shellcheck shell=dash
 # External Tools
-chmod -R 0755 $MODPATH/common/addon/Volume-Key-Selector/tools
+chmod -R 0755 "$MODPATH"/common/addon/Volume-Key-Selector/tools
 
 chooseport_legacy() {
   # Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
@@ -7,8 +8,8 @@ chooseport_legacy() {
   [ "$1" ] && local delay=$1 || local delay=3
   local error=false
   while true; do
-    timeout 0 $MODPATH/common/addon/Volume-Key-Selector/tools/$ARCH32/keycheck
-    timeout $delay $MODPATH/common/addon/Volume-Key-Selector/tools/$ARCH32/keycheck
+    timeout 0 "$MODPATH"/common/addon/Volume-Key-Selector/tools/"$ARCH32"/keycheck
+    timeout "$delay" "$MODPATH"/common/addon/Volume-Key-Selector/tools/"$ARCH32"/keycheck
     local sel=$?
     if [ $sel -eq 42 ]; then
       return 0
@@ -29,8 +30,9 @@ chooseport() {
   local error=false 
   while true; do
     local count=0
+    echo "" > "$TMPDIR"/events
     while true; do
-      timeout $delay /system/bin/getevent -lqc 1 2>&1 > $TMPDIR/events &
+      timeout "$delay" /system/bin/getevent -lqc 1 2>&1 > "$TMPDIR"/events &
       sleep 0.5; count=$((count + 1))
       if (`grep -q 'KEY_VOLUMEUP *DOWN' $TMPDIR/events`); then
         return 0
@@ -43,7 +45,7 @@ chooseport() {
       # abort "Volume key not detected!"
       echo "Volume key not detected. Trying keycheck method"
       export chooseport=chooseport_legacy VKSEL=chooseport_legacy
-      chooseport_legacy $delay
+      chooseport_legacy "$delay"
       return $?
     else
       error=true
@@ -51,6 +53,9 @@ chooseport() {
     fi
   done
 }
-
+if [ ! -d "$TMPDIR" ]; then
+  mkdir -p "$TMPDIR"
+fi
+echo "" > "$TMPDIR"/events
 # Keep old variable from previous versions of this
 VKSEL=chooseport
