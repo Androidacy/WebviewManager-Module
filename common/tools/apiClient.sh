@@ -1,6 +1,5 @@
 # shellcheck shell=ash
 VERSION="1.3"
-
 # Ensure curl is installed as we'll be using it
 if ! curl --version >/dev/null; then
     echo "curl not found. Your magisk installation may be corrupt. Please reinstall Magisk."

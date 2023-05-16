@@ -13,12 +13,12 @@ if [ -z "$adb" ]; then
     exit 1
 fi
 
-# Check if a device is connected
+# Check if a device is connected. one device should be connected.
 if ! grep -q "device" <($adb devices); then
-    echo "No device connected"
+    echo "No device connected. Please make sure test infrastructure is set up correctly. See androidacy/infra#test-device-setup"
     exit 1
 fi
-
+echo "Checks passed"
 # Check if magisk is installed via adb shell and magisk -V
 if ! grep -q "MAGISK" <($adb shell su -c "magisk -v"); then
     # for debugging, output magisk -V and magisk -v
@@ -27,12 +27,14 @@ if ! grep -q "MAGISK" <($adb shell su -c "magisk -v"); then
     echo "Magisk not installed"
     exit 1
 fi
-
+echo "Magisk installed"
 # get timestamp
 timestamp=$(date +%Y%m%d-%H%M%S)
-
-zip -r7 "wvm-$timestamp.zip" . -x ".git/*" "build.sh" "README.md" "LICENSE" "wvm-*.zip"
-
+echo "Timestamp: $timestamp"
+rm -f wvm-*.zip
+echo "Removed old zip(s)"
+zip -qr8 "wvm-$timestamp.zip" . -x ".git/*" "build.sh" "README.md" "LICENSE"
+echo "Created zip"
 $adb push "wvm-$timestamp.zip" /sdcard/
-
+echo "Pushed zip to /sdcard/"
 $adb shell su -c "magisk --install-module /sdcard/\"wvm-$timestamp.zip\""
