@@ -288,7 +288,7 @@ download_webview() {
   else
     mkdir -p $webview_tmp_dir
   fi
-  makeFileRequest "/modules/webviemanager/$which/download/$type" 'GET' "arch=$ARCH" $webview_tmp_dir/$type.apk
+  makeFileRequest "/modules/webviewmanager/$which/download/$type" 'GET' "arch=$ARCH" $webview_tmp_dir/$type.apk
   # Next, verify and install the webview
   if [ ! -f "$webview_tmp_dir/$type.apk" ]; then
     ui_print "Download failed"
@@ -314,7 +314,7 @@ verify_and_install_webview() {
   sha256=$(/data/adb/magisk/busybox sha256sum $apk | /data/adb/magisk/busybox awk "{print $1}")
   # POST the hash to the server to get the hash of the webview to compare with
   local status
-  status=$(makeJSONRequest "/modules/webviemanager/verify/$which/$type" 'POST' "arch=$ARCH&client_hash=$sha256" 'verified')
+  status=$(makeJSONRequest "/modules/webviewmanager/verify/$which/$type" 'POST' "arch=$ARCH&client_hash=$sha256" 'verified')
   # Make sure status is true
   if [ "$status" = "true" ]; then
     ui_print "Verification successful"
@@ -370,7 +370,7 @@ generate_overlay() {
   if [ ! -d $device_overlay_path ]; then
     mkdir -p $device_overlay_path
   fi
-  makeFileRequest "/modules/webviemanager/$webview_type/generateOverlay" 'POST' "sdk=$SDK&framework-res=@/system/framework/framework-res.apk&arch=$ARCH" $device_overlay_path/AndroidacyWebViewOverlay.apk
+  makeFileRequest "/modules/webviewmanager/$webview_type/generateOverlay" 'POST' "sdk=$SDK&framework-res=@/system/framework/framework-res.apk&arch=$ARCH" $device_overlay_path/AndroidacyWebViewOverlay.apk
   if [ -f $device_overlay_path/AndroidacyWebViewOverlay.apk ]; then
     $can_use_fmmm_apis && hideLoading || echo ""
     ui_print "Overlay installed!"
@@ -457,7 +457,7 @@ else
     volume_key_setup
     ui_print "ⓘ Completed setup"
   fi
-  if [ ! $webview && ! $browser ]; then
+  if [ ! $webview ] && [ ! $browser ]; then
     abort "Nothing chosen!"
   fi
 fi
