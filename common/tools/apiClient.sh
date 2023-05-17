@@ -20,7 +20,6 @@ fi
 
 # Wrap jq in a parseJSON function so that the logic is hidden
 parseJSON() {
-  echo "$1 $2"
   local pattern
   # prepend . if not present
   first_char="$(printf %.1s "$1")"
@@ -30,7 +29,7 @@ parseJSON() {
     pattern="$1"
   fi
   local json
-  json=$(cat)
+  json=$(cat -)
   echo "$json" | jq "$pattern" 2>/dev/null;
 }
 
@@ -85,7 +84,7 @@ makeJSONRequest() {
     fi
     local url method request_params value
     # Build URL
-    url="https://production-api.androidacy.com""$1"
+    url="https://production-api.androidacy.com$1"
     # Show what request to servers
     # shellcheck disable=SC2154
     if [ "$ANDROIDACY_API_SDK_DEBUG_STATUS" = "ON" ]; then
@@ -94,14 +93,14 @@ makeJSONRequest() {
     fi
     # For POST requests, send data as form encoded data. For GET requests, attach data as parameters in the URL
     if [ "$3" = "POST" ]; then
-        request_params="--post-data $2"
+        request_params="-d \"$2\""
     else
         request_params=""
-        url="$url""?""$2"
+        url="$url?$2"
     fi
     # Same headers and options as init request, except add the form encoded data
     export value
-    value=$(curl -sL -o- -H "Accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: $DEVICE_ID" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
+    value=$(curl -sL -o- -H "Accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: $DEVICE_ID" -X "$3" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid JSON response. Please try again later."
@@ -129,7 +128,7 @@ makeFileRequest() {
     url="https://production-api.androidacy.com""$1"
     # For POST requests, send data as form encoded data. For GET requests, attach data as parameters in the URL
     if [ "$2" = "POST" ]; then
-        request_params="--post-data $3"
+        request_params="-d \"$3\""
     else
         request_params=""
         url="$url""?""$3"

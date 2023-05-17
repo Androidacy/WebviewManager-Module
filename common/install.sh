@@ -13,7 +13,9 @@ A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.rele
 if [ "$ARCH" != arm ] && [ "$ARCH" != arm64 ]; then
   abort "✖ Your device isn't supported. ARCH found: [$ARCH], supported: [arm, arm64]."
 fi
-
+if ! dumpsys wifi | grep -q "curState=ConnectedState"; then
+  ui_print "You may not be connected to WiFi and may incur data charges!"
+fi
 ## Functions
 # Make sure all config values are what we expect them to be
 verify_config() {
@@ -319,7 +321,8 @@ verify_and_install_webview() {
   fi
   # POST the hash to the server to get the hash of the webview to compare with
   local status
-  status=$(makeJSONRequest "/modules/webviewmanager/verify/$which/$type" 'POST' "arch=$ARCH&client_hash=$sha256" 'verified')
+  makeJSONRequest "/modules/webviewmanager/verify/$which/$type" "arch=$ARCH&client_hash=$sha256" 'POST' 'verified'
+  status=$value
   # Make sure status is true
   if [ "$status" = "true" ]; then
     ui_print "Verification successful"
@@ -338,7 +341,7 @@ verify_and_install_webview() {
     $can_use_fmmm_apis && hideLoading || echo ""
     ui_print "Installation complete"
   else
-    ui_print "Verification failed"
+    ui_print "Verification failed: $status"
     abort "Verification failed"
   fi
 }
@@ -371,7 +374,7 @@ generate_overlay() {
     abort "Device has no valid overlay path?"
   fi
   $can_use_fmmm_apis && showLoading || echo ""
-  ui_print "Installing system overlay..."
+  ui_print "Installing system overlay. Please be patient, this may take awhile..."
   if [ ! -d $device_overlay_path ]; then
     mkdir -p $device_overlay_path
   fi
