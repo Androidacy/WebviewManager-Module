@@ -1,15 +1,20 @@
 # shellcheck shell=dash
 # External Tools
 chmod -R 0755 "$MODPATH"/common/addon/Volume-Key-Selector/tools
+alias keycheck="$MODPATH"/common/addon/Volume-Key-Selector/tools/"$ARCH"/keycheck
 
 chooseport_legacy() {
   # Keycheck binary by someone755 @Github, idea for code below by Zappo @xda-developers
   # Calling it first time detects previous input. Calling it second time will do what we want
-  [ "$1" ] && local delay=$1 || local delay=3
+  if [ -n "$1" ]; then
+    local delay=$1
+  else
+    local delay=5
+  fi
   local error=false
   while true; do
-    timeout 0 "$MODPATH"/common/addon/Volume-Key-Selector/tools/"$ARCH32"/keycheck
-    timeout "$delay" "$MODPATH"/common/addon/Volume-Key-Selector/tools/"$ARCH32"/keycheck
+    timeout 0 keycheck
+    timeout "$delay" keycheck
     local sel=$?
     if [ $sel -eq 42 ]; then
       return 0
@@ -25,21 +30,29 @@ chooseport_legacy() {
 }
 
 chooseport() {
-  # Original idea by chainfire and ianmacd @xda-developers
-  [ "$1" ] && local delay=$1 || local delay=3
+  if [ -n "$1" ]; then
+    local delay=$1
+  else
+    local delay=5
+  fi
   local error=false 
   while true; do
     local count=0
-    echo "" > "$TMPDIR"/events
     while true; do
-      timeout "$delay" /system/bin/getevent -lqc 1 2>&1 > "$TMPDIR"/events &
-      sleep 0.5; count=$((count + 1))
-      if (`grep -q 'KEY_VOLUMEUP *DOWN' $TMPDIR/events`); then
+      if [ ! -d "$TMPDIR" ]; then
+        mkdir -p "$TMPDIR"
+      fi
+      if [ -f "$TMPDIR"/events ]; then
+        rm -f "$TMPDIR"/events
+      fi
+      timeout "$delay" /system/bin/getevent -lqc 1 > "$TMPDIR"/events 2>&1
+      count=$((count + 1))
+      if grep -q "KEY_VOLUMEUP *DOWN" "$TMPDIR"/events; then
         return 0
-      elif (`grep -q 'KEY_VOLUMEDOWN *DOWN' $TMPDIR/events`); then
+      elif grep -q "KEY_VOLUMEDOWN *DOWN" "$TMPDIR"/events; then
         return 1
       fi
-      [ $count -gt 6 ] && break
+      [ $count -gt 3 ] && break
     done
     if $error; then
       # abort "Volume key not detected!"

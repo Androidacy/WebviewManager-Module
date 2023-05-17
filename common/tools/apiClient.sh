@@ -1,4 +1,4 @@
-# shellcheck shell=ash
+# shellcheck shell=ash disable=SC3045
 VERSION="1.3"
 
 # Ensure curl is installed as we'll be using it
@@ -11,6 +11,11 @@ fi
 if ! curl -sL https://production-api.androidacy.com/ping; then
     echo "Unable to ping API server: $?. Please try again later."
     abort
+fi
+
+# if abort is not defined, alias it to exit 1
+if [ -z "$(LC_ALL=C type -t rvm)" ] || [ ! "$(LC_ALL=C type -t rvm)" = function ]; then
+  alias abort="exit 1"
 fi
 
 # Wrap jq in a parseJSON function so that the logic is hidden
@@ -26,7 +31,7 @@ parseJSON() {
   fi
   local json
   json=$(cat)
-  jq "$pattern" "$json" 2>/dev/null;
+  echo "$json" | jq "$pattern" 2>/dev/null;
 }
 
 # Ensure ANDROIDACY_API_KEY and ANDROIDACY_CLIENT_ID are both set, otherwise, exit
