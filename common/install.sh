@@ -419,7 +419,8 @@ isUpdated() {
   ourVersion=$(grep_prop versionCode $TMPDIR/module.prop)
   # Request the api for the version number of bromitewebview (our codename)
   local status
-  status=$(makeJSONRequest "/modules/webviewmanager/versionCheck" "version=$ourVersion&device=$DEVICE&sdk=$SDK" "GET" ".status")
+  makeJSONRequest "/modules/webviewmanager/versionCheck" "version=$ourVersion&device=$DEVICE&sdk=$SDK" "GET" ".status"
+  status=$value
   # If status is "error", then our version is out of date
   if [ "$status" = "error" ]; then
     ui_print "You are running an outdated version of this module"
