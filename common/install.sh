@@ -9,10 +9,6 @@ export webview=false
 export browser=false
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 # ui_print "Checking for module updates..."
-# if $ARCH is not arm or arm64 we abort
-if [ "$ARCH" != arm ] && [ "$ARCH" != arm64 ]; then
-  abort "✖ Your device isn't supported. ARCH found: [$ARCH], supported: [arm, arm64]."
-fi
 if ! dumpsys wifi | grep -q "curState=ConnectedState"; then
   ui_print "You may not be connected to WiFi and may incur data charges!"
 fi

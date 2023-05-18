@@ -1,5 +1,4 @@
-# shellcheck shell=ash
-# shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091,SC3020
+# shellcheck shell=ash disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091,SC3020,SC2139
 
 echo " __        __     _            _                 "
 echo " \ \      / /___ | |__ __   __(_)  ___ __      __"
@@ -50,6 +49,11 @@ abort() {
   rm -fr $TMPDIR 2>/dev/null
   it_failed
 }
+export abort
+# if $ARCH is not arm or arm64 we abort
+if [ "$ARCH" != "arm" ] && [ "$ARCH" != "arm64" ]; then
+  abort "✖ Your device isn't supported. ARCH found: [$ARCH], supported: [arm, arm64]."
+fi
 unzip "$MODPATH"/common/tools/tools.zip -q -d "$MODPATH"/common/tools
 chmod -R a+rx "$MODPATH"/common/tools
 alias jq="$MODPATH"/common/tools/jq-"$ARCH"
