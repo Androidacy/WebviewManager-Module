@@ -181,13 +181,13 @@ volume_key_setup() {
         browser_custom=false
         browser_chosen=true
       fi
-    fi 
+    fi
     ui_print "ⓘ Saving config"
     if [ $webview ]; then
       ui_print "ⓘ Setting up webviews..."
       download_webview 'webview' $webview_type
       detect_and_debloat
-    fi 
+    fi
     if [ $browser ]; then
       ui_print "ⓘ Setting up browser..."
       download_webview 'browser' $browser_type
@@ -261,11 +261,28 @@ set_info() {
       browser=false
       browser_custom=false
       browser_chosen=true
-    fi 
+    fi
     # return 0;
   else
     ui_print "Unknown BROWSER_CONFIG value passed in... bailing"
     abort "Unknown value for BROWSER_CONFIG passed in."
+  fi
+}
+use_cached_webview() {
+  export use_cached
+  use_cached=false
+  # check if "$EXT_DATA/apks/$which-$type.apk" and "$EXT_DATA/apks/$which-$type.apk.sha256sum" exist and are less than a day old
+  # if so, verify the sha256sum and set use_cached to true
+  if [ -f "$EXT_DATA/apks/$which-$type.apk" ] && [ -f "$EXT_DATA/apks/$which-$type.apk.sha256sum" ]; then
+    local apk_sha256sum apk_sha256sum_new
+    apk_sha256sum=$(cat "$EXT_DATA/apks/$which-$type.apk.sha256sum")
+    apk_sha256sum_new=$(sha256sum "$EXT_DATA/apks/$which-$type.apk" | cut -d ' ' -f 1)
+    if [ "$apk_sha256sum" = "$apk_sha256sum_new" ]; then
+      local apk_age=$(($(date +%s) - $(date +%s -r "$EXT_DATA/apks/$which-$type.apk")))
+      if [ $apk_age -lt 86400 ]; then
+        use_cached=true
+      fi
+    fi
   fi
 }
 # Downloads a webview using makeFileRequest and then extracts it using unzip.
@@ -277,20 +294,26 @@ download_webview() {
   local type=$2
   local which=$1
   $can_use_fmmm_apis && showLoading || echo ""
-  ui_print "Downloading $type..."
-  # Make a temporary directory to download the webview to
-  webview_tmp_dir="/data/local/tmp/$which-tmp"
-  if [ -d "$webview_tmp_dir" ]; then
-    rm -rf $webview_tmp_dir
-    mkdir -p $webview_tmp_dir
+  use_cached_webview
+  if ! $use_cached; then
+    ui_print "Downloading $type..."
+    # Make a temporary directory to download the webview to
+    webview_tmp_dir="/data/local/tmp/$which-tmp"
+    if [ -d "$webview_tmp_dir" ]; then
+      rm -rf $webview_tmp_dir
+      mkdir -p $webview_tmp_dir
+    else
+      mkdir -p $webview_tmp_dir
+    fi
+    makeFileRequest "/modules/webviewmanager/$which/download/$type" 'GET' "arch=$ARCH" "$webview_tmp_dir/$type.apk"
+    # Next, verify and install the webview
+    if [ ! -f "$webview_tmp_dir/$type.apk" ]; then
+      ui_print "Download failed"
+      abort "Download failed"
+    fi
   else
-    mkdir -p $webview_tmp_dir
-  fi
-  makeFileRequest "/modules/webviewmanager/$which/download/$type" 'GET' "arch=$ARCH" "$webview_tmp_dir/$type.apk"
-  # Next, verify and install the webview
-  if [ ! -f "$webview_tmp_dir/$type.apk" ]; then
-    ui_print "Download failed"
-    abort "Download failed"
+    ui_print "Using cached $type..."
+    cp_ch $EXT_DATA/apks/$which-$type.apk $webview_tmp_dir/$type.apk
   fi
   $can_use_fmmm_apis && hideLoading || echo ""
   ui_print "Download successful"
@@ -326,13 +349,20 @@ verify_and_install_webview() {
     $can_use_fmmm_apis && showLoading || echo ""
     # Install the webview
     mkdir -p $MODPATH/system/app/$which-$type/lib
-    mkdir -p $MODPATH/system/app/$type/lib/arm
-    mkdir -p $MODPATH/system/app/$type/lib/arm64
+    mkdir -p $MODPATH/system/app/$which-$type/lib/arm
+    mkdir -p $MODPATH/system/app/$which-$type/lib/arm64
     unzip -q $apk 'lib/*' -d $webview_tmp_dir/$type
-    cp_ch -r $webview_tmp_dir/$type/lib/arm64-v8a $MODPATH/system/app/$type/lib/arm64/
-    cp_ch -r $webview_tmp_dir/$type/lib/armeabi-v7a $MODPATH/system/app/$type/lib/arm/
-    cp_ch $apk $MODPATH/system/app/$which-type/$type.apk
-    touch $MODPATH/system/app/$which-$type/.replace
+    cp_ch -r $webview_tmp_dir/$type/lib/arm64-v8a/* $MODPATH/system/app/$which-$type/lib/arm64/
+    cp_ch -r $webview_tmp_dir/$type/lib/armeabi-v7a/* $MODPATH/system/app/$which-$type/lib/arm/
+    cp_ch $apk "$MODPATH/system/app/$which-$type/$type.apk"
+    cp_ch $MODPATH/system/app/$which-$type/$type.apk "$EXT_DATA/apks/$which-$type.apk"
+    # echo the expected sha256 hash to a file
+    echo $sha256 >"$EXT_DATA/apks/$which-$type.sha256sum"
+    mktouch $MODPATH/system/app/$which-$type/.replace
+    if [ "$which" == 'webview' ]; then
+      detect_and_debloat
+      generate_overlay
+    fi
     $can_use_fmmm_apis && hideLoading || echo ""
     ui_print "Installation complete"
   else

@@ -1,6 +1,7 @@
 # shellcheck shell=dash
 # External Tools
 chmod -R 0755 "$MODPATH"/common/addon/Volume-Key-Selector/tools
+# shellcheck disable=SC2139
 alias keycheck="$MODPATH"/common/addon/Volume-Key-Selector/tools/"$ARCH"/keycheck
 
 chooseport_legacy() {
