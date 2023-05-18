@@ -8,7 +8,8 @@ if ! curl --version >/dev/null; then
 fi
 
 # Attempt to ping productions API. If we cannot, it means our API is down or users don't have internet.
-if ! curl -sL https://production-api.androidacy.com/ping; then
+status=$(curl -sL -o /dev/null -w "%{http_code}" https://production-api.androidacy.com/ping)
+if [ $status != "200" ] && [ $status != "204" ]; then
     echo "Unable to ping API server: $?. Please try again later."
     abort
 fi
@@ -99,12 +100,14 @@ makeJSONRequest() {
         url="$url?$2"
     fi
     # Same headers and options as init request, except add the form encoded data
+    value=$(curl --fail-with-body -sL -H "Accept: application/json" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: $DEVICE_ID" -X "$3" -c cookies.txt $request_params "$url" | parseJSON "$4")
     export value
-    value=$(curl --fail-with-body -sL -o- -H "Accept: application/json" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: $DEVICE_ID" -X "$3" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid JSON response. Please try again later."
         abort
+    else
+        echo $value
     fi
 }
 
@@ -134,9 +137,9 @@ makeFileRequest() {
         url="$url""?""$3"
     fi
     # Same headers and options as init request, except add the form encoded data
-    curl --fail-with-body -X "$2" -sL -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ""${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt "$request_params" "$url" > "$4"
+    curl --create-dirs --fail -X "$2" -sL --progress-bar -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt $request_params "$url" > "$4"
     # shellcheck disable=SC2181
-    if [ "$?" -ne 0 ]; then
+    if [ $? -ne 0 ]; then
         echo "Invalid file response. Please try again later."
         abort
     fi

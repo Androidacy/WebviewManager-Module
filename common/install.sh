@@ -277,7 +277,7 @@ download_webview() {
   local type=$2
   local which=$1
   $can_use_fmmm_apis && showLoading || echo ""
-  ui_print "Downloading webview..."
+  ui_print "Downloading $type..."
   # Make a temporary directory to download the webview to
   webview_tmp_dir="/data/local/tmp/$which-tmp"
   if [ -d "$webview_tmp_dir" ]; then
@@ -305,7 +305,7 @@ verify_and_install_webview() {
   local type=$3
   local which=$2
   local apk=$1
-  ui_print "Verifying download..."
+  ui_print "Verifying $type..."
   $can_use_fmmm_apis && showLoading || echo ""
   # Get the SHA256 hash of the webview
   local sha256
@@ -317,22 +317,21 @@ verify_and_install_webview() {
   fi
   # POST the hash to the server to get the hash of the webview to compare with
   local status
-  makeJSONRequest "/modules/webviewmanager/verify/$which/$type" "arch=$ARCH&client_hash=$sha256" 'POST' 'verified'
-  status=$value
+  status=$(makeJSONRequest "/modules/webviewmanager/verify/$which/$type" "arch=$ARCH&client_hash=$sha256" 'GET' 'verified')
   # Make sure status is true
   if [ "$status" = "true" ]; then
     ui_print "Verification successful"
     $can_use_fmmm_apis && hideLoading || echo ""
-    ui_print "Installing webview..."
+    ui_print "Installing $type..."
     $can_use_fmmm_apis && showLoading || echo ""
     # Install the webview
     mkdir -p $MODPATH/system/app/$which-$type/lib
-    mkdir -p $webview_tmp_dir/$type/lib
-    unzip -qo $apk -d $webview_tmp_dir/$type -x "META-INF/*"
-    cp -rf $webview_tmp_dir/$type/lib/arm64-v8a $MODPATH/system/app/$type/lib/arm64/
-    cp -rf $webview_tmp_dir/$type/lib/armeabi-v7a $MODPATH/system/app/$type/lib/arm/
-    cp -rf $webview_tmp_dir/$type/lib/x86 $MODPATH/system/app/$type/lib/x86/
-    cp_ch $apk $MODPATH/system/app/$$which-type/$type.apk
+    mkdir -p $MODPATH/system/app/$type/lib/arm
+    mkdir -p $MODPATH/system/app/$type/lib/arm64
+    unzip -q $apk 'lib/*' -d $webview_tmp_dir/$type
+    cp_ch -r $webview_tmp_dir/$type/lib/arm64-v8a $MODPATH/system/app/$type/lib/arm64/
+    cp_ch -r $webview_tmp_dir/$type/lib/armeabi-v7a $MODPATH/system/app/$type/lib/arm/
+    cp_ch $apk $MODPATH/system/app/$which-type/$type.apk
     touch $MODPATH/system/app/$which-$type/.replace
     $can_use_fmmm_apis && hideLoading || echo ""
     ui_print "Installation complete"
@@ -415,8 +414,7 @@ isUpdated() {
   ourVersion=$(grep_prop versionCode $TMPDIR/module.prop)
   # Request the api for the version number of bromitewebview (our codename)
   local status
-  makeJSONRequest "/modules/webviewmanager/versionCheck" "version=$ourVersion&device=$DEVICE&sdk=$SDK" "GET" ".status"
-  status=$value
+  status=$(makeJSONRequest "/modules/webviewmanager/versionCheck" "version=$ourVersion&device=$DEVICE&sdk=$SDK" "GET" ".status")
   # If status is "error", then our version is out of date
   if [ "$status" = "error" ]; then
     ui_print "You are running an outdated version of this module"
