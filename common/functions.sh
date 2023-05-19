@@ -289,8 +289,11 @@ MODEL=$(getprop ro.product.model)
 DEVICE=$(getprop ro.product.device)
 ROM=$(getprop ro.build.display.id)
 API=$(grep_prop ro.build.version.sdk)
+SDK=$API
+export BRAND MODEL DEVICE ROM API SDK
 
 ui_print "ⓘ Logging verbosely to ${EXT_DATA}/logs"
+
 ### Logging functions
 
 # Log <level> <message>
@@ -334,6 +337,9 @@ ui_print "ⓘ Removing old files"
 
 if [ -f $INFO ]; then
   while read -r LINE; do
+    if case $LINE in /sdcard*) ;; *) false;; esac; then
+      continue
+    fi
     if [ "$(echo -n $LINE | tail -c 1)" = "~" ]; then
       continue
     elif [ -f "$LINE~" ]; then

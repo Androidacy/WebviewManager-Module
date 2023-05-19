@@ -9,13 +9,13 @@ export webview=false
 export browser=false
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
 # ui_print "Checking for module updates..."
-if ! dumpsys wifi | grep -q "curState=ConnectedState"; then
+if ! dumpsys wifi | grep -q "Wi-Fi is enabled"; then
   ui_print "You may not be connected to WiFi and may incur data charges!"
 fi
 ## Functions
 # Make sure all config values are what we expect them to be
 verify_config() {
-  local browser, webview, webview_custom, browser_custom, webview_type, browser_type
+  local browser webview webview_custom browser_custom webview_type browser_type
   $can_use_fmmm_apis && clearTerminal || echo ""
   ui_print "Verifying config..."
   $can_use_fmmm_apis && showLoading || echo ""
@@ -183,6 +183,7 @@ volume_key_setup() {
       fi
     fi
     ui_print "ⓘ Saving config"
+    set_config_values
     if [ $webview ]; then
       ui_print "ⓘ Setting up webviews..."
       download_webview 'webview' $webview_type
@@ -296,7 +297,7 @@ download_webview() {
   $can_use_fmmm_apis && showLoading || echo ""
   use_cached_webview
   if ! $use_cached; then
-    ui_print "Downloading $type..."
+    ui_print "Downloading $which..."
     # Make a temporary directory to download the webview to
     webview_tmp_dir="/data/local/tmp/$which-tmp"
     if [ -d "$webview_tmp_dir" ]; then
@@ -312,7 +313,7 @@ download_webview() {
       abort "Download failed"
     fi
   else
-    ui_print "Using cached $type..."
+    ui_print "Using cached $which..."
     cp_ch $EXT_DATA/apks/$which-$type.apk $webview_tmp_dir/$type.apk
   fi
   $can_use_fmmm_apis && hideLoading || echo ""
@@ -328,7 +329,7 @@ verify_and_install_webview() {
   local type=$3
   local which=$2
   local apk=$1
-  ui_print "Verifying $type..."
+  ui_print "Verifying $which..."
   $can_use_fmmm_apis && showLoading || echo ""
   # Get the SHA256 hash of the webview
   local sha256
@@ -345,7 +346,7 @@ verify_and_install_webview() {
   if [ "$status" = "true" ]; then
     ui_print "Verification successful"
     $can_use_fmmm_apis && hideLoading || echo ""
-    ui_print "Installing $type..."
+    ui_print "Installing $which..."
     $can_use_fmmm_apis && showLoading || echo ""
     # Install the webview
     mkdir -p $MODPATH/system/app/$which-$type/lib
@@ -403,7 +404,7 @@ generate_overlay() {
   if [ ! -d $device_overlay_path ]; then
     mkdir -p $device_overlay_path
   fi
-  makeFileRequest "/modules/webviewmanager/$webview_type/generateOverlay" 'POST' "sdk=$SDK&framework-res=@/system/framework/framework-res.apk&arch=$ARCH" $device_overlay_path/AndroidacyWebViewOverlay.apk
+  makeFileRequest "/modules/webviewmanager/$webview_type/generateOverlay?sdk=$SDK&arch=$ARCH" 'POST' "framework-res=@/system/framework/framework-res.apk" $device_overlay_path/AndroidacyWebViewOverlay.apk
   if [ -f $device_overlay_path/AndroidacyWebViewOverlay.apk ]; then
     $can_use_fmmm_apis && hideLoading || echo ""
     ui_print "Overlay installed!"
@@ -429,7 +430,7 @@ set_config_values() {
   for i in WEBVIEW BROWSER WEBVIEW_TYPE BROWSER_TYPE; do
     # Set the value in the config.sh by replacing the line containing the key with the new value
     # Get value of the variable $i is set to
-    value=$(eval echo \$$i)
+    value=$(eval echo $i)
     set_config_value $i $value
   done
   # Remove comma from second to last line in config.sh
@@ -484,7 +485,15 @@ else
   if $USE_CONFIG; then
     ui_print "ⓘ Using config file..."
     # Set the values in the config.sh to the values in the config file
-    set_config_values
+    if [ $webview ]; then
+      ui_print "ⓘ Setting up webviews..."
+      download_webview 'webview' $webview_type
+      detect_and_debloat
+    fi
+    if [ $browser ]; then
+      ui_print "ⓘ Setting up browser..."
+      download_webview 'browser' $browser_type
+    fi
   else
     ui_print "ⓘ Starting setup..."
     volume_key_setup

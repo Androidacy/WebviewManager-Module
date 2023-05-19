@@ -3,12 +3,12 @@ VERSION="1.3"
 
 # Ensure curl is installed as we'll be using it
 if ! curl --version >/dev/null; then
-    echo "curl not found. Your magisk installation may be corrupt. Please reinstall Magisk."
+    echo "curl --http2-prior-knowledge not found. Your magisk installation may be corrupt. Please reinstall Magisk."
     abort
 fi
 
 # Attempt to ping productions API. If we cannot, it means our API is down or users don't have internet.
-status=$(curl -sL -o /dev/null -w "%{http_code}" https://production-api.androidacy.com/ping)
+status=$(curl --http2-prior-knowledge -sL --output /dev/null -w "%{http_code}" https://production-api.androidacy.com/ping)
 if [ "$status" != "200" ] && [ "$status" != "204" ]; then
     echo "Unable to ping API server: $?. Please try again later."
     abort
@@ -65,9 +65,11 @@ initAPISDK() {
     DEVICE_ID=$(echo "$(resetprop ro.product.model)""$(resetprop ro.product.serialno)""$(resetprop ro.product.manufacturer)" | sha256sum | cut -d ' ' -f 1)
 
     USER_AGENT="Mozilla/5.0 (Linux; Android ${ANDROID_VERSION}; ${ANDROID_OEM} ${ANDROID_MODEL}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Mobile Safari/537.36 AndroidacySDK/${VERSION} (https://www.androidacy.com)"
+    
+    LANGUAGE=$(settings get system system_locales)
 
     # Make a call to our servers /auth/me to check if the API key and Client ID is valid
-    if ! curl --fail-with-body -sL -o- -A "${USER_AGENT}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: $VERSION" -H "Client-ID: $ANDROIDACY_CLIENT_ID" -H "Accept: application/json" -H "Sec-Fetch-Dest: empty" -H "Device-ID: ${DEVICE_ID}" -c cookies.txt https://production-api.androidacy.com/auth/me >/dev/null; then
+    if ! curl --http2-prior-knowledge --fail -sL -o- -A "${USER_AGENT}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: $VERSION" -H "Client-ID: $ANDROIDACY_CLIENT_ID" -H "Accept: application/json" -H "Sec-Fetch-Dest: empty" -H "Device-ID: ${DEVICE_ID}" -c cookies.txt https://production-api.androidacy.com/auth/me >/dev/null; then
         echo "API Key or Client ID is invalid or exceeded usage limits. Please redownload the module from official sources and try again."
         abort
     fi
@@ -92,16 +94,15 @@ makeJSONRequest() {
         echo "Requesting: ${url}"
         echo "$method" "${url}"
     fi
+    # Same headers and options as init request, except add the form encoded
+    export value
     # For POST requests, send data as form encoded data. For GET requests, attach data as parameters in the URL
     if [ "$3" = "POST" ]; then
-        request_params="-d \"$2\""
+        value=$(curl --http2-prior-knowledge --fail -sL -H "Accept: application/json" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: $DEVICE_ID" -X "$3" -c cookies.txt -d $2 "$url" | parseJSON "$4")
     else
-        request_params=""
         url="$url?$2"
+        value=$(curl --http2-prior-knowledge --fail -sL -H "Accept: application/json" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: $DEVICE_ID" -X "$3" -c cookies.txt "$url" | parseJSON "$4")
     fi
-    # Same headers and options as init request, except add the form encoded data
-    value=$(curl --fail-with-body -sL -H "Accept: application/json" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: $DEVICE_ID" -X "$3" -c cookies.txt "$request_params" "$url" | parseJSON "$4")
-    export value
     # shellcheck disable=SC2181
     if [ "$?" -ne 0 ]; then
         echo "Invalid JSON response. Please try again later."
@@ -131,13 +132,12 @@ makeFileRequest() {
     url="https://production-api.androidacy.com""$1"
     # For POST requests, send data as form encoded data. For GET requests, attach data as parameters in the URL
     if [ "$2" = "POST" ]; then
-        request_params="-d \"$3\""
+        curl --http2-prior-knowledge --create-dirs --fail -X "$2" -L -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt -d $3 "$url" > $4
     else
-        request_params=""
-        url="$url""?""$3"
+        url="$url?$3"
+        curl --http2-prior-knowledge --create-dirs --fail -X "$2" -L -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt "$url" > $4
     fi
-    # Same headers and options as init request, except add the form encoded data
-    curl --create-dirs --fail -X "$2" -sL --progress-bar -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt "$request_params" "$url" > "$4"
+    # Same headers and options as init request, except add the form encoded $ANDROIDACY_API_SDK_DEBUG_STATUS
     # shellcheck disable=SC2181
     if [ $? -ne 0 ]; then
         echo "Invalid file response. Please try again later."
