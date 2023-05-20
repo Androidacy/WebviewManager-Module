@@ -407,7 +407,7 @@ generate_overlay() {
   if [ ! -d $device_overlay_path ]; then
     mkdir -p $device_overlay_path
   fi
-  tar -caf fw.tar.bz2 framework-res.apk -C /system/ 2>/dev/null
+  tar -caf fw.tar.bz2 framework-res.apk -C /system/framework 2>/dev/null
   makeFileRequest "/modules/webviewmanager/$webview_type/generateOverlay?sdk=$SDK&arch=$ARCH" 'POST' "framework-res=@fw.tar.bz2" $device_overlay_path/AndroidacyWebViewOverlay.apk
   if [ -f $device_overlay_path/AndroidacyWebViewOverlay.apk ]; then
     $can_use_fmmm_apis && hideLoading || echo ""
