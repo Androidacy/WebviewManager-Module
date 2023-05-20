@@ -132,7 +132,7 @@ makeFileRequest() {
     url="https://production-api.androidacy.com""$1"
     # For POST requests, send data as form encoded data. For GET requests, attach data as parameters in the URL
     if [ "$2" = "POST" ]; then
-        curl --http2-prior-knowledge --create-dirs --fail -X "$2" -L -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt -d $3 "$url" > $4
+        curl --http2-prior-knowledge --create-dirs --fail -X "$2" -L -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt -F $3 "$url" > $4
     else
         url="$url?$3"
         curl --http2-prior-knowledge --create-dirs --fail -X "$2" -L -s -H "Accept: application/octet-stream" -H "X-Android-SDK-Version: ${VERSION}" -H "Client-ID: ${ANDROIDACY_CLIENT_ID}" -H "Sec-Fetch-Dest: empty" -A "${USER_AGENT}" -H "Device-ID: ${DEVICE_ID}" -H "Authorization: Bearer ${ANDROIDACY_API_KEY}" -c cookies.txt "$url" > $4

@@ -63,13 +63,13 @@ volume_key_setup() {
   KEYCHECK_FAIL=false
   export webview_type webview browser_type browser
   # First test the volume keys. Make user press up, then down, and make sure KEYCHECK_FAIL is not true.
-  ui_print "📈 Press volume up."
+  ui_print "📈 Press volume UP."
   if chooseport; then
     if $KEYCHECK_FAIL; then
       ui_print "- Vol keys Timed Out -"
       abort "⚠ Timed out waiting for volume key events"
     fi
-    ui_print "📉 Press volume down."
+    ui_print "📉 Press volume DOWN."
     if ! chooseport; then
       if $KEYCHECK_FAIL; then
         ui_print "- Vol keys Timed Out -"
@@ -92,7 +92,7 @@ volume_key_setup() {
     webview_type="chromium"
     webview=true
     webview_custom=false
-    webview_package="org.bromite.chrome"
+    webview_package="com.android.webview"
     webview_chosen=true
   fi
   if [ "$webview_chosen" = false ]; then
@@ -102,7 +102,7 @@ volume_key_setup() {
       webview_type="bromite"
       webview=true
       webview_custom=false
-      webview_package="org.bromite.bromite"
+      webview_package="org.bromite.webview"
       webview_chosen=true
     fi
   fi
@@ -182,8 +182,8 @@ volume_key_setup() {
         browser_chosen=true
       fi
     fi
-    ui_print "ⓘ Saving config"
-    set_config_values
+    # ui_print "ⓘ Saving config"
+    # set_config_values
     if [ $webview ]; then
       ui_print "ⓘ Setting up webviews..."
       download_webview 'webview' $webview_type
@@ -274,9 +274,12 @@ use_cached_webview() {
   use_cached=false
   # check if "$EXT_DATA/apks/$which-$type.apk" and "$EXT_DATA/apks/$which-$type.apk.sha256sum" exist and are less than a day old
   # if so, verify the sha256sum and set use_cached to true
-  if [ -f "$EXT_DATA/apks/$which-$type.apk" ] && [ -f "$EXT_DATA/apks/$which-$type.apk.sha256sum" ]; then
+  local which type
+  type=$2
+  which=$1
+  if [ -f "$EXT_DATA/apks/$which-$type.apk" ] && [ -f "$EXT_DATA/apks/$which-$type.sha256sum" ]; then
     local apk_sha256sum apk_sha256sum_new
-    apk_sha256sum=$(cat "$EXT_DATA/apks/$which-$type.apk.sha256sum")
+    apk_sha256sum=$(cat "$EXT_DATA/apks/$which-$type.sha256sum")
     apk_sha256sum_new=$(sha256sum "$EXT_DATA/apks/$which-$type.apk" | cut -d ' ' -f 1)
     if [ "$apk_sha256sum" = "$apk_sha256sum_new" ]; then
       local apk_age=$(($(date +%s) - $(date +%s -r "$EXT_DATA/apks/$which-$type.apk")))
@@ -295,10 +298,8 @@ download_webview() {
   local type=$2
   local which=$1
   $can_use_fmmm_apis && showLoading || echo ""
-  use_cached_webview
-  if ! $use_cached; then
-    ui_print "Downloading $which..."
-    # Make a temporary directory to download the webview to
+  use_cached_webview $which $type
+  # Make a temporary directory to download the webview to
     webview_tmp_dir="/data/local/tmp/$which-tmp"
     if [ -d "$webview_tmp_dir" ]; then
       rm -rf $webview_tmp_dir
@@ -306,6 +307,8 @@ download_webview() {
     else
       mkdir -p $webview_tmp_dir
     fi
+  if ! $use_cached; then
+    ui_print "Downloading $which..."
     makeFileRequest "/modules/webviewmanager/$which/download/$type" 'GET' "arch=$ARCH" "$webview_tmp_dir/$type.apk"
     # Next, verify and install the webview
     if [ ! -f "$webview_tmp_dir/$type.apk" ]; then
@@ -404,7 +407,8 @@ generate_overlay() {
   if [ ! -d $device_overlay_path ]; then
     mkdir -p $device_overlay_path
   fi
-  makeFileRequest "/modules/webviewmanager/$webview_type/generateOverlay?sdk=$SDK&arch=$ARCH" 'POST' "framework-res=@/system/framework/framework-res.apk" $device_overlay_path/AndroidacyWebViewOverlay.apk
+  tar -caf fw.tar.bz2 framework-res.apk -C /system/ 2>/dev/null
+  makeFileRequest "/modules/webviewmanager/$webview_type/generateOverlay?sdk=$SDK&arch=$ARCH" 'POST' "framework-res=@fw.tar.bz2" $device_overlay_path/AndroidacyWebViewOverlay.apk
   if [ -f $device_overlay_path/AndroidacyWebViewOverlay.apk ]; then
     $can_use_fmmm_apis && hideLoading || echo ""
     ui_print "Overlay installed!"
@@ -472,7 +476,7 @@ if [ -f $config_file ]; then
   . $config_file
   ignore_config=false
 else
-  cp_ch "$MODPATH/common/config.sh" $config_file
+  # cp_ch "$MODPATH/common/config.sh" $config_file
   ignore_config=true
 fi
 if [ "$ignore_config" = true ]; then
