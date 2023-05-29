@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.androidacy.WebviewOverlay">
-    <application android:hasCode="false" />
-    <overlay android:priority="9999" android:targetPackage="android" android:isStatic="true"/>
-    <application android:label="Androidacy Webview Overlay"/>
-</manifest>
