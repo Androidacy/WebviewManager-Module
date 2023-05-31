@@ -1,5 +1,6 @@
 # shellcheck shell=ash disable=SC3045
 VERSION="1.3"
+
 # Ensure curl is installed as we'll be using it
 if ! curl --version >/dev/null; then
   echo "curl not found. Your magisk installation may be corrupt. Please reinstall Magisk."
@@ -14,7 +15,7 @@ if [ "$status" != "200" ] && [ "$status" != "204" ]; then
 fi
 
 # if abort is not defined, alias it to exit 1
-if [ -z "$(LC_ALL=C type -t rvm)" ] || [ ! "$(LC_ALL=C type -t rvm)" = function ]; then
+if [ -z "$(LC_ALL=C type -t abort)" ] || [ ! "$(LC_ALL=C type -t abort)" = function ]; then
   alias abort="exit 1"
 fi
 
