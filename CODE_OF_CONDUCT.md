@@ -1,94 +1,56 @@
-# Citizen Code of Conduct
+# Androidacy Code of Conduct
 
-## 1. Purpose
+## Introduction
 
-A primary goal of Webview Manager Module is to be inclusive to the largest number of contributors, with the most varied and diverse backgrounds possible. As such, we are committed to providing a friendly, safe and welcoming environment for all, regardless of gender, sexual orientation, ability, ethnicity, socioeconomic status, and religion (or lack thereof).
+At Androidacy, we're committed to fostering an open, inclusive, supportive, and respectful community for everyone who participates in our repositories and communities. This Code of Conduct outlines our expectations for participant behavior as well as the consequences for unacceptable behavior.
 
-This code of conduct outlines our expectations for all those who participate in our community, as well as the consequences for unacceptable behavior.
+## Our Pledge
 
-We invite all those who participate in Webview Manager Module to help us create safe and positive experiences for everyone.
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community. We value and respect all individuals irrespective of their race, religion, sexual orientation, gender identity, age, nationality, appearance, or technical expertise.
 
-## 2. Open [Source/Culture/Tech] Citizenship
+## Our Standards
 
-A supplemental goal of this Code of Conduct is to increase open [source/culture/tech] citizenship by encouraging participants to recognize and strengthen the relationships between our actions and their effects on our community.
+### Expected Behavior
 
-Communities mirror the societies in which they exist and positive action is essential to counteract the many forms of inequality and abuses of power that exist in society.
+We expect all participants in Androidacy communities to:
 
-If you see someone who is making an extra effort to ensure our community is welcoming, friendly, and encourages all participants to contribute to the fullest extent, we want to know.
+- Demonstrate empathy and kindness towards other people.
+- Respect personal identities and experiences, particularly related to LGBTQ+, race, religion, sexuality, and gender.
+- Give and gracefully accept constructive feedback.
+- Focus on what is best not just for us as individuals, but for the overall community.
 
-## 3. Expected Behavior
+### Unacceptable Behavior
 
-The following behaviors are expected and requested of all community members:
+We consider the following behaviors unacceptable:
 
- * Participate in an authentic and active way. In doing so, you contribute to the health and longevity of this community.
- * Exercise consideration and respect in your speech and actions.
- * Attempt collaboration before conflict.
- * Refrain from demeaning, discriminatory, or harassing behavior and speech.
- * Be mindful of your surroundings and of your fellow participants. Alert community leaders if you notice a dangerous situation, someone in distress, or violations of this Code of Conduct, even if they seem inconsequential.
- * Remember that community event venues may be shared with members of the public; please be respectful to all patrons of these locations.
+- Disrespect or discrimination of any form, particularly related to a person's LGBTQ+ status, race, religion, sexuality, or gender identity.
+- Harassment, public or private.
+- Using this community as a platform for inappropriate content or conduct.
 
-## 4. Unacceptable Behavior
+### Content Responsibility
 
-The following behaviors are considered harassment and are unacceptable within our community:
+While Androidacy will strive to maintain the community standards, we are not responsible for all community content. However, we'll make a best effort to moderate as per the guidelines, at our discretion.
 
- * Violence, threats of violence or violent language directed against another person.
- * Sexist, racist, homophobic, transphobic, ableist or otherwise discriminatory jokes and language.
- * Posting or displaying sexually explicit or violent material.
- * Posting or threatening to post other people's personally identifying information ("doxing").
- * Personal insults, particularly those related to gender, sexual orientation, race, religion, or disability.
- * Inappropriate photography or recording.
- * Inappropriate physical contact. You should have someone's consent before touching them.
- * Unwelcome sexual attention. This includes, sexualized comments or jokes; inappropriate touching, groping, and unwelcomed sexual advances.
- * Deliberate intimidation, stalking or following (online or in person).
- * Advocating for, or encouraging, any of the above behavior.
- * Sustained disruption of community events, including talks and presentations.
+## Reporting and Enforcement
 
-## 5. Weapons Policy
+If you are the subject of, or witness any violations of this Code of Conduct, please contact us by emailing community-relations@androidacy.com or via https://t.me/AndroidacySupport on Telegram. If necessary, Androidacy will respond as promptly as we can to address the issue.
 
-No weapons will be allowed at Webview Manager Module events, community spaces, or in other spaces covered by the scope of this Code of Conduct. Weapons include but are not limited to guns, explosives (including fireworks), and large knives such as those used for hunting or display, as well as any other item used for the purpose of causing injury or harm to others. Anyone seen in possession of one of these items will be asked to leave immediately, and will only be allowed to return without the weapon. Community members are further expected to comply with all state and local laws on this matter.
+We will maintain confidentiality with regard to the reporter of an incident. However, Androidacy reserves the right to moderate, delete, or censor any content or behavior that we find to be in violation of this Code of Conduct, at our discretion. We also have the ultimate say in interpreting and enforcing these rules, with no obligation to act on any report or complaint.
 
-## 6. Consequences of Unacceptable Behavior
+## Intellectual Property
 
-Unacceptable behavior from any community member, including sponsors and those with decision-making authority, will not be tolerated.
+All participants are expected to respect copyrights, trademarks, and other legal rights. Any contributions should be original or free from other license encumbrances.
 
-Anyone asked to stop unacceptable behavior is expected to comply immediately.
+### Code Contributions
 
-If a community member engages in unacceptable behavior, the community organizers may take any action they deem appropriate, up to and including a temporary ban or permanent expulsion from the community without warning (and without refund in the case of a paid event).
+Your submissions should follow existing code styles and be free of bugs and security vulnerabilities. By submitting your code, you grant Androidacy all rights to use and distribute your code, as long as it does not infringe any existing licenses.
 
-## 7. Reporting Guidelines
+## Legal
 
-If you are subject to or witness unacceptable behavior, or have any other concerns, please notify a community organizer as soon as possible. https://www.androidacy.com/contact/.
+Androidacy is not liable for any defamation, slander, or other claims arising from the operation of our public communities. Slander against Androidacy under any circumstance is not permissible.
 
-[Reporting guidelines](https://www.androidacy.com/contact/)
+## Conclusion
 
-Additionally, community organizers are available to help community members engage with local law enforcement or to otherwise help those experiencing unacceptable behavior feel safe. In the context of in-person events, organizers will also provide escorts as desired by the person experiencing distress.
+This Code of Conduct applies to all Androidacy communities and public spaces, both online and off, and also applies when an individual is officially representing Androidacy in public spaces. We hope that our community members will carry these principles with them into their everyday lives, helping make the world a better place for everyone.
 
-## 8. Addressing Grievances
-
-If you feel you have been falsely or unfairly accused of violating this Code of Conduct, you should notify Androidacy with a concise description of your grievance. Your grievance will be handled in accordance with our existing governing policies. [Policy](https://www.androidacy.com/terms/)
-
-All grievances will be addressed by a Community Manager or Moderator as soon as possible, in the order received.
-
-## 9. Scope
-
-We expect all community participants (contributors, paid or otherwise; sponsors; and other guests) to abide by this Code of Conduct in all community venues--online and in-person--as well as in all one-on-one communications pertaining to community business.
-
-This code of conduct and its related procedures also applies to unacceptable behavior occurring outside the scope of community activities when such behavior has the potential to adversely affect the safety and well-being of community members.
-
-## 10. Contact info
-
-https://www.androidacy.com/contact/
-
-## 11. License and attribution
-
-The Citizen Code of Conduct is distributed by [Stumptown Syndicate](http://stumptownsyndicate.org) under a [Creative Commons Attribution-ShareAlike license](http://creativecommons.org/licenses/by-sa/3.0/). 
-
-Portions of text derived from the [Django Code of Conduct](https://www.djangoproject.com/conduct/) and the [Geek Feminism Anti-Harassment Policy](http://geekfeminism.wikia.com/wiki/Conference_anti-harassment/Policy).
-
-_Revision 2.3. Posted 6 March 2017._
-
-_Revision 2.2. Posted 4 February 2016._
-
-_Revision 2.1. Posted 23 June 2014._
-
-_Revision 2.0, adopted by the [Stumptown Syndicate](http://stumptownsyndicate.org) board on 10 January 2013. Posted 17 March 2013._
+By choosing to join and participate in Androidacy communities, you are committing to upholding these standards. Thank you for helping make our community welcoming and friendly to all.
