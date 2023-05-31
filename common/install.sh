@@ -5,13 +5,7 @@ VF=0
 VERIFY=true
 config_file="$EXT_DATA/config.conf"
 A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
-ui_print "ⓘ $("$DEVICE"//%20// ) with android $A, sdk$API, with an $ARCH cpu"
-# most x86/x86_64 hosts on android provide arm emulation, so let's try to use it
-if [ $ARCH == "x66" ] || [ $ARCH == "x86_64" ]; then
-  ui_print "$ARCH is not officially supported. Attempting to fallback to arm..."
-  ui_print "Install WILL FAIL if your device or emulator doesn't support arm emulation!"
-  ARCH="arm64"
-fi
+ui_print "ⓘ $(echo "$DEVICE" | sed 's#%20#\ #g') with android $A, sdk$API, with an $ARCH cpu"
 ui_print "Checking for module updates..."
 updateChecker 'self'
 newVersion=$response
