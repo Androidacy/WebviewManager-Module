@@ -2,6 +2,8 @@
 ### The premier systemless solution for changing default browser and WebView. 
 ## Support
 
+#### NOTE: We're working on an app replacement for this module. Sorry for the wait!
+
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fandroidacy_discussions)](https://telegram.dog/androidacy_discussions)
 [![Telegram Channel](https://img.shields.io/endpoint?color=neon&style=flat&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fandroidacy)](https://telegram.dog/androidacy)
 [![XDA-Developers](https://img.shields.io/badge/XDA--Developers-%23AC6E2F.svg?style=flat&logo=XDA-Developers&logoColor=white)](https://forum.xda-developers.com/android/software/bromite-magisk-module-t3936964)
@@ -74,7 +76,7 @@ Issues with the module should be filed [here](https://github.com/Androidacy/Webv
 
 ## Compatibility
 
-- Android 7.x to 12.1. 
+- Android 8.x to 12.1. 
   - Some heavily customized stock ROMs may have issues.
   - MIUI is not officially supported for the aforementioned reason. Some people have had success with debloating the stock bloatware.
   - OneUI users: make sure Secure Folder is disabled before installing.
