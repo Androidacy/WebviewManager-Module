@@ -1,8 +1,16 @@
 # Webview Manager
 ### The premier systemless solution for changing default browser and WebView. 
+
+
+#### NOTE: We're working on an app replacement for this module. This module will receive no more feature updates.
+#### Any forks bearing our name, logos, or code are not authorized by Androidacy, and should be treated with caution.
+
+Androidacy has become aware of forks that may use our code without credit or without giving back to the original project in any way, while claiming to be superior. While this module is open source, Androidacy does not condone such usage of open source work. When Androidacy uses open source work, we always ensure to give credit where credit is due, and we ask that other ecosystem participants do the same.
+
+
+
 ## Support
 
-#### NOTE: We're working on an app replacement for this module. Sorry for the wait!
 
 [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fandroidacy_discussions)](https://telegram.dog/androidacy_discussions)
 [![Telegram Channel](https://img.shields.io/endpoint?color=neon&style=flat&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fandroidacy)](https://telegram.dog/androidacy)
@@ -18,7 +26,7 @@ Different webviews and browser have additional advantages to the default ones: t
 
 The module will always download the latest version of the webview and/or browser, to update it just reflash the module!
 
-The latest update should now work on all ROMs Android v7.0+. ROMs versions 5.x to 6.x are not explicitly supported. Overly customized OEM ROMs such as MIUI have limited support.
+The latest update should now work on all ROMs Android v7.0+. ROMs versions 5.x to 6.x are not explicitly supported. Overly customized OEM ROMs such as MIUI have limited support. Android 13+ should not be considered supported.
 
 ## What is a WebView?
 
